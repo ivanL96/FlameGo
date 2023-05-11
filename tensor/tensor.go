@@ -8,11 +8,13 @@ func InitTensor[T Number](shape ...uint) *Tensor[T] {
 	}
 	var ndim uint = uint(len(shape))
 
-	new_tensor := &Tensor[T]{shape: shape, data: make([]T, prod), ndim: ndim, len: prod}
+	data := make([]T, prod)
+	new_tensor := &Tensor[T]{shape: shape, data: data, ndim: ndim, len: prod, dtype: get_type_array(data)}
 	return new_tensor
 }
 
 func (tensor *Tensor[T]) Set(value []T) *Tensor[T] {
+	// sets new value of the same shape
 	length := uint(len(value))
 	var prod uint = 1
 	for _, dim := range tensor.shape {
@@ -26,6 +28,17 @@ func (tensor *Tensor[T]) Set(value []T) *Tensor[T] {
 	return tensor
 }
 
+func AsType[T Number, DT Number](tensor *Tensor[T]) *Tensor[DT] {
+	// naive impl with copying the data & tensor
+	data := make([]DT, tensor.len)
+	for i, val := range tensor.data {
+		data[i] = DT(val)
+	}
+	new_tensor := InitTensor[DT](tensor.shape...)
+	new_tensor.data = data
+	return new_tensor
+}
+
 func (tensor *Tensor[T]) Copy() *Tensor[T] {
 	new_copy := InitTensor[T](tensor.shape...)
 	copy(new_copy.data, tensor.data)
@@ -34,7 +47,7 @@ func (tensor *Tensor[T]) Copy() *Tensor[T] {
 
 func (tensor *Tensor[T]) Compare(other_tensor *Tensor[T]) bool {
 	// iterates over two tensors and compares elementwise
-	if tensor.len != other_tensor.len{
+	if tensor.len != other_tensor.len {
 		return false
 	}
 	for i, element := range tensor.data {
@@ -75,7 +88,7 @@ func (tensor *Tensor[T]) Index(indices ...int) *Tensor[T] {
 	// 	fmt.Print("start: ")
 	// 	fmt.Println(start)
 	// }
-	for i, index := range indices {
+	for _, index := range indices {
 		get_value_by_index(tensor, index)
 	}
 
@@ -83,7 +96,8 @@ func (tensor *Tensor[T]) Index(indices ...int) *Tensor[T] {
 }
 
 func get_value_by_index[T Number](tensor *Tensor[T], index int) *Tensor[T] {
-	if tensor.ndim <= 1 {
-		return &Tensor{data:tensor.data[index])
-	}
+	// if tensor.ndim <= 1 {
+	// 	return &Tensor{data:tensor.data[index])
+	// }
+	return tensor
 }

@@ -1,5 +1,10 @@
 package tensor
 
+import (
+	"reflect"
+	"unsafe"
+)
+
 func create_slice[T any](n int, value T) []T {
 	slice := make([]T, n)
 	for i := range slice {
@@ -34,4 +39,18 @@ func Compare_slices[T Number](slice1, slice2 []T) bool {
 		}
 	}
 	return true
+}
+
+func get_type_array[T Number](arr []T) reflect.Type {
+	return reflect.TypeOf(arr).Elem()
+}
+
+func convert_slice_type[OLD_T, NEW_T Number](slice []OLD_T) []NEW_T {
+	// doesnt work yet
+	orig_sizeof := unsafe.Sizeof(slice[0])
+	new_sizeof := unsafe.Sizeof(NEW_T(0))
+	n_elements := uintptr(len(slice)) * orig_sizeof / new_sizeof // length of a new slice type
+	slice_addr := &slice[0]
+	converted := unsafe.Slice((*NEW_T)(unsafe.Pointer(slice_addr)), n_elements)
+	return converted
 }
