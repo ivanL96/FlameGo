@@ -53,3 +53,12 @@ func convert_slice_type[OLD_T, NEW_T Number](slice []OLD_T) []NEW_T {
 	converted := unsafe.Slice((*NEW_T)(unsafe.Pointer(slice_addr)), n_elements)
 	return converted
 }
+
+func repeat_slice[T Number](data []T, ntimes uint) []T {
+	length := len(data) * int(ntimes)
+	replicated_data := make([]T, 0, int(length))
+	for i := 0; i < int(ntimes); i++ {
+		replicated_data = append(replicated_data, data...)
+	}
+	return replicated_data
+}

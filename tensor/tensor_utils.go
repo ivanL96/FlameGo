@@ -50,6 +50,7 @@ func are_broadcastable(shape_a, shape_b Shape) bool {
 		shape_b = append(ones, shape_b...)
 	}
 	// Start from the trailing dimensions and work forward
+	// TODO get rid of reverse_slice_copy
 	rev_shape_b := reverse_slice_copy(shape_b)
 	for i, dim1 := range reverse_slice_copy(shape_a) {
 		dim2 := rev_shape_b[i]

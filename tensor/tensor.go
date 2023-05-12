@@ -3,16 +3,13 @@ package tensor
 import "fmt"
 
 func make_tensor[T Number](data []T, shape Shape) *Tensor[T] {
-	var ndim Dim = Dim(len(shape))
-
-	new_tensor := &Tensor[T]{
+	return &Tensor[T]{
 		shape: shape,
 		data:  data,
-		ndim:  ndim,
+		ndim:  Dim(len(shape)),
 		len:   uint(len(data)),
 		dtype: get_type_array(data),
 	}
-	return new_tensor
 }
 
 func InitTensor[T Number](value []T, shape Shape) *Tensor[T] {
