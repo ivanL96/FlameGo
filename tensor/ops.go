@@ -1,6 +1,8 @@
 package tensor
 
-import "fmt"
+import (
+	"fmt"
+)
 
 type BinaryScalarOp[T Number] func(T, T) T
 
@@ -77,7 +79,6 @@ func elementwise_routine[T Number](
 			new_tensor.data[i] = binOp(val, broadcasted_tensor_b.data[i])
 		}
 	}
-
 	return new_tensor
 }
 
