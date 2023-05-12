@@ -1,16 +1,39 @@
 package tensor
 
-func InitTensor[T Number](shape ...uint) *Tensor[T] {
-	// inits a tensor with no data
-	var prod uint = 1
+import "fmt"
+
+func make_tensor[T Number](data []T, shape Shape) *Tensor[T] {
+	var ndim Dim = Dim(len(shape))
+
+	new_tensor := &Tensor[T]{
+		shape: shape,
+		data:  data,
+		ndim:  ndim,
+		len:   uint(len(data)),
+		dtype: get_type_array(data),
+	}
+	return new_tensor
+}
+
+func InitTensor[T Number](value []T, shape Shape) *Tensor[T] {
+	// inits a tensor with data
+	var prod Dim = 1
 	for _, dim := range shape {
 		prod *= dim
 	}
-	var ndim uint = uint(len(shape))
+	if int(prod) != len(value) {
+		panic(fmt.Sprintf("Value length cannot have shape %v", shape))
+	}
+	return make_tensor(value, shape)
+}
 
-	data := make([]T, prod)
-	new_tensor := &Tensor[T]{shape: shape, data: data, ndim: ndim, len: prod, dtype: get_type_array(data)}
-	return new_tensor
+func InitEmptyTensor[T Number](shape ...Dim) *Tensor[T] {
+	var length Dim = 1
+	for _, dim := range shape {
+		length *= dim
+	}
+	zeroes := make([]T, length)
+	return make_tensor(zeroes, shape)
 }
 
 func (tensor *Tensor[T]) Set(value []T) *Tensor[T] {
@@ -18,10 +41,13 @@ func (tensor *Tensor[T]) Set(value []T) *Tensor[T] {
 	length := uint(len(value))
 	var prod uint = 1
 	for _, dim := range tensor.shape {
-		prod = dim * prod
+		prod = uint(dim) * prod
 	}
 	if prod != length {
-		panic("Initialized shape of tensor not equal the number of elements. Change the shape first")
+		msg := fmt.Sprintf(
+			"Shape %v cannot fit the number of elements %v. Change the shape first",
+			tensor.shape, length)
+		panic(msg)
 	}
 	tensor.len = length
 	tensor.data = value
@@ -34,14 +60,14 @@ func AsType[T Number, DT Number](tensor *Tensor[T]) *Tensor[DT] {
 	for i, val := range tensor.data {
 		data[i] = DT(val)
 	}
-	new_tensor := InitTensor[DT](tensor.shape...)
-	new_tensor.data = data
+	new_tensor := InitTensor[DT](data, tensor.shape)
 	return new_tensor
 }
 
 func (tensor *Tensor[T]) Copy() *Tensor[T] {
-	new_copy := InitTensor[T](tensor.shape...)
-	copy(new_copy.data, tensor.data)
+	new_data := make([]T, len(tensor.data))
+	copy(new_data, tensor.data)
+	new_copy := InitTensor[T](new_data, tensor.shape)
 	return new_copy
 }
 

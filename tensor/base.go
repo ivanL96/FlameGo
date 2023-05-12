@@ -13,11 +13,12 @@ type Number interface {
 	constraints.Float | constraints.Integer
 }
 
-type Shape []uint
+type Dim uint
+type Shape []Dim
 
 type Tensor[T Number] struct {
 	shape Shape
-	ndim  uint
+	ndim  Dim
 	data  []T
 	dtype reflect.Type
 	len   uint

@@ -22,7 +22,7 @@ func compare_shapes[T Number](tensor_a *Tensor[T], tensor_b *Tensor[T]) bool {
 	return false
 }
 
-func squeeze_shape(shape Shape) []uint {
+func squeeze_shape(shape Shape) Shape {
 	result := Shape{1}
 	for _, v := range shape {
 		if v > 1 {
@@ -44,10 +44,10 @@ func are_broadcastable(shape_a, shape_b Shape) bool {
 
 	// If one shape has more dimensions than the other, prepend 1s to the shape of the smaller array
 	if len(shape_a) < len(shape_b) {
-		ones := create_slice[uint](len(shape_b)-len(shape_a), 1)
+		ones := create_slice[Dim](len(shape_b)-len(shape_a), 1)
 		shape_a = append(ones, shape_a...)
 	} else if len(shape_b) < len(shape_a) {
-		ones := create_slice[uint](len(shape_a)-len(shape_b), 1)
+		ones := create_slice[Dim](len(shape_a)-len(shape_b), 1)
 		shape_b = append(ones, shape_b...)
 	}
 	// Start from the trailing dimensions and work forward
@@ -64,10 +64,10 @@ func are_broadcastable(shape_a, shape_b Shape) bool {
 func broadcast(shape_a, shape_b Shape) Shape {
 
 	if len(shape_a) < len(shape_b) {
-		ones := create_slice[uint](len(shape_b)-len(shape_a), 1)
+		ones := create_slice[Dim](len(shape_b)-len(shape_a), 1)
 		shape_a = append(ones, shape_a...)
 	} else if len(shape_b) < len(shape_a) {
-		ones := create_slice[uint](len(shape_a)-len(shape_b), 1)
+		ones := create_slice[Dim](len(shape_a)-len(shape_b), 1)
 		shape_b = append(ones, shape_b...)
 	}
 	// # Start from the trailing dimensions and work forward

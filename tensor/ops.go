@@ -14,11 +14,10 @@ func elementwise_routine[T Number](tensor_a, tensor_b *Tensor[T], binOp BinarySc
 	}
 	var new_tensor *Tensor[T] = nil
 	if out == nil {
-		new_tensor = InitTensor[T](tensor_a.shape...)
+		new_tensor = InitEmptyTensor[T](tensor_a.shape...)
 	} else {
 		new_tensor = out
 	}
-	fmt.Println(tensor_a.ToString(), tensor_b.ToString())
 	if tensor_a.len == tensor_b.len {
 		for i, val := range tensor_a.data {
 			new_tensor.data[i] = binOp(val, tensor_b.data[i])
@@ -38,7 +37,7 @@ func elementwise_routine[T Number](tensor_a, tensor_b *Tensor[T], binOp BinarySc
 		// panic(fmt.Sprintf("Cannot apply elementwise op for %s, %s", tensor_a.ToString(), tensor_b.ToString()))
 	}
 
-	new_tensor = new_tensor.Broadcast(tensor_b.shape)
+	new_tensor = new_tensor.Broadcast(tensor_b.shape...)
 	return new_tensor
 }
 
