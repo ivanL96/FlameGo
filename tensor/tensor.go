@@ -87,3 +87,11 @@ func (tensor *Tensor[T]) Fill(fill_value T) *Tensor[T] {
 	}
 	return tensor
 }
+
+func Range[T Number](limit int) *Tensor[T] {
+	tensor := InitEmptyTensor[T](Dim(limit))
+	for i := 0; i < limit; i++ {
+		tensor.data[i] = T(i)
+	}
+	return tensor
+}
