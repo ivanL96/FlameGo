@@ -7,7 +7,19 @@ import "fmt"
 func (tensor *Tensor[T]) Broadcast(shape ...Dim) *Tensor[T] {
 	// tries to broadcast the shape and replicate the data accordingly
 	tensor.shape = broadcast(tensor.shape, shape)
+	var length Dim = 1 // new number of elements
+	for _, dim := range tensor.shape {
+		length *= dim
+	}
 	tensor.ndim = Dim(len(tensor.shape))
+
+	// replicate data
+	ntimes := int(length) / len(tensor.data)
+	replicated_data := make([]T, 0, int(length))
+	for i := 0; i < ntimes; i++ {
+		replicated_data = append(replicated_data, tensor.data...)
+	}
+	tensor.data = replicated_data
 	return tensor
 }
 
@@ -52,23 +64,5 @@ func (tensor *Tensor[T]) Index(indices ...int) *Tensor[T] {
 		sub_data = sub_data[start:end]
 		fmt.Println(start, end, sub_data)
 	}
-	//[0, 1, 2,
-	// 3, 4, 5, <--
-	// 6, 7, 8,
-	// 9, 10, 11,
-	// 12, 13, 14]
-	// Example: array [0 1 2 3 4 5], shape=(3,2), index=2 => array[2] = [4,5]
-	return tensor
-}
-
-func get_value_by_index[T Number](tensor *Tensor[T], index int) *Tensor[T] {
-	// if tensor.ndim <= 1 {
-	// 	return &Tensor{data:tensor.data[index])
-	// }
-	if index < 0 {
-		panic("negative index not supported yet")
-	}
-	// dim := tensor.shape[0]
-	// offset := dim * uint(index)
 	return tensor
 }
