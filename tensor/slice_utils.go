@@ -13,12 +13,11 @@ func create_slice[T any](n int, value T) []T {
 	return slice
 }
 
-func reverse_slice_inplace[T any](slice []T) []T {
+func reverse_slice_inplace[T any](slice []T) {
 	for i := len(slice)/2 - 1; i >= 0; i-- {
 		opp := len(slice) - 1 - i
 		slice[i], slice[opp] = slice[opp], slice[i]
 	}
-	return slice
 }
 
 func reverse_slice_copy[T any](slice []T) []T {

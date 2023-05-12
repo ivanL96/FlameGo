@@ -60,14 +60,14 @@ func AsType[T Number, DT Number](tensor *Tensor[T]) *Tensor[DT] {
 	for i, val := range tensor.data {
 		data[i] = DT(val)
 	}
-	new_tensor := InitTensor[DT](data, tensor.shape)
+	new_tensor := InitTensor(data, tensor.shape)
 	return new_tensor
 }
 
 func (tensor *Tensor[T]) Copy() *Tensor[T] {
 	new_data := make([]T, len(tensor.data))
 	copy(new_data, tensor.data)
-	new_copy := InitTensor[T](new_data, tensor.shape)
+	new_copy := InitTensor(new_data, tensor.shape)
 	return new_copy
 }
 

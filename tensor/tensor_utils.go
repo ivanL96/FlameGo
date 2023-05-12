@@ -41,7 +41,6 @@ func is_scalar_like(shape Shape) bool {
 }
 
 func are_broadcastable(shape_a, shape_b Shape) bool {
-
 	// If one shape has more dimensions than the other, prepend 1s to the shape of the smaller array
 	if len(shape_a) < len(shape_b) {
 		ones := create_slice[Dim](len(shape_b)-len(shape_a), 1)
@@ -62,7 +61,6 @@ func are_broadcastable(shape_a, shape_b Shape) bool {
 }
 
 func broadcast(shape_a, shape_b Shape) Shape {
-
 	if len(shape_a) < len(shape_b) {
 		ones := create_slice[Dim](len(shape_b)-len(shape_a), 1)
 		shape_a = append(ones, shape_a...)
@@ -75,6 +73,9 @@ func broadcast(shape_a, shape_b Shape) Shape {
 	rev_shape_b := reverse_slice_copy(shape_b)
 	for i, dim1 := range reverse_slice_copy(shape_a) {
 		dim2 := rev_shape_b[i]
+		if dim1 != dim2 && dim1 != 1 && dim2 != 1 {
+			panic(fmt.Sprintf("Shapes %v and %v are not broadcastable: Dim1 '%v' not equal Dim2 '%v'", shape_a, shape_b, dim1, dim2))
+		}
 		if dim1 == dim2 {
 			result_shape[len(result_shape)-1-i] = dim1
 		} else if dim2 != 1 {
@@ -82,7 +83,7 @@ func broadcast(shape_a, shape_b Shape) Shape {
 		} else if dim1 != 1 {
 			result_shape[len(result_shape)-1-i] = dim1
 		} else {
-			panic(fmt.Sprint("Shapes are not broadcastable: %s, %s", shape_a, shape_b))
+			panic("Something went wrong while broadcasting")
 		}
 	}
 	return result_shape
