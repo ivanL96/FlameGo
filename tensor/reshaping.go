@@ -55,10 +55,15 @@ func (tensor *Tensor[T]) Index(indices ...int) *Tensor[T] {
 	copy(sub_shape, tensor.shape[len(indices):])
 
 	for i, ind := range indices {
-		if ind >= int(tensor.shape[i]) {
-			panic(fmt.Sprintf("Index %v out of range", ind))
-		}
 		dim := tensor.shape[i]
+		if ind < 0 {
+			ind = int(dim) + ind
+		}
+
+		if ind < 0 || ind >= int(tensor.shape[i]) {
+			panic(fmt.Sprintf("Index %v out of range", indices[i]))
+		}
+
 		shape_prod /= dim
 		start := int(shape_prod) * ind
 		end := start + int(shape_prod)

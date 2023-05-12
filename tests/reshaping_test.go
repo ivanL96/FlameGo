@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"gograd/tensor"
 	"testing"
 )
@@ -40,7 +39,10 @@ func TestIndex(t *testing.T) {
 
 	sub2 := sub1.Index(1)
 	assertEqualSlices(t, sub2.Data(), []int32{6, 7})
-	fmt.Println(sub2.Shape())
 	assertEqualSlices(t, sub2.Shape(), tensor.Shape{2})
 
+	b := tensor.InitTensor([]int32{0, 1, 2, 3}, tensor.Shape{2, 2})
+	bsub := b.Index(-2)
+	assertEqualSlices(t, bsub.Data(), []int32{0, 1})
+	assertEqualSlices(t, bsub.Shape(), tensor.Shape{2})
 }

@@ -22,6 +22,7 @@ func elementwise_routine[T Number](
 	if out == nil {
 		new_tensor = InitEmptyTensor[T](tensor_a.shape...)
 	} else {
+		// TODO use shape from "out" tensor
 		new_tensor = out
 	}
 	if tensor_a.len == tensor_b.len {
@@ -50,6 +51,7 @@ func elementwise_routine[T Number](
 				dim_a := tensor_a.shape[i]
 				if dim_a < brc_dim && broadcasted_tensor_a == nil {
 					// need to broadcast tensor_a
+					// TODO how to avoid Copy() and additional Broadcast()
 					broadcasted_tensor_a = tensor_a.Copy().Broadcast(broadcasted_shape...)
 				}
 			}
