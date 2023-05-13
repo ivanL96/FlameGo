@@ -25,7 +25,10 @@ func elementwise_routine[T Number](
 		// TODO use shape from "out" tensor
 		new_tensor = out
 	}
-	if tensor_a.len == tensor_b.len {
+	if is_scalar_like(tensor_a.shape) && is_scalar_like(tensor_b.shape) {
+		// most trivial case
+		new_tensor.data[0] = binOp(tensor_a.data[0], tensor_b.data[0])
+	} else if tensor_a.len == tensor_b.len {
 		// same shapes
 		for i, val := range tensor_a.data {
 			new_tensor.data[i] = binOp(val, tensor_b.data[i])

@@ -64,6 +64,10 @@ func are_broadcastable(shape_a, shape_b Shape) bool {
 }
 
 func broadcast(shape_a, shape_b Shape) Shape {
+	if is_scalar_like(shape_a) && is_scalar_like(shape_b) {
+		return shape_a
+	}
+
 	if len(shape_a) < len(shape_b) {
 		ones := create_slice[Dim](len(shape_b)-len(shape_a), 1)
 		shape_a = append(ones, shape_a...)
@@ -73,6 +77,7 @@ func broadcast(shape_a, shape_b Shape) Shape {
 	}
 	// # Start from the trailing dimensions and work forward
 	result_shape := make(Shape, len(shape_a))
+	// TODO get rid of reverse_slice_copy
 	rev_shape_b := reverse_slice_copy(shape_b)
 	for i, dim1 := range reverse_slice_copy(shape_a) {
 		dim2 := rev_shape_b[i]
@@ -86,7 +91,7 @@ func broadcast(shape_a, shape_b Shape) Shape {
 		} else if dim1 != 1 {
 			result_shape[len(result_shape)-1-i] = dim1
 		} else {
-			panic("Something went wrong while broadcasting")
+			panic("Something went wrong during broadcasting")
 		}
 	}
 	return result_shape

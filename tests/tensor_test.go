@@ -25,13 +25,26 @@ func TestCompare(t *testing.T) {
 	a := tensor.InitTensor([]int32{1, 2, 3}, tensor.Shape{3, 1})
 	b := tensor.InitTensor([]int32{1, 2, 3}, tensor.Shape{1, 3})
 	c := tensor.InitTensor([]int32{1, 2, 3, 4}, tensor.Shape{1, 4})
-	assert(t, a.Compare(b))
-	assert(t, !a.Compare(c))
+	assert(t, a.IsEqual(b))
+	assert(t, !a.IsEqual(c))
 }
 
 func TestRange(t *testing.T) {
-	a := tensor.Range[int32](6)
-	b := tensor.InitTensor([]int32{0, 1, 2, 3, 4, 5}, tensor.Shape{6})
+	var a *tensor.Tensor[int32] = nil
+	var b *tensor.Tensor[int32] = nil
+
+	a = tensor.Range[int32](6)
+	b = tensor.InitTensor([]int32{0, 1, 2, 3, 4, 5}, tensor.Shape{6})
+	assertEqualSlices(t, a.Data(), b.Data())
+	assertEqualSlices(t, a.Shape(), b.Shape())
+
+	a = tensor.Range[int32](2, 6, 1)
+	b = tensor.InitTensor([]int32{2, 3, 4, 5}, tensor.Shape{4})
+	assertEqualSlices(t, a.Data(), b.Data())
+	assertEqualSlices(t, a.Shape(), b.Shape())
+
+	a = tensor.Range[int32](1, 6, 2)
+	b = tensor.InitTensor([]int32{1, 3, 5}, tensor.Shape{3})
 	assertEqualSlices(t, a.Data(), b.Data())
 	assertEqualSlices(t, a.Shape(), b.Shape())
 }

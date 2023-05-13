@@ -1,6 +1,8 @@
 package tensor
 
-import "fmt"
+import (
+	"fmt"
+)
 
 func make_tensor[T Number](data []T, shape Shape) *Tensor[T] {
 	return &Tensor[T]{
@@ -19,7 +21,7 @@ func InitTensor[T Number](value []T, shape Shape) *Tensor[T] {
 		prod *= dim
 	}
 	if int(prod) != len(value) {
-		panic(fmt.Sprintf("Value length cannot have shape %v", shape))
+		panic(fmt.Sprintf("Value length %v cannot have shape %v", len(value), shape))
 	}
 	return make_tensor(value, shape)
 }
@@ -68,7 +70,7 @@ func (tensor *Tensor[T]) Copy() *Tensor[T] {
 	return new_copy
 }
 
-func (tensor *Tensor[T]) Compare(other_tensor *Tensor[T]) bool {
+func (tensor *Tensor[T]) IsEqual(other_tensor *Tensor[T]) bool {
 	// iterates over two tensors and compares elementwise
 	if tensor.len != other_tensor.len {
 		return false
@@ -88,10 +90,28 @@ func (tensor *Tensor[T]) Fill(fill_value T) *Tensor[T] {
 	return tensor
 }
 
-func Range[T Number](limit int) *Tensor[T] {
-	tensor := InitEmptyTensor[T](Dim(limit))
-	for i := 0; i < limit; i++ {
-		tensor.data[i] = T(i)
+func Range[T Number](limits ...int) *Tensor[T] {
+	// Created a tensor with data ranged from 'start' to 'end'
+	// limits: min 1 and max 3 arguments. Start, End, Step
+	if len(limits) == 0 {
+		panic("Range requires at least one argument")
+	}
+	start, end, step := 0, 0, 1
+	if len(limits) == 1 {
+		end = limits[0]
+	}
+	if len(limits) >= 2 {
+		start = limits[0]
+		end = limits[1]
+	}
+	if len(limits) == 3 {
+		step = limits[2]
+	}
+	length := ((end - start) + step - 1) / step
+	tensor := InitEmptyTensor[T](Dim(length))
+	for i := 0; i < length; i++ {
+		tensor.data[i] = T(start)
+		start += step
 	}
 	return tensor
 }
