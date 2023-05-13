@@ -12,9 +12,9 @@ func TestAsType(t *testing.T) {
 	assert(t, a.DType() == b.DType())
 
 	c := tensor.AsType[int32, float32](a)
-	assert(t, a.DType() != c.DType())
-	assert(t, a.DType().Kind() == reflect.Int32)
-	assert(t, c.DType().Kind() == reflect.Float64)
+	assertStatement(t, a.DType().Kind(), NotEquals, c.DType().Kind())
+	assertStatement(t, a.DType().Kind(), Equals, reflect.Int32)
+	assertStatement(t, c.DType().Kind(), Equals, reflect.Float32)
 }
 
 func TestCopy(t *testing.T) {
