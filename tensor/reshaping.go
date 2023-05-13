@@ -40,7 +40,7 @@ func (tensor *Tensor[T]) Reshape(new_shape ...Dim) *Tensor[T] {
 	return tensor
 }
 
-func (tensor *Tensor[T]) Index(indices ...int) *Tensor[T] {
+func (tensor *Tensor[T]) View(indices ...int) []T {
 	if len(indices) > int(tensor.ndim) {
 		panic("Too many indices")
 	}
@@ -51,9 +51,6 @@ func (tensor *Tensor[T]) Index(indices ...int) *Tensor[T] {
 	}
 
 	sub_data := tensor.data
-	sub_shape := make(Shape, len(tensor.shape)-len(indices))
-	copy(sub_shape, tensor.shape[len(indices):])
-
 	for i, ind := range indices {
 		dim := tensor.shape[i]
 		if ind < 0 {
@@ -69,5 +66,12 @@ func (tensor *Tensor[T]) Index(indices ...int) *Tensor[T] {
 		end := start + int(shape_prod)
 		sub_data = sub_data[start:end]
 	}
+	return sub_data
+}
+
+func (tensor *Tensor[T]) Index(indices ...int) *Tensor[T] {
+	sub_shape := make(Shape, len(tensor.shape)-len(indices))
+	copy(sub_shape, tensor.shape[len(indices):])
+	sub_data := tensor.View(indices...)
 	return InitTensor(sub_data, sub_shape)
 }
