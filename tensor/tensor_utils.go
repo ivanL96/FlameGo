@@ -45,17 +45,16 @@ func are_broadcastable(shape_a, shape_b Shape) bool {
 	}
 	// If one shape has more dimensions than the other, prepend 1s to the shape of the smaller array
 	if len(shape_a) < len(shape_b) {
-		ones := create_slice[Dim](len(shape_b)-len(shape_a), 1)
-		shape_a = append(ones, shape_a...)
+		ones_size := len(shape_b) - len(shape_a)
+		shape_a = add_left_padding(shape_a, ones_size, 1)
 	} else if len(shape_b) < len(shape_a) {
-		ones := create_slice[Dim](len(shape_a)-len(shape_b), 1)
-		shape_b = append(ones, shape_b...)
+		ones_size := len(shape_a) - len(shape_b)
+		shape_b = add_left_padding(shape_b, ones_size, 1)
 	}
 	// Start from the trailing dimensions and work forward
-	// TODO get rid of reverse_slice_copy
-	rev_shape_b := reverse_slice_copy(shape_b)
-	for i, dim1 := range reverse_slice_copy(shape_a) {
-		dim2 := rev_shape_b[i]
+	for i := len(shape_a) - 1; i >= 0; i-- {
+		dim1 := shape_a[i]
+		dim2 := shape_b[i]
 		if dim1 != dim2 && dim1 != 1 && dim2 != 1 {
 			return false
 		}
@@ -67,29 +66,27 @@ func broadcast(shape_a, shape_b Shape) Shape {
 	if is_scalar_like(shape_a) && is_scalar_like(shape_b) {
 		return shape_a
 	}
-
 	if len(shape_a) < len(shape_b) {
-		ones := create_slice[Dim](len(shape_b)-len(shape_a), 1)
-		shape_a = append(ones, shape_a...)
+		ones_size := len(shape_b) - len(shape_a)
+		shape_a = add_left_padding(shape_a, ones_size, 1)
 	} else if len(shape_b) < len(shape_a) {
-		ones := create_slice[Dim](len(shape_a)-len(shape_b), 1)
-		shape_b = append(ones, shape_b...)
+		ones_size := len(shape_a) - len(shape_b)
+		shape_b = add_left_padding(shape_b, ones_size, 1)
 	}
 	// # Start from the trailing dimensions and work forward
 	result_shape := make(Shape, len(shape_a))
-	// TODO get rid of reverse_slice_copy
-	rev_shape_b := reverse_slice_copy(shape_b)
-	for i, dim1 := range reverse_slice_copy(shape_a) {
-		dim2 := rev_shape_b[i]
+	for i := len(shape_a) - 1; i >= 0; i-- {
+		dim1 := shape_a[i]
+		dim2 := shape_b[i]
 		if dim1 != dim2 && dim1 != 1 && dim2 != 1 {
 			panic(fmt.Sprintf("Shapes %v and %v are not broadcastable: Dim1 '%v' not equal Dim2 '%v'", shape_a, shape_b, dim1, dim2))
 		}
 		if dim1 == dim2 {
-			result_shape[len(result_shape)-1-i] = dim1
+			result_shape[i] = dim1
 		} else if dim2 != 1 {
-			result_shape[len(result_shape)-1-i] = dim2
+			result_shape[i] = dim2
 		} else if dim1 != 1 {
-			result_shape[len(result_shape)-1-i] = dim1
+			result_shape[i] = dim1
 		} else {
 			panic("Something went wrong during broadcasting")
 		}
