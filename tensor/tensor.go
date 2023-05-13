@@ -53,11 +53,13 @@ func (tensor *Tensor[T]) Set(value []T) *Tensor[T] {
 	return tensor
 }
 
-func AsType[T Number, DT Number](tensor *Tensor[T]) *Tensor[DT] {
+func AsType[OLDT Number, NEWT Number](tensor *Tensor[OLDT]) *Tensor[NEWT] {
 	// naive impl with copying the data & tensor
-	data := make([]DT, tensor.len)
+	// example:
+	// AsType(int32, float64)(tensor) ==> float64 tensor
+	data := make([]NEWT, tensor.len)
 	for i, val := range tensor.data {
-		data[i] = DT(val)
+		data[i] = NEWT(val)
 	}
 	new_tensor := InitTensor(data, tensor.shape)
 	return new_tensor

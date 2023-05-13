@@ -2,6 +2,7 @@ package main
 
 import (
 	"gograd/tensor"
+	"reflect"
 	"testing"
 )
 
@@ -9,6 +10,11 @@ func TestAsType(t *testing.T) {
 	a := tensor.InitTensor([]int32{1, 2, 3}, tensor.Shape{3, 1})
 	b := tensor.AsType[int32, int32](a)
 	assert(t, a.DType() == b.DType())
+
+	c := tensor.AsType[int32, float32](a)
+	assert(t, a.DType() != c.DType())
+	assert(t, a.DType().Kind() == reflect.Int32)
+	assert(t, c.DType().Kind() == reflect.Float64)
 }
 
 func TestCopy(t *testing.T) {
