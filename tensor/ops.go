@@ -2,11 +2,13 @@ package tensor
 
 import (
 	"fmt"
+	"math"
 )
 
 type BinaryScalarOp[T Number] func(T, T) T
+type UnaryScalarOp[T Number] func(T) T
 
-func elementwise_routine[T Number](
+func bin_elementwise_routine[T Number](
 	tensor_a,
 	tensor_b *Tensor[T],
 	binOp BinaryScalarOp[T],
@@ -87,31 +89,59 @@ func elementwise_routine[T Number](
 	return new_tensor
 }
 
+func unary_elementwise_routine[T Number](
+	tensor *Tensor[T],
+	unaryOp UnaryScalarOp[T],
+	out *Tensor[T],
+) *Tensor[T] {
+	var new_tensor *Tensor[T] = nil
+	if out == nil {
+		new_tensor = InitEmptyTensor[T](tensor.shape...)
+	} else {
+		new_tensor = out
+	}
+	if is_scalar_like(tensor.shape) {
+		new_tensor.data[0] = unaryOp(tensor.data[0])
+		return new_tensor
+	}
+	for i, val := range tensor.data {
+		new_tensor.data[i] = unaryOp(val)
+	}
+	return new_tensor
+}
+
 func _add[T Number](a, b T) T {
 	return a + b
 }
 
 func (tensor *Tensor[T]) Add(other_tensor *Tensor[T]) *Tensor[T] {
-	return elementwise_routine(tensor, other_tensor, _add[T], nil)
+	return bin_elementwise_routine(tensor, other_tensor, _add[T], nil)
 }
 
 func _sub[T Number](a, b T) T {
 	return a - b
 }
 func (tensor *Tensor[T]) Sub(other_tensor *Tensor[T]) *Tensor[T] {
-	return elementwise_routine(tensor, other_tensor, _sub[T], nil)
+	return bin_elementwise_routine(tensor, other_tensor, _sub[T], nil)
 }
 
 func _mul[T Number](a, b T) T {
 	return a * b
 }
 func (tensor *Tensor[T]) Mul(other_tensor *Tensor[T]) *Tensor[T] {
-	return elementwise_routine(tensor, other_tensor, _mul[T], nil)
+	return bin_elementwise_routine(tensor, other_tensor, _mul[T], nil)
 }
 
 func _div[T Number](a, b T) T {
 	return a / b
 }
 func (tensor *Tensor[T]) Div(other_tensor *Tensor[T]) *Tensor[T] {
-	return elementwise_routine(tensor, other_tensor, _div[T], nil)
+	return bin_elementwise_routine(tensor, other_tensor, _div[T], nil)
+}
+
+func _sigmoid[T Number](a T) T {
+	return T(1. / (1. + math.Pow(math.E, float64(-a))))
+}
+func (tensor *Tensor[T]) Sigmoid() *Tensor[T] {
+	return unary_elementwise_routine(tensor, _sigmoid[T], nil)
 }

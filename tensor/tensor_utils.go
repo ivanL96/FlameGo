@@ -40,7 +40,7 @@ func is_scalar_like(shape Shape) bool {
 }
 
 func are_broadcastable(shape_a, shape_b Shape) bool {
-	if is_scalar_like(shape_a) && is_scalar_like(shape_b) {
+	if (is_scalar_like(shape_a) && is_scalar_like(shape_b)) || Equal_slices(shape_a, shape_b) {
 		return true
 	}
 	// If one shape has more dimensions than the other, prepend 1s to the shape of the smaller array
@@ -63,7 +63,7 @@ func are_broadcastable(shape_a, shape_b Shape) bool {
 }
 
 func broadcast(shape_a, shape_b Shape) Shape {
-	if is_scalar_like(shape_a) && is_scalar_like(shape_b) {
+	if is_scalar_like(shape_a) && is_scalar_like(shape_b) || Equal_slices(shape_a, shape_b) {
 		return shape_a
 	}
 	if len(shape_a) < len(shape_b) {

@@ -24,3 +24,11 @@ func TestAdd(t *testing.T) {
 	assertEqualSlices(t, ef.Data(), []int32{5})
 	assertEqualSlices(t, ef.Shape(), tensor.Shape{1})
 }
+
+func TestMul(t *testing.T) {
+	a := tensor.InitEmptyTensor[int32](3, 2).Fill(2)
+	b := tensor.InitEmptyTensor[int32](3, 1).Fill(3)
+	ab := a.Mul(b)
+	assertEqualSlices(t, ab.Data(), []int32{6, 6, 6, 6, 6, 6})
+	assertEqualSlices(t, ab.Shape(), tensor.Shape{3, 2})
+}

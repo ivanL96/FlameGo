@@ -9,6 +9,10 @@ import (
 
 type Any interface{}
 
+type Float interface {
+	float32 | float64
+}
+
 type Number interface {
 	constraints.Float | constraints.Integer
 }
