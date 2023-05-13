@@ -32,6 +32,10 @@ func (tensor *Tensor[T]) Data() []T {
 	return tensor.data
 }
 
+func (tensor *Tensor[T]) DType() reflect.Type {
+	return tensor.dtype
+}
+
 func (tensor *Tensor[T]) ToString() string {
 	str := fmt.Sprintf("Tensor(data=%v, shape=%v, ndim=%v, dtype=%v)", tensor.data, tensor.shape, tensor.ndim, tensor.dtype.String())
 	return str

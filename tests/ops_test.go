@@ -11,8 +11,8 @@ func TestAdd(t *testing.T) {
 	b := tensor.InitEmptyTensor[int32](3, 1).Fill(3)
 	assertEqualSlices(t, a.Add(b).Data(), []int32{5, 5, 5, 5, 5, 5})
 
-	c := tensor.InitEmptyTensor[int32](1, 2).Fill(2)
-	d := tensor.InitEmptyTensor[int32](3, 1).Fill(3)
+	c := tensor.InitEmptyTensor[int32](3, 3).Fill(4)
+	d := tensor.InitEmptyTensor[int32](1).Fill(1)
 	fmt.Println(c.Add(d).Shape())
-	assertEqualSlices(t, c.Add(d).Data(), []int32{5, 5, 5, 5, 5, 5})
+	assertEqualSlices(t, c.Add(d).Data(), []int32{5, 5, 5, 5, 5, 5, 5, 5, 5})
 }

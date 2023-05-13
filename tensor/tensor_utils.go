@@ -33,14 +33,16 @@ func squeeze_shape(shape Shape) Shape {
 }
 
 func is_scalar_like(shape Shape) bool {
-	ndim := len(shape)
-	if ndim <= 1 && shape[0] <= 1 {
+	if len(shape) <= 1 && shape[0] <= 1 {
 		return true
 	}
 	return false
 }
 
 func are_broadcastable(shape_a, shape_b Shape) bool {
+	if is_scalar_like(shape_a) && is_scalar_like(shape_b) {
+		return true
+	}
 	// If one shape has more dimensions than the other, prepend 1s to the shape of the smaller array
 	if len(shape_a) < len(shape_b) {
 		ones := create_slice[Dim](len(shape_b)-len(shape_a), 1)

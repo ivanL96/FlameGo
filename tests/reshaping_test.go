@@ -8,15 +8,17 @@ import (
 // RESHAPING
 func TestBroadcast(t *testing.T) {
 	a := tensor.InitEmptyTensor[int32](3, 2)
-	a.Fill(7)
 	a.Broadcast(3, 1, 1)
 	want := tensor.Shape{3, 3, 2}
 	assertEqualSlices(t, a.Shape(), want)
 
 	b := tensor.InitEmptyTensor[int32](1, 1)
-	b.Fill(7)
 	b.Broadcast(6)
 	assertEqualSlices(t, b.Shape(), tensor.Shape{1, 6})
+
+	c := tensor.InitEmptyTensor[int32](1)
+	c.Broadcast(3)
+	assertEqualSlices(t, c.Shape(), tensor.Shape{3})
 }
 
 func TestFlatten(t *testing.T) {
