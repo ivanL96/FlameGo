@@ -9,7 +9,7 @@ func Log(value ...interface{}) {
 	fmt.Println("Debug: " + str)
 }
 
-func compare_shapes[T Number](tensor_a *Tensor[T], tensor_b *Tensor[T]) bool {
+func compare_shapes[T TensorType](tensor_a *Tensor[T], tensor_b *Tensor[T]) bool {
 	shape_a := tensor_a.shape
 	shape_b := tensor_b.shape
 

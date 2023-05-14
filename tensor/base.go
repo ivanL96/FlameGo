@@ -12,17 +12,18 @@ type Float interface {
 	float32 | float64
 }
 
-type Number interface {
+type TensorType interface {
 	constraints.Float | constraints.Integer
 }
 
 type Dim uint
 type Shape []Dim
 
-type Tensor[T Number] struct {
-	data  []T
-	shape Shape
-	dtype reflect.Type
+type Tensor[T TensorType] struct {
+	data       []T
+	shape      Shape
+	dtype      reflect.Type
+	shape_prod Dim // shape product to reduce amount of comutations
 }
 
 func (tensor *Tensor[T]) Shape() Shape {

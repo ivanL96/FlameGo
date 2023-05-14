@@ -5,10 +5,10 @@ import (
 	"math"
 )
 
-type BinaryScalarOp[T Number] func(T, T) T
-type UnaryScalarOp[T Number] func(T) T
+type BinaryScalarOp[T TensorType] func(T, T) T
+type UnaryScalarOp[T TensorType] func(T) T
 
-func bin_elementwise_routine[T Number](
+func bin_elementwise_routine[T TensorType](
 	tensor_a,
 	tensor_b *Tensor[T],
 	binOp BinaryScalarOp[T],
@@ -88,7 +88,7 @@ func bin_elementwise_routine[T Number](
 	return new_tensor
 }
 
-func unary_elementwise_routine[T Number](
+func unary_elementwise_routine[T TensorType](
 	tensor *Tensor[T],
 	unaryOp UnaryScalarOp[T],
 	out *Tensor[T],
@@ -109,7 +109,7 @@ func unary_elementwise_routine[T Number](
 	return new_tensor
 }
 
-func _add[T Number](a, b T) T {
+func _add[T TensorType](a, b T) T {
 	return a + b
 }
 
@@ -117,28 +117,28 @@ func (tensor *Tensor[T]) Add(other_tensor *Tensor[T]) *Tensor[T] {
 	return bin_elementwise_routine(tensor, other_tensor, _add[T], nil)
 }
 
-func _sub[T Number](a, b T) T {
+func _sub[T TensorType](a, b T) T {
 	return a - b
 }
 func (tensor *Tensor[T]) Sub(other_tensor *Tensor[T]) *Tensor[T] {
 	return bin_elementwise_routine(tensor, other_tensor, _sub[T], nil)
 }
 
-func _mul[T Number](a, b T) T {
+func _mul[T TensorType](a, b T) T {
 	return a * b
 }
 func (tensor *Tensor[T]) Mul(other_tensor *Tensor[T]) *Tensor[T] {
 	return bin_elementwise_routine(tensor, other_tensor, _mul[T], nil)
 }
 
-func _div[T Number](a, b T) T {
+func _div[T TensorType](a, b T) T {
 	return a / b
 }
 func (tensor *Tensor[T]) Div(other_tensor *Tensor[T]) *Tensor[T] {
 	return bin_elementwise_routine(tensor, other_tensor, _div[T], nil)
 }
 
-func _sigmoid[T Number](a T) T {
+func _sigmoid[T TensorType](a T) T {
 	return T(1. / (1. + math.Pow(math.E, float64(-a))))
 }
 func (tensor *Tensor[T]) Sigmoid() *Tensor[T] {

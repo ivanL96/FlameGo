@@ -5,6 +5,7 @@ import "fmt"
 // set of operations for shaping routines
 
 func (tensor *Tensor[T]) Broadcast(shape ...Dim) *Tensor[T] {
+	// INPLACE
 	// tries to broadcast the shape and replicate the data accordingly
 	if Equal_1D_slices(tensor.shape, shape) {
 		return tensor
@@ -15,16 +16,18 @@ func (tensor *Tensor[T]) Broadcast(shape ...Dim) *Tensor[T] {
 	for _, dim := range tensor.shape {
 		length *= dim
 	}
+	tensor.shape_prod = length
 
 	// repeat data
 	ntimes := int(length) / len(tensor.data)
-	replicated_data := repeat_slice(tensor.data, uint(ntimes))
-	tensor.data = replicated_data
+	tensor.data = repeat_slice(tensor.data, uint(ntimes))
 	return tensor
 }
 
 func (tensor *Tensor[T]) Flatten() *Tensor[T] {
-	tensor.shape = Shape{Dim(len(tensor.data))}
+	dim := Dim(len(tensor.data))
+	tensor.shape = Shape{dim}
+	tensor.shape_prod = dim
 	return tensor
 }
 
@@ -36,6 +39,7 @@ func (tensor *Tensor[T]) Reshape(new_shape ...Dim) *Tensor[T] {
 	if len(tensor.data) != int(new_shape_prod) {
 		panic(fmt.Sprintf("Cannot reshape to shape %v", new_shape))
 	}
+	tensor.shape_prod = new_shape_prod
 	tensor.shape = new_shape
 	return tensor
 }
@@ -46,10 +50,7 @@ func (tensor *Tensor[T]) View(indices ...int) []T {
 		panic("Too many indices")
 	}
 
-	var shape_prod Dim = 1
-	for _, dim := range tensor.shape {
-		shape_prod *= dim
-	}
+	var shape_prod Dim = tensor.shape_prod
 
 	sub_data := tensor.data
 	for i, ind := range indices {

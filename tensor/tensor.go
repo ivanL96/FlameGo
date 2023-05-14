@@ -4,33 +4,35 @@ import (
 	"fmt"
 )
 
-func make_tensor[T Number](data []T, shape Shape) *Tensor[T] {
+func make_tensor[T TensorType](data_p *[]T, shape Shape) *Tensor[T] {
+	var shape_prod Dim = 1
+	for _, dim := range shape {
+		shape_prod *= dim
+	}
+	var data []T
+	if data_p == nil {
+		data = make([]T, shape_prod)
+	} else {
+		data = *data_p
+	}
+	if len(shape) == 0 || int(shape_prod) != len(data) {
+		panic(fmt.Sprintf("Value length %v cannot have shape %v", len(data), shape))
+	}
 	return &Tensor[T]{
-		shape: shape,
-		data:  data,
-		dtype: get_type_array(data),
+		shape:      shape,
+		data:       data,
+		dtype:      get_type_array(data),
+		shape_prod: shape_prod,
 	}
 }
 
-func InitTensor[T Number](value []T, shape Shape) *Tensor[T] {
+func InitTensor[T TensorType](value []T, shape Shape) *Tensor[T] {
 	// inits a tensor with data
-	var prod Dim = 1
-	for _, dim := range shape {
-		prod *= dim
-	}
-	if int(prod) != len(value) || len(shape) == 0 {
-		panic(fmt.Sprintf("Value length %v cannot have shape %v", len(value), shape))
-	}
-	return make_tensor(value, shape)
+	return make_tensor(&value, shape)
 }
 
-func InitEmptyTensor[T Number](shape ...Dim) *Tensor[T] {
-	var length Dim = 1
-	for _, dim := range shape {
-		length *= dim
-	}
-	zeroes := make([]T, length)
-	return make_tensor(zeroes, shape)
+func InitEmptyTensor[T TensorType](shape ...Dim) *Tensor[T] {
+	return make_tensor[T](nil, shape)
 }
 
 func (tensor *Tensor[T]) Set(value []T) *Tensor[T] {
@@ -50,7 +52,7 @@ func (tensor *Tensor[T]) Set(value []T) *Tensor[T] {
 	return tensor
 }
 
-func AsType[OLDT Number, NEWT Number](tensor *Tensor[OLDT]) *Tensor[NEWT] {
+func AsType[OLDT TensorType, NEWT TensorType](tensor *Tensor[OLDT]) *Tensor[NEWT] {
 	// naive impl with copying the data & tensor
 	// example:
 	// AsType(int32, float64)(tensor) ==> float64 tensor
@@ -89,7 +91,7 @@ func (tensor *Tensor[T]) Fill(fill_value T) *Tensor[T] {
 	return tensor
 }
 
-func Range[T Number](limits ...int) *Tensor[T] {
+func Range[T TensorType](limits ...int) *Tensor[T] {
 	// Created a tensor with data ranged from 'start' to 'end'
 	// limits: min 1 and max 3 arguments. Start, End, Step
 	if len(limits) == 0 {

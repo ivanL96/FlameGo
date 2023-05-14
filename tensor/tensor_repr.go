@@ -7,7 +7,12 @@ import (
 	"strings"
 )
 
-func join_data[T Number](sb *strings.Builder, data []T) {
+type PrintSettings struct {
+	whitespace_offset int
+	last_char_closed  bool
+}
+
+func join_data[T TensorType](sb *strings.Builder, data []T) {
 	string_data := make([]string, len(data))
 	dtype := get_type_array(data)
 	switch dtype.Kind() {
@@ -30,12 +35,7 @@ func join_data[T Number](sb *strings.Builder, data []T) {
 	sb.WriteString(strings.Join(string_data, ", "))
 }
 
-type PrintSettings struct {
-	whitespace_offset int
-	last_char_closed  bool
-}
-
-func _string_repr[T Number](sb *strings.Builder, tensor *Tensor[T], ps *PrintSettings) {
+func _string_repr[T TensorType](sb *strings.Builder, tensor *Tensor[T], ps *PrintSettings) {
 	// TODO shrink heigth of printed array
 	if ps.last_char_closed {
 		for j := 0; j < ps.whitespace_offset; j++ {
@@ -78,7 +78,6 @@ func (tensor *Tensor[T]) ToString() string {
 	var ps PrintSettings
 	_string_repr(&sb, tensor, &ps)
 	str_data := sb.String()
-	// str_data = re.ReplaceAllString(str_data, "\n")
 
 	if len(tensor.shape) > 1 {
 		str_data = "\n" + str_data
