@@ -8,8 +8,6 @@ func make_tensor[T Number](data []T, shape Shape) *Tensor[T] {
 	return &Tensor[T]{
 		shape: shape,
 		data:  data,
-		ndim:  Dim(len(shape)),
-		len:   uint(len(data)),
 		dtype: get_type_array(data),
 	}
 }
@@ -20,7 +18,7 @@ func InitTensor[T Number](value []T, shape Shape) *Tensor[T] {
 	for _, dim := range shape {
 		prod *= dim
 	}
-	if int(prod) != len(value) {
+	if int(prod) != len(value) || len(shape) == 0 {
 		panic(fmt.Sprintf("Value length %v cannot have shape %v", len(value), shape))
 	}
 	return make_tensor(value, shape)
@@ -48,7 +46,6 @@ func (tensor *Tensor[T]) Set(value []T) *Tensor[T] {
 			tensor.shape, length)
 		panic(msg)
 	}
-	tensor.len = length
 	tensor.data = value
 	return tensor
 }
@@ -57,7 +54,7 @@ func AsType[OLDT Number, NEWT Number](tensor *Tensor[OLDT]) *Tensor[NEWT] {
 	// naive impl with copying the data & tensor
 	// example:
 	// AsType(int32, float64)(tensor) ==> float64 tensor
-	data := make([]NEWT, tensor.len)
+	data := make([]NEWT, len(tensor.data))
 	for i, val := range tensor.data {
 		data[i] = NEWT(val)
 	}
@@ -74,7 +71,7 @@ func (tensor *Tensor[T]) Copy() *Tensor[T] {
 
 func (tensor *Tensor[T]) IsEqual(other_tensor *Tensor[T]) bool {
 	// iterates over two tensors and compares elementwise
-	if tensor.len != other_tensor.len {
+	if len(tensor.data) != len(other_tensor.data) {
 		return false
 	}
 	for i, element := range tensor.data {

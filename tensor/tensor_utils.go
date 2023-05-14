@@ -1,6 +1,8 @@
 package tensor
 
-import "fmt"
+import (
+	"fmt"
+)
 
 func Log(value ...interface{}) {
 	str := fmt.Sprintf("%x", value)
@@ -11,7 +13,7 @@ func compare_shapes[T Number](tensor_a *Tensor[T], tensor_b *Tensor[T]) bool {
 	shape_a := tensor_a.shape
 	shape_b := tensor_b.shape
 
-	if tensor_a.ndim == tensor_b.ndim {
+	if len(shape_a) == len(shape_b) {
 		for i, dim := range shape_a {
 			if dim != shape_b[i] {
 				return false
@@ -40,7 +42,7 @@ func is_scalar_like(shape Shape) bool {
 }
 
 func are_broadcastable(shape_a, shape_b Shape) bool {
-	if (is_scalar_like(shape_a) && is_scalar_like(shape_b)) || Equal_slices(shape_a, shape_b) {
+	if (is_scalar_like(shape_a) && is_scalar_like(shape_b)) || Equal_1D_slices(shape_a, shape_b) {
 		return true
 	}
 	// If one shape has more dimensions than the other, prepend 1s to the shape of the smaller array
@@ -63,7 +65,7 @@ func are_broadcastable(shape_a, shape_b Shape) bool {
 }
 
 func broadcast(shape_a, shape_b Shape) Shape {
-	if is_scalar_like(shape_a) && is_scalar_like(shape_b) || Equal_slices(shape_a, shape_b) {
+	if is_scalar_like(shape_a) && is_scalar_like(shape_b) || Equal_1D_slices(shape_a, shape_b) {
 		return shape_a
 	}
 	if len(shape_a) < len(shape_b) {
@@ -79,7 +81,11 @@ func broadcast(shape_a, shape_b Shape) Shape {
 		dim1 := shape_a[i]
 		dim2 := shape_b[i]
 		if dim1 != dim2 && dim1 != 1 && dim2 != 1 {
-			panic(fmt.Sprintf("Shapes %v and %v are not broadcastable: Dim1 '%v' not equal Dim2 '%v'", shape_a, shape_b, dim1, dim2))
+			panic(
+				fmt.Sprintf(
+					"Shapes %v and %v are not broadcastable: Dim1 '%v' not equal Dim2 '%v'", shape_a, shape_b, dim1, dim2,
+				),
+			)
 		}
 		if dim1 == dim2 {
 			result_shape[i] = dim1

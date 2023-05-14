@@ -17,8 +17,9 @@ func bin_elementwise_routine[T Number](
 	// tensors should have equal shapes or at least one of them should be scalar-like
 	is_broadcastable_ := are_broadcastable(tensor_a.shape, tensor_b.shape)
 	if !is_broadcastable_ {
-		err_msg := fmt.Sprintf("Shapes: %x, %x are not broadcastable", tensor_a.shape, tensor_b.shape)
-		panic(err_msg)
+		panic(
+			fmt.Sprintf("Shapes: %x, %x are not broadcastable", tensor_a.shape, tensor_b.shape),
+		)
 	}
 	var new_tensor *Tensor[T] = nil
 	if out == nil {
@@ -30,17 +31,17 @@ func bin_elementwise_routine[T Number](
 	if is_scalar_like(tensor_a.shape) && is_scalar_like(tensor_b.shape) {
 		// most trivial case
 		new_tensor.data[0] = binOp(tensor_a.data[0], tensor_b.data[0])
-	} else if tensor_a.len == tensor_b.len {
+	} else if len(tensor_a.data) == len(tensor_b.data) {
 		// same shapes
 		for i, val := range tensor_a.data {
 			new_tensor.data[i] = binOp(val, tensor_b.data[i])
 		}
-	} else if tensor_b.len == 1 {
+	} else if len(tensor_b.data) == 1 {
 		// one of them scalar
 		for i, val := range tensor_a.data {
 			new_tensor.data[i] = binOp(val, tensor_b.data[0])
 		}
-	} else if tensor_a.len == 1 {
+	} else if len(tensor_a.data) == 1 {
 		for i, val := range tensor_b.data {
 			new_tensor.data[i] = binOp(val, tensor_a.data[0])
 		}
@@ -73,15 +74,15 @@ func bin_elementwise_routine[T Number](
 		for _, dim := range broadcasted_shape {
 			length *= dim
 		}
-		new_tensor.ndim = Dim(len(broadcasted_shape))
 		new_tensor.data = make([]T, int(length))
-		new_tensor.len = uint(length)
 		if broadcasted_tensor_a == nil {
 			broadcasted_tensor_a = tensor_a
 		}
 		if broadcasted_tensor_b == nil {
 			broadcasted_tensor_b = tensor_b
 		}
+		// fmt.Println("broadcasted_tensor_a", broadcasted_tensor_a.data, broadcasted_tensor_a.shape)
+		// fmt.Println("broadcasted_tensor_b", broadcasted_tensor_b.data, broadcasted_tensor_b.shape)
 		for i, val := range broadcasted_tensor_a.data {
 			new_tensor.data[i] = binOp(val, broadcasted_tensor_b.data[i])
 		}

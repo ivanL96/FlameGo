@@ -28,7 +28,7 @@ func reverse_slice_copy[T any](slice []T) []T {
 	return rev_slice
 }
 
-func Equal_slices[T Number](slice1, slice2 []T) bool {
+func Equal_1D_slices[T Number](slice1, slice2 []T) bool {
 	if len(slice1) != len(slice2) {
 		return false
 	}

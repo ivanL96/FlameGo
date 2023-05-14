@@ -1,7 +1,6 @@
 package tensor
 
 import (
-	"fmt"
 	"reflect"
 
 	"golang.org/x/exp/constraints"
@@ -21,11 +20,9 @@ type Dim uint
 type Shape []Dim
 
 type Tensor[T Number] struct {
-	shape Shape
-	ndim  Dim
 	data  []T
+	shape Shape
 	dtype reflect.Type
-	len   uint
 }
 
 func (tensor *Tensor[T]) Shape() Shape {
@@ -38,9 +35,4 @@ func (tensor *Tensor[T]) Data() []T {
 
 func (tensor *Tensor[T]) DType() reflect.Type {
 	return tensor.dtype
-}
-
-func (tensor *Tensor[T]) ToString() string {
-	str := fmt.Sprintf("Tensor(data=%v, shape=%v, ndim=%v, dtype=%v)", tensor.data, tensor.shape, tensor.ndim, tensor.dtype.String())
-	return str
 }

@@ -6,9 +6,11 @@ import "fmt"
 
 func (tensor *Tensor[T]) Broadcast(shape ...Dim) *Tensor[T] {
 	// tries to broadcast the shape and replicate the data accordingly
-	tensor.shape = broadcast(tensor.shape, shape)
-	tensor.ndim = Dim(len(tensor.shape))
+	if Equal_1D_slices(tensor.shape, shape) {
+		return tensor
+	}
 
+	tensor.shape = broadcast(tensor.shape, shape)
 	var length Dim = 1 // new number of elements
 	for _, dim := range tensor.shape {
 		length *= dim
@@ -23,7 +25,6 @@ func (tensor *Tensor[T]) Broadcast(shape ...Dim) *Tensor[T] {
 
 func (tensor *Tensor[T]) Flatten() *Tensor[T] {
 	tensor.shape = Shape{Dim(len(tensor.data))}
-	tensor.ndim = 1
 	return tensor
 }
 
@@ -32,16 +33,16 @@ func (tensor *Tensor[T]) Reshape(new_shape ...Dim) *Tensor[T] {
 	for _, dim := range new_shape {
 		new_shape_prod *= dim
 	}
-	if Dim(tensor.len) != new_shape_prod {
+	if len(tensor.data) != int(new_shape_prod) {
 		panic(fmt.Sprintf("Cannot reshape to shape %v", new_shape))
 	}
 	tensor.shape = new_shape
-	tensor.ndim = Dim(len(new_shape))
 	return tensor
 }
 
+// returns sub data for given indices. Doesn't create a new tensor
 func (tensor *Tensor[T]) View(indices ...int) []T {
-	if len(indices) > int(tensor.ndim) {
+	if len(indices) > int(len(tensor.shape)) {
 		panic("Too many indices")
 	}
 
@@ -57,7 +58,7 @@ func (tensor *Tensor[T]) View(indices ...int) []T {
 			ind = int(dim) + ind
 		}
 
-		if ind < 0 || ind >= int(tensor.shape[i]) {
+		if ind < 0 || ind >= int(dim) {
 			panic(fmt.Sprintf("Index %v out of range", indices[i]))
 		}
 
@@ -70,8 +71,11 @@ func (tensor *Tensor[T]) View(indices ...int) []T {
 }
 
 func (tensor *Tensor[T]) Index(indices ...int) *Tensor[T] {
-	sub_shape := make(Shape, len(tensor.shape)-len(indices))
+	new_shape_size := len(tensor.shape) - len(indices)
+	if new_shape_size == 0 {
+		return InitTensor(tensor.View(indices...), Shape{1})
+	}
+	sub_shape := make(Shape, new_shape_size)
 	copy(sub_shape, tensor.shape[len(indices):])
-	sub_data := tensor.View(indices...)
-	return InitTensor(sub_data, sub_shape)
+	return InitTensor(tensor.View(indices...), sub_shape)
 }
