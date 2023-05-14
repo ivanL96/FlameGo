@@ -81,8 +81,6 @@ func bin_elementwise_routine[T Number](
 		if broadcasted_tensor_b == nil {
 			broadcasted_tensor_b = tensor_b
 		}
-		// fmt.Println("broadcasted_tensor_a", broadcasted_tensor_a.data, broadcasted_tensor_a.shape)
-		// fmt.Println("broadcasted_tensor_b", broadcasted_tensor_b.data, broadcasted_tensor_b.shape)
 		for i, val := range broadcasted_tensor_a.data {
 			new_tensor.data[i] = binOp(val, broadcasted_tensor_b.data[i])
 		}

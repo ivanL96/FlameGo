@@ -42,7 +42,7 @@ func (tensor *Tensor[T]) Reshape(new_shape ...Dim) *Tensor[T] {
 
 // returns sub data for given indices. Doesn't create a new tensor
 func (tensor *Tensor[T]) View(indices ...int) []T {
-	if len(indices) > int(len(tensor.shape)) {
+	if len(indices) > len(tensor.shape) {
 		panic("Too many indices")
 	}
 
