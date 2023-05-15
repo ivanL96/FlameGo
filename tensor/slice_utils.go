@@ -40,17 +40,17 @@ func Equal_1D_slices[T TensorType](slice1, slice2 []T) bool {
 	return true
 }
 
-func get_type_array[T TensorType](arr []T) reflect.Type {
+func getTypeArray[T TensorType](arr []T) reflect.Type {
 	return reflect.TypeOf(arr).Elem()
 }
 
 func convert_slice_type[OLD_T, NEW_T TensorType](slice []OLD_T) []NEW_T {
 	// doesnt work yet
-	orig_sizeof := unsafe.Sizeof(slice[0])
-	new_sizeof := unsafe.Sizeof(NEW_T(0))
-	n_elements := uintptr(len(slice)) * orig_sizeof / new_sizeof // length of a new slice type
-	slice_addr := &slice[0]
-	converted := unsafe.Slice((*NEW_T)(unsafe.Pointer(slice_addr)), n_elements)
+	origSizeof := unsafe.Sizeof(slice[0])
+	newSizeof := unsafe.Sizeof(NEW_T(0))
+	n_Elements := uintptr(len(slice)) * origSizeof / newSizeof // length of a new slice type
+	sliceAddr := &slice[0]
+	converted := unsafe.Slice((*NEW_T)(unsafe.Pointer(sliceAddr)), n_Elements)
 	return converted
 }
 

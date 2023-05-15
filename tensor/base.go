@@ -20,10 +20,10 @@ type Dim uint
 type Shape []Dim
 
 type Tensor[T TensorType] struct {
-	data       []T
-	shape      Shape
-	dtype      reflect.Type
-	shape_prod Dim // shape product to reduce amount of comutations
+	data      []T
+	shape     Shape
+	dtype     reflect.Type
+	shapeProd Dim // shape product to reduce amount of comutations
 }
 
 func (tensor *Tensor[T]) Shape() Shape {

@@ -5,24 +5,24 @@ import (
 )
 
 func make_tensor[T TensorType](data_p *[]T, shape Shape) *Tensor[T] {
-	var shape_prod Dim = 1
+	var shapeProd Dim = 1
 	for _, dim := range shape {
-		shape_prod *= dim
+		shapeProd *= dim
 	}
 	var data []T
 	if data_p == nil {
-		data = make([]T, shape_prod)
+		data = make([]T, shapeProd)
 	} else {
 		data = *data_p
 	}
-	if len(shape) == 0 || int(shape_prod) != len(data) {
+	if len(shape) == 0 || int(shapeProd) != len(data) {
 		panic(fmt.Sprintf("Value length %v cannot have shape %v", len(data), shape))
 	}
 	return &Tensor[T]{
-		shape:      shape,
-		data:       data,
-		dtype:      get_type_array(data),
-		shape_prod: shape_prod,
+		shape:     shape,
+		data:      data,
+		dtype:     getTypeArray(data),
+		shapeProd: shapeProd,
 	}
 }
 

@@ -16,7 +16,7 @@ func (tensor *Tensor[T]) Broadcast(shape ...Dim) *Tensor[T] {
 	for _, dim := range tensor.shape {
 		length *= dim
 	}
-	tensor.shape_prod = length
+	tensor.shapeProd = length
 
 	// repeat data
 	ntimes := int(length) / len(tensor.data)
@@ -27,7 +27,7 @@ func (tensor *Tensor[T]) Broadcast(shape ...Dim) *Tensor[T] {
 func (tensor *Tensor[T]) Flatten() *Tensor[T] {
 	dim := Dim(len(tensor.data))
 	tensor.shape = Shape{dim}
-	tensor.shape_prod = dim
+	tensor.shapeProd = dim
 	return tensor
 }
 
@@ -39,18 +39,18 @@ func (tensor *Tensor[T]) Reshape(new_shape ...Dim) *Tensor[T] {
 	if len(tensor.data) != int(new_shape_prod) {
 		panic(fmt.Sprintf("Cannot reshape to shape %v", new_shape))
 	}
-	tensor.shape_prod = new_shape_prod
+	tensor.shapeProd = new_shape_prod
 	tensor.shape = new_shape
 	return tensor
 }
 
-// returns sub data for given indices. Doesn't create a new tensor
-func (tensor *Tensor[T]) View(indices ...int) []T {
+// returns sub data for given indices. Doesn't copy tensor
+func (tensor *Tensor[T]) View(indices ...int) *Tensor[T] {
 	if len(indices) > len(tensor.shape) {
 		panic("Too many indices")
 	}
 
-	var shape_prod Dim = tensor.shape_prod
+	var shape_prod Dim = tensor.shapeProd
 
 	sub_data := tensor.data
 	for i, ind := range indices {
@@ -68,15 +68,64 @@ func (tensor *Tensor[T]) View(indices ...int) []T {
 		end := start + int(shape_prod)
 		sub_data = sub_data[start:end]
 	}
-	return sub_data
+	sub_shape := make(Shape, len(tensor.shape)-len(indices))
+	if len(sub_shape) == 0 {
+		sub_shape = Shape{1}
+	} else {
+		copy(sub_shape, tensor.shape[len(indices):])
+	}
+	return InitTensor[T](sub_data, sub_shape)
 }
 
+// same as tensor.View but with copying the data
 func (tensor *Tensor[T]) Index(indices ...int) *Tensor[T] {
-	new_shape_size := len(tensor.shape) - len(indices)
-	if new_shape_size == 0 {
-		return InitTensor(tensor.View(indices...), Shape{1})
+	sub_tensor := tensor.View(indices...)
+	sub_data_copy := make([]T, len(sub_tensor.data))
+	copy(sub_data_copy, sub_tensor.data)
+	return InitTensor(sub_data_copy, sub_tensor.shape)
+}
+
+func (tensor *Tensor[T]) Transpose(axes ...uint) *Tensor[T] {
+	if len(axes) == 0 {
+		axes = make([]uint, len(tensor.shape))
+		for i := range axes {
+			axes[i] = uint(len(axes) - i - 1)
+		}
 	}
-	sub_shape := make(Shape, new_shape_size)
-	copy(sub_shape, tensor.shape[len(indices):])
-	return InitTensor(tensor.View(indices...), sub_shape)
+
+	if len(axes) != len(tensor.shape) {
+		panic("The number of axes does not match the dimension of the tensor")
+	}
+
+	// new shape with swapped axes
+	newShape := make(Shape, len(tensor.shape))
+	for i, axis := range axes {
+		newShape[i] = tensor.shape[axis]
+	}
+
+	oldStrides := getStrides(tensor.shape)
+	newStrides := getStrides(newShape)
+
+	newData := make([]T, len(tensor.data))
+	for i := range tensor.data {
+		newIndex := 0
+		oldIndex := i
+		for j := 0; j < len(tensor.shape); j++ {
+			newIndex += (oldIndex / oldStrides[j]) * newStrides[axes[j]]
+			oldIndex %= oldStrides[j]
+		}
+		newData[i] = tensor.data[newIndex]
+	}
+
+	return &Tensor[T]{data: newData, shape: newShape, dtype: tensor.dtype, shapeProd: tensor.shapeProd}
+}
+
+func getStrides(shape Shape) []int {
+	strides := make([]int, len(shape))
+	stride := 1
+	for i := len(shape) - 1; i >= 0; i-- {
+		strides[i] = stride
+		stride *= int(shape[i])
+	}
+	return strides
 }
