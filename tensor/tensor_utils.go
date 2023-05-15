@@ -9,21 +9,6 @@ func Log(value ...interface{}) {
 	fmt.Println("Debug: " + str)
 }
 
-func compare_shapes[T TensorType](tensor_a *Tensor[T], tensor_b *Tensor[T]) bool {
-	shape_a := tensor_a.shape
-	shape_b := tensor_b.shape
-
-	if len(shape_a) == len(shape_b) {
-		for i, dim := range shape_a {
-			if dim != shape_b[i] {
-				return false
-			}
-		}
-		return true
-	}
-	return false
-}
-
 func squeeze_shape(shape Shape) Shape {
 	result := Shape{1}
 	for _, v := range shape {
@@ -34,7 +19,7 @@ func squeeze_shape(shape Shape) Shape {
 	return result
 }
 
-func is_scalar_like(shape Shape) bool {
+func isScalarLike(shape Shape) bool {
 	if len(shape) <= 1 && shape[0] <= 1 {
 		return true
 	}
@@ -42,16 +27,16 @@ func is_scalar_like(shape Shape) bool {
 }
 
 func are_broadcastable(shape_a, shape_b Shape) bool {
-	if (is_scalar_like(shape_a) && is_scalar_like(shape_b)) || Equal_1D_slices(shape_a, shape_b) {
+	if (isScalarLike(shape_a) && isScalarLike(shape_b)) || Equal_1D_slices(shape_a, shape_b) {
 		return true
 	}
 	// If one shape has more dimensions than the other, prepend 1s to the shape of the smaller array
 	if len(shape_a) < len(shape_b) {
 		ones_size := len(shape_b) - len(shape_a)
-		shape_a = add_left_padding(shape_a, ones_size, 1)
+		shape_a = addLeftPadding(shape_a, ones_size, 1)
 	} else if len(shape_b) < len(shape_a) {
 		ones_size := len(shape_a) - len(shape_b)
-		shape_b = add_left_padding(shape_b, ones_size, 1)
+		shape_b = addLeftPadding(shape_b, ones_size, 1)
 	}
 	// Start from the trailing dimensions and work forward
 	for i := len(shape_a) - 1; i >= 0; i-- {
@@ -65,15 +50,15 @@ func are_broadcastable(shape_a, shape_b Shape) bool {
 }
 
 func broadcast(shape_a, shape_b Shape) Shape {
-	if is_scalar_like(shape_a) && is_scalar_like(shape_b) || Equal_1D_slices(shape_a, shape_b) {
+	if isScalarLike(shape_a) && isScalarLike(shape_b) || Equal_1D_slices(shape_a, shape_b) {
 		return shape_a
 	}
 	if len(shape_a) < len(shape_b) {
 		ones_size := len(shape_b) - len(shape_a)
-		shape_a = add_left_padding(shape_a, ones_size, 1)
+		shape_a = addLeftPadding(shape_a, ones_size, 1)
 	} else if len(shape_b) < len(shape_a) {
 		ones_size := len(shape_a) - len(shape_b)
-		shape_b = add_left_padding(shape_b, ones_size, 1)
+		shape_b = addLeftPadding(shape_b, ones_size, 1)
 	}
 	// # Start from the trailing dimensions and work forward
 	result_shape := make(Shape, len(shape_a))
@@ -98,4 +83,14 @@ func broadcast(shape_a, shape_b Shape) Shape {
 		}
 	}
 	return result_shape
+}
+
+func getStrides(shape Shape) []int {
+	strides := make([]int, len(shape))
+	stride := 1
+	for i := len(shape) - 1; i >= 0; i-- {
+		strides[i] = stride
+		stride *= int(shape[i])
+	}
+	return strides
 }

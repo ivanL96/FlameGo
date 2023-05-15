@@ -63,7 +63,7 @@ func repeat_slice[T TensorType](data []T, ntimes uint) []T {
 	return replicated_data
 }
 
-func add_left_padding[T TensorType](slice []T, padding_size, padding_val int) []T {
+func addLeftPadding[T TensorType](slice []T, padding_size, padding_val int) []T {
 	expanded_slice_size := len(slice) + padding_size
 	expanded_slice := make([]T, expanded_slice_size)
 	for i := 0; i < expanded_slice_size; i++ {

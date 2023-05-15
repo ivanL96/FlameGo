@@ -31,8 +31,10 @@ func TestCompare(t *testing.T) {
 	a := tensor.InitTensor([]int32{1, 2, 3}, tensor.Shape{3, 1})
 	b := tensor.InitTensor([]int32{1, 2, 3}, tensor.Shape{1, 3})
 	c := tensor.InitTensor([]int32{1, 2, 3, 4}, tensor.Shape{1, 4})
-	assert(t, a.IsEqual(b))
+	d := tensor.InitTensor([]int32{1, 2, 3}, tensor.Shape{1, 3})
+	assert(t, !a.IsEqual(b))
 	assert(t, !a.IsEqual(c))
+	assert(t, b.IsEqual(d))
 }
 
 func TestRange(t *testing.T) {

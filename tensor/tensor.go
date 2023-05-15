@@ -13,16 +13,22 @@ func make_tensor[T TensorType](data_p *[]T, shape Shape) *Tensor[T] {
 	if data_p == nil {
 		data = make([]T, shapeProd)
 	} else {
-		data = *data_p
+		data = append([]T(nil), (*data_p)...)
 	}
 	if len(shape) == 0 || int(shapeProd) != len(data) {
 		panic(fmt.Sprintf("Value length %v cannot have shape %v", len(data), shape))
 	}
+	dim_order := make([]int, len(shape))
+	for i := range dim_order {
+		dim_order[i] = i
+	}
 	return &Tensor[T]{
-		shape:     shape,
+		shape:     append(Shape(nil), shape...),
+		strides:   getStrides(shape),
 		data:      data,
 		dtype:     getTypeArray(data),
 		shapeProd: shapeProd,
+		dim_order: dim_order,
 	}
 }
 
@@ -73,13 +79,14 @@ func (tensor *Tensor[T]) Copy() *Tensor[T] {
 
 func (tensor *Tensor[T]) IsEqual(other_tensor *Tensor[T]) bool {
 	// iterates over two tensors and compares elementwise
-	if len(tensor.data) != len(other_tensor.data) {
+	if !Equal_1D_slices(tensor.shape, other_tensor.shape) {
 		return false
 	}
-	for i, element := range tensor.data {
-		if element != other_tensor.data[i] {
-			return false
-		}
+	if !Equal_1D_slices(tensor.dim_order, other_tensor.dim_order) {
+		return false
+	}
+	if !Equal_1D_slices(tensor.data, other_tensor.data) {
+		return false
 	}
 	return true
 }

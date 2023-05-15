@@ -36,7 +36,7 @@ func joinData[T TensorType](sb *strings.Builder, data []T) {
 }
 
 func stringRepr[T TensorType](sb *strings.Builder, tensor *Tensor[T], ps *printSettings) {
-	// TODO shrink heigth of printed array
+	// TODO shrink height of printed array
 	if ps.lastCharClosed {
 		for j := 0; j < ps.whitespaceOffset; j++ {
 			sb.WriteRune(' ')

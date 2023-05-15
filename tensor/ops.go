@@ -28,7 +28,7 @@ func binElementwiseRoutine[T TensorType](
 		// TODO use shape from "out" tensor
 		new_tensor = out
 	}
-	if is_scalar_like(tensor_a.shape) && is_scalar_like(tensor_b.shape) {
+	if isScalarLike(tensor_a.shape) && isScalarLike(tensor_b.shape) {
 		// most trivial case
 		new_tensor.data[0] = binOp(tensor_a.data[0], tensor_b.data[0])
 	} else if len(tensor_a.data) == len(tensor_b.data) {
@@ -57,15 +57,15 @@ func binElementwiseRoutine[T TensorType](
 				dim_a := tensor_a.shape[i]
 				if dim_a < brc_dim && broadcasted_tensor_a == nil {
 					// need to broadcast tensor_a
-					// TODO how to avoid Copy() and additional Broadcast()
-					broadcasted_tensor_a = tensor_a.Copy().Broadcast(broadcasted_shape...)
+					// TODO how to avoid additional Broadcast()
+					broadcasted_tensor_a = tensor_a.Broadcast(broadcasted_shape...)
 				}
 			}
 			if i < len(tensor_b.shape) {
 				dim_b := tensor_b.shape[i]
 				if dim_b < brc_dim && broadcasted_tensor_b == nil {
 					// need to broadcast tensor_b
-					broadcasted_tensor_b = tensor_b.Copy().Broadcast(broadcasted_shape...)
+					broadcasted_tensor_b = tensor_b.Broadcast(broadcasted_shape...)
 				}
 			}
 		}
@@ -99,7 +99,7 @@ func unaryElementwiseRoutine[T TensorType](
 	} else {
 		newTensor = out
 	}
-	if is_scalar_like(tensor.shape) {
+	if isScalarLike(tensor.shape) {
 		newTensor.data[0] = unaryOp(tensor.data[0])
 		return newTensor
 	}
