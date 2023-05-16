@@ -19,7 +19,7 @@ func TestAsType(t *testing.T) {
 
 func TestCopy(t *testing.T) {
 	a := tensor.InitTensor([]int32{1, 2, 3}, tensor.Shape{3, 1})
-	b := a.Copy().Set([]int32{7, 8, 9})
+	b := a.Copy().SetData([]int32{7, 8, 9})
 	a_data := a.Data()
 	b_data := b.Data()
 	assertNotEqualSlices(t, a_data, b_data)

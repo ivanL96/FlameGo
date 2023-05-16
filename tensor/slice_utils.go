@@ -49,8 +49,7 @@ func convert_slice_type[OLD_T, NEW_T TensorType](slice []OLD_T) []NEW_T {
 	origSizeof := unsafe.Sizeof(slice[0])
 	newSizeof := unsafe.Sizeof(NEW_T(0))
 	n_Elements := uintptr(len(slice)) * origSizeof / newSizeof // length of a new slice type
-	sliceAddr := &slice[0]
-	converted := unsafe.Slice((*NEW_T)(unsafe.Pointer(sliceAddr)), n_Elements)
+	converted := unsafe.Slice((*NEW_T)(unsafe.Pointer(&slice[0])), n_Elements)
 	return converted
 }
 

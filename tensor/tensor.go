@@ -4,7 +4,7 @@ import (
 	"fmt"
 )
 
-func make_tensor[T TensorType](data_p *[]T, shape Shape) *Tensor[T] {
+func makeTensor[T TensorType](data_p *[]T, shape Shape) *Tensor[T] {
 	var shapeProd Dim = 1
 	for _, dim := range shape {
 		shapeProd *= dim
@@ -32,16 +32,16 @@ func make_tensor[T TensorType](data_p *[]T, shape Shape) *Tensor[T] {
 	}
 }
 
+// inits a tensor with data
 func InitTensor[T TensorType](value []T, shape Shape) *Tensor[T] {
-	// inits a tensor with data
-	return make_tensor(&value, shape)
+	return makeTensor(&value, shape)
 }
 
 func InitEmptyTensor[T TensorType](shape ...Dim) *Tensor[T] {
-	return make_tensor[T](nil, shape)
+	return makeTensor[T](nil, shape)
 }
 
-func (tensor *Tensor[T]) Set(value []T) *Tensor[T] {
+func (tensor *Tensor[T]) SetData(value []T) *Tensor[T] {
 	// sets new value of the same shape
 	length := uint(len(value))
 	var prod uint = 1
@@ -66,34 +66,35 @@ func AsType[OLDT TensorType, NEWT TensorType](tensor *Tensor[OLDT]) *Tensor[NEWT
 	for i, val := range tensor.data {
 		data[i] = NEWT(val)
 	}
-	new_tensor := InitTensor(data, tensor.shape)
-	return new_tensor
+	return InitTensor(data, tensor.shape)
 }
 
 func (tensor *Tensor[T]) Copy() *Tensor[T] {
-	new_data := make([]T, len(tensor.data))
-	copy(new_data, tensor.data)
-	new_copy := InitTensor(new_data, tensor.shape)
-	return new_copy
+	newData := make([]T, len(tensor.data))
+	copy(newData, tensor.data)
+	return InitTensor(newData, tensor.shape)
 }
 
-func (tensor *Tensor[T]) IsEqual(other_tensor *Tensor[T]) bool {
+func (tensor *Tensor[T]) IsEqual(otherTensor *Tensor[T]) bool {
 	// iterates over two tensors and compares elementwise
-	if !Equal_1D_slices(tensor.shape, other_tensor.shape) {
+	if !Equal_1D_slices(tensor.shape, otherTensor.shape) {
 		return false
 	}
-	if !Equal_1D_slices(tensor.dim_order, other_tensor.dim_order) {
+	if !Equal_1D_slices(tensor.strides, otherTensor.strides) {
 		return false
 	}
-	if !Equal_1D_slices(tensor.data, other_tensor.data) {
+	if !Equal_1D_slices(tensor.dim_order, otherTensor.dim_order) {
+		return false
+	}
+	if !Equal_1D_slices(tensor.data, otherTensor.data) {
 		return false
 	}
 	return true
 }
 
-func (tensor *Tensor[T]) Fill(fill_value T) *Tensor[T] {
+func (tensor *Tensor[T]) Fill(value T) *Tensor[T] {
 	for i := range tensor.data {
-		tensor.data[i] = fill_value
+		tensor.data[i] = value
 	}
 	return tensor
 }
