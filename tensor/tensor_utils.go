@@ -1,14 +1,8 @@
 package tensor
 
 import (
-	"fmt"
 	"reflect"
 )
-
-func Log(value ...interface{}) {
-	str := fmt.Sprintf("%x", value)
-	fmt.Println("Debug: " + str)
-}
 
 func squeeze_shape(shape Shape) Shape {
 	result := Shape{1}
@@ -45,13 +39,14 @@ func initDimOrder(shape Shape) []int {
 	return dimOrder
 }
 
+// if dim order is not shuffled
 func isDimOrderInit(dimOrder []int) bool {
 	min := 0
 	for _, dim := range dimOrder {
 		if dim > min {
 			return false
 		}
-		min = dim
+		min += 1
 	}
 	return true
 }
