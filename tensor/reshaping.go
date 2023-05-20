@@ -118,21 +118,22 @@ func (tensor *Tensor[T]) Reshape(newShape ...Dim) *Tensor[T] {
 	return tensor
 }
 
-func (tensor *Tensor[T]) Transpose(axes ...int) *Tensor[T] {
+func (tensor *Tensor[T]) Transpose(axes ...uint) *Tensor[T] {
+	n_dims := len(tensor.shape)
 	if len(axes) == 0 {
-		axes = make([]int, len(tensor.shape))
+		axes = make([]uint, n_dims)
 		for i := range axes {
-			axes[i] = len(axes) - i - 1
+			axes[i] = uint(len(axes) - i - 1)
 		}
 	}
 
 	// TODO replace with InitTensor
 	outTensor := &Tensor[T]{
 		data:      tensor.data,
-		shape:     make(Shape, len(tensor.shape)),
-		strides:   make([]int, len(tensor.shape)),
+		shape:     make(Shape, n_dims),
+		strides:   make([]int, n_dims),
 		dtype:     tensor.dtype,
-		dim_order: make([]int, len(tensor.shape)),
+		dim_order: make([]int, n_dims),
 	}
 
 	for i, axis := range axes {

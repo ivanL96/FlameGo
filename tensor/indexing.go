@@ -16,20 +16,18 @@ func (tensor *Tensor[T]) Get(indices ...int) T {
 
 // returns sub data for given indices.
 func (tensor *Tensor[T]) Index(indices ...int) *Tensor[T] {
-	if len(indices) == 0 {
+	n_indices := len(indices)
+	n_dims := len(tensor.shape)
+	if n_indices == 0 {
 		panic("At leat one index is required in View")
 	}
-	if len(indices) > len(tensor.shape) {
+	if n_indices > n_dims {
 		panic("Too many indices")
 	}
 
-	newShape := make(Shape, len(tensor.shape)-len(indices))
-	copy(newShape, tensor.shape[len(indices):])
+	newShape := make(Shape, n_dims-n_indices)
+	copy(newShape, tensor.shape[n_indices:])
 
-	newSize := Dim(1)
-	for _, dim := range newShape {
-		newSize *= dim
-	}
 	flatIndex := 0 // index of the first elem in the sub tensor
 	for i, ind := range indices {
 		// resolve negative indexes
@@ -42,7 +40,7 @@ func (tensor *Tensor[T]) Index(indices ...int) *Tensor[T] {
 		flatIndex += tensor.strides[i] * ind
 	}
 	// fmt.Println("flatIndex", flatIndex, tensor.data[flatIndex])
-	if len(indices) == len(tensor.shape) {
+	if n_indices == n_dims {
 		return InitTensor([]T{tensor.data[flatIndex]}, Shape{1})
 	} else {
 		// TODO add case for contiguous data: dim_order 0,1,2,3...
