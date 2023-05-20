@@ -20,11 +20,11 @@ type Dim uint
 type Shape []Dim
 
 type Tensor[T TensorType] struct {
+	dtype     reflect.Type
 	data      []T
 	shape     Shape
 	strides   []int
-	dtype     reflect.Type
-	dim_order []int // order of dimensions
+	dim_order []int
 }
 
 func (tensor *Tensor[T]) Shape() Shape {
