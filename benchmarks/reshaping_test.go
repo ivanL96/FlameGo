@@ -9,7 +9,7 @@ import (
 func BenchmarkIndex(b *testing.B) {
 	a := tensor.Range[int32](1000).Reshape(10, 10, 10)
 	for i := 0; i < b.N; i++ {
-		a.View(1, 2, 3)
+		a.Index(1, 2, 3)
 	}
 }
 

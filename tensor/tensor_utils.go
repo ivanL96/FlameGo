@@ -2,6 +2,7 @@ package tensor
 
 import (
 	"fmt"
+	"reflect"
 )
 
 func Log(value ...interface{}) {
@@ -53,4 +54,14 @@ func isDimOrderInit(dimOrder []int) bool {
 		min = dim
 	}
 	return true
+}
+
+func isIntKind(tensorDType reflect.Type) bool {
+	switch tensorDType.Kind() {
+	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64,
+		reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+		return true
+	default:
+		return false
+	}
 }
