@@ -53,24 +53,24 @@ func convert_slice_type[OLD_T, NEW_T TensorType](slice []OLD_T) []NEW_T {
 	return converted
 }
 
-func repeat_slice[T TensorType](data []T, ntimes uint) []T {
+func repeatSlice[T TensorType](data []T, ntimes uint) []T {
 	length := len(data) * int(ntimes)
-	replicated_data := make([]T, 0, int(length))
+	replicatedData := make([]T, 0, int(length))
 	for i := 0; i < int(ntimes); i++ {
-		replicated_data = append(replicated_data, data...)
+		replicatedData = append(replicatedData, data...)
 	}
-	return replicated_data
+	return replicatedData
 }
 
-func addLeftPadding[T TensorType](slice []T, padding_size, padding_val int) []T {
-	expanded_slice_size := len(slice) + padding_size
-	expanded_slice := make([]T, expanded_slice_size)
-	for i := 0; i < expanded_slice_size; i++ {
-		if i < padding_size {
-			expanded_slice[i] = 1
+func addLeftPadding[T TensorType](slice []T, paddingSize, paddingVal int) []T {
+	// example: addLeftPadding([1,2,3], 4, 0) ==> [0,0,0,0,1,2,3]
+	expandedSlice := make([]T, len(slice)+paddingSize)
+	for i := range expandedSlice {
+		if i < paddingSize {
+			expandedSlice[i] = 1
 			continue
 		}
-		expanded_slice[i] = slice[i-padding_size]
+		expandedSlice[i] = slice[i-paddingSize]
 	}
-	return expanded_slice
+	return expandedSlice
 }

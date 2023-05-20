@@ -82,10 +82,11 @@ func (tensor *Tensor[T]) ToString() string {
 	if len(tensor.shape) > 1 {
 		strData = "\n" + strData
 	}
-	str := fmt.Sprintf("Tensor(data=%v, shape=%v, dtype=%v)",
+	return fmt.Sprintf("Tensor(data=%v, shape=%v, dtype=%v, order=%v, strides=%v)",
 		strData,
 		tensor.shape,
 		tensor.dtype.String(),
+		tensor.dim_order,
+		tensor.strides,
 	)
-	return str
 }

@@ -93,20 +93,20 @@ func unaryElementwiseRoutine[T TensorType](
 	unaryOp UnaryScalarOp[T],
 	out *Tensor[T],
 ) *Tensor[T] {
-	var newTensor *Tensor[T] = nil
+	var outTensor *Tensor[T] = nil
 	if out == nil {
-		newTensor = InitEmptyTensor[T](tensor.shape...)
+		outTensor = InitEmptyTensor[T](tensor.shape...)
 	} else {
-		newTensor = out
+		outTensor = out
 	}
 	if isScalarLike(tensor.shape) {
-		newTensor.data[0] = unaryOp(tensor.data[0])
-		return newTensor
+		outTensor.data[0] = unaryOp(tensor.data[0])
+		return outTensor
 	}
 	for i, val := range tensor.data {
-		newTensor.data[i] = unaryOp(val)
+		outTensor.data[i] = unaryOp(val)
 	}
-	return newTensor
+	return outTensor
 }
 
 func _add[T TensorType](a, b T) T {

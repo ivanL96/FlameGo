@@ -24,12 +24,19 @@ type Tensor[T TensorType] struct {
 	shape     Shape
 	strides   []int
 	dtype     reflect.Type
-	shapeProd Dim   // shape product to reduce amount of computations
 	dim_order []int // order of dimensions
 }
 
 func (tensor *Tensor[T]) Shape() Shape {
 	return tensor.shape
+}
+
+func (tensor *Tensor[T]) Strides() []int {
+	return tensor.strides
+}
+
+func (tensor *Tensor[T]) Order() []int {
+	return tensor.dim_order
 }
 
 func (tensor *Tensor[T]) Data() []T {

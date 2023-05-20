@@ -4,30 +4,28 @@ import (
 	"fmt"
 )
 
-func makeTensor[T TensorType](data_p *[]T, shape Shape) *Tensor[T] {
+func makeTensor[T TensorType](dataPtr *[]T, shape Shape) *Tensor[T] {
 	var shapeProd Dim = 1
 	for _, dim := range shape {
 		shapeProd *= dim
 	}
 	var data []T
-	if data_p == nil {
+	if dataPtr == nil {
+		// if nil ptr create an empty slice with size of 'shapeProd'
 		data = make([]T, shapeProd)
 	} else {
-		data = append([]T(nil), (*data_p)...)
+		// copies data
+		data = append([]T(nil), (*dataPtr)...)
 	}
 	if len(shape) == 0 || int(shapeProd) != len(data) {
-		panic(fmt.Sprintf("Value length %v cannot have shape %v", len(data), shape))
+		panic(fmt.Sprintf("makeTensor: Value length %v cannot have shape %v", len(data), shape))
 	}
-	dim_order := make([]int, len(shape))
-	for i := range dim_order {
-		dim_order[i] = i
-	}
+	dim_order := initDimOrder(shape)
 	return &Tensor[T]{
 		shape:     append(Shape(nil), shape...),
 		strides:   getStrides(shape),
 		data:      data,
 		dtype:     getTypeArray(data),
-		shapeProd: shapeProd,
 		dim_order: dim_order,
 	}
 }
@@ -76,6 +74,7 @@ func (tensor *Tensor[T]) Copy() *Tensor[T] {
 }
 
 func (tensor *Tensor[T]) IsEqual(otherTensor *Tensor[T]) bool {
+	// FIXME this should be aware of tensor.strides
 	// iterates over two tensors and compares elementwise
 	if !Equal_1D_slices(tensor.shape, otherTensor.shape) {
 		return false
