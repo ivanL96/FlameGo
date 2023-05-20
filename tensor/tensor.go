@@ -70,7 +70,10 @@ func AsType[OLDT TensorType, NEWT TensorType](tensor *Tensor[OLDT]) *Tensor[NEWT
 func (tensor *Tensor[T]) Copy() *Tensor[T] {
 	newData := make([]T, len(tensor.data))
 	copy(newData, tensor.data)
-	return InitTensor(newData, tensor.shape)
+	newTensor := InitTensor(newData, tensor.shape)
+	newTensor.strides = tensor.strides
+	newTensor.dim_order = tensor.dim_order
+	return newTensor
 }
 
 func (tensor *Tensor[T]) IsEqual(otherTensor *Tensor[T]) bool {
