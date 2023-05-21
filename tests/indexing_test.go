@@ -47,4 +47,9 @@ func TestTransposeAndIndex(t *testing.T) {
 	d.ToString()
 	assertEqualSlices(t, d.Data(), []int32{0, 2, 4, 6, 1, 3, 5, 7})
 	assertEqualSlices(t, d.Shape(), tensor.Shape{2, 4})
+
+	e := tensor.InitTensor([]int32{3}, tensor.Shape{1, 1, 1, 1})
+	e = e.Transpose().Index(0)
+	assertEqualSlices(t, e.Data(), []int32{3})
+	assertEqualSlices(t, e.Shape(), tensor.Shape{1, 1, 1})
 }

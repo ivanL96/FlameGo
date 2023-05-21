@@ -53,14 +53,17 @@ func (tensor *Tensor[T]) Index(indices ...int) *Tensor[T] {
 		return InitTensor(subData, innerShape)
 	}
 
-	innerStrides := tensor.strides[n_indices:]
-
 	// not continuous data. i.e. transposed tensor
 	var innerShapeProd Dim = 1
 	for _, dim := range innerShape {
 		innerShapeProd *= dim
 	}
+	// tensor with shape (1,1,...1)
+	if innerShapeProd == 1 {
+		return InitTensor([]T{tensor.data[0]}, innerShape)
+	}
 
+	innerStrides := tensor.strides[n_indices:]
 	subShape := innerShape
 	// expand innerShape
 	// TODO this is extra step, better to do something with the loop
