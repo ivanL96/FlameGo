@@ -2,7 +2,7 @@ package tensor
 
 import "fmt"
 
-func (tensor *Tensor[T]) Get(indices ...int) T {
+func (tensor *Tensor[T]) getFlatIndex(indices ...int) int {
 	if len(indices) != len(tensor.shape) {
 		panic(fmt.Sprintf(
 			"Incorrect number of indices. Must be %v got %v", len(tensor.shape), len(indices)))
@@ -11,6 +11,11 @@ func (tensor *Tensor[T]) Get(indices ...int) T {
 	for i, ind := range indices {
 		flatIndex += tensor.strides[i] * ind
 	}
+	return flatIndex
+}
+
+func (tensor *Tensor[T]) Get(indices ...int) T {
+	flatIndex := tensor.getFlatIndex(indices...)
 	return tensor.data[flatIndex]
 }
 
@@ -39,28 +44,39 @@ func (tensor *Tensor[T]) Index(indices ...int) *Tensor[T] {
 		}
 		flatIndex += tensor.strides[i] * ind
 	}
-	// fmt.Println("flatIndex", flatIndex, tensor.data[flatIndex])
 	if n_indices == n_dims {
 		return InitTensor([]T{tensor.data[flatIndex]}, Shape{1})
 	} else {
-		// TODO add case for contiguous data: dim_order 0,1,2,3...
+		innerShape := tensor.shape[n_indices:]
+		// if data layout is continuous we can just take a slice start:end from data
+		if isDimOrderInit(tensor.dim_order) {
+			endFlatIndex := flatIndex + tensor.strides[n_indices-1]
+			subData := tensor.data[flatIndex:endFlatIndex]
+			return InitTensor(subData, innerShape)
+		}
 
-		innerShape := tensor.shape[len(indices):]
-		// fmt.Println("innerShape", innerShape)
+		// not continuous. i.e. transposed tensor
 		var innerShapeProd Dim = 1
 		for _, dim := range innerShape {
 			innerShapeProd *= dim
 		}
 
+		// prealloc output
 		subData := make([]T, innerShapeProd)
-
-		row := int(innerShape[len(innerShape)-1]) // deepest axis
-		rowStride := tensor.strides[len(tensor.strides)-1]
-		for j := 0; j < int(innerShapeProd); j++ {
-			rem := (j / row) * row
-			count := j % row
-			deepIndex := (flatIndex + rem) + rowStride*count
-			subData[j] = tensor.data[deepIndex]
+		innerStrides := tensor.strides[n_indices:]
+		innermostStride := tensor.strides[len(tensor.strides)-1]
+		row := int(innerShape[len(innerShape)-1]) // innermost axis
+		for i := len(innerStrides) - 2; i >= 0; i-- {
+			stride := innerStrides[i]
+			subDataIdx := 0
+			for s := 0; s < int(innerShape[i]); s++ {
+				for j := 0; j < row; j++ {
+					// from innermost to outermost
+					deepIndex := flatIndex + innermostStride*j + stride*s
+					subData[subDataIdx] = tensor.data[deepIndex]
+					subDataIdx++
+				}
+			}
 		}
 		return InitTensor(subData, innerShape)
 	}
