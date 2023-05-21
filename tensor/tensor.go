@@ -39,23 +39,6 @@ func InitEmptyTensor[T TensorType](shape ...Dim) *Tensor[T] {
 	return makeTensor[T](nil, shape)
 }
 
-func (tensor *Tensor[T]) SetData(value []T) *Tensor[T] {
-	// sets new value of the same shape
-	length := uint(len(value))
-	var prod uint = 1
-	for _, dim := range tensor.shape {
-		prod = uint(dim) * prod
-	}
-	if prod != length {
-		msg := fmt.Sprintf(
-			"Shape %v cannot fit the number of elements %v. Change the shape first",
-			tensor.shape, length)
-		panic(msg)
-	}
-	tensor.data = value
-	return tensor
-}
-
 func AsType[OLDT TensorType, NEWT TensorType](tensor *Tensor[OLDT]) *Tensor[NEWT] {
 	// naive impl with copying the data & tensor
 	// example:
@@ -94,13 +77,6 @@ func (tensor *Tensor[T]) IsEqual(otherTensor *Tensor[T]) bool {
 	return true
 }
 
-func (tensor *Tensor[T]) Fill(value T) *Tensor[T] {
-	for i := range tensor.data {
-		tensor.data[i] = value
-	}
-	return tensor
-}
-
 func Range[T TensorType](limits ...int) *Tensor[T] {
 	// Created a tensor with data ranged from 'start' to 'end'
 	// limits: min 1 and max 3 arguments. Start, End, Step
@@ -125,4 +101,33 @@ func Range[T TensorType](limits ...int) *Tensor[T] {
 		start += step
 	}
 	return tensor
+}
+
+func (tensor *Tensor[T]) Fill(value T) *Tensor[T] {
+	for i := range tensor.data {
+		tensor.data[i] = value
+	}
+	return tensor
+}
+
+func (tensor *Tensor[T]) SetData(value []T) *Tensor[T] {
+	// sets new value of the same shape
+	length := uint(len(value))
+	var prod uint = 1
+	for _, dim := range tensor.shape {
+		prod = uint(dim) * prod
+	}
+	if prod != length {
+		panic(fmt.Sprintf(
+			"Shape %v cannot fit the number of elements %v. Change the shape first",
+			tensor.shape, length),
+		)
+	}
+	tensor.data = value
+	return tensor
+}
+
+func (tensor *Tensor[T]) Set(indexes []int, value T) {
+	flatIndex := tensor.getFlatIndex(indexes...)
+	tensor.data[flatIndex] = value
 }
