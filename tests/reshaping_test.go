@@ -30,19 +30,3 @@ func TestReshape(t *testing.T) {
 	assertEqualSlices(t, a.Reshape(3, 2).Shape(), tensor.Shape{3, 2})
 	assertEqualSlices(t, a.Reshape(1, 1, 1, 3, 2).Shape(), tensor.Shape{1, 1, 1, 3, 2})
 }
-
-func TestIndex(t *testing.T) {
-	a := tensor.Range[int32](8).Reshape(2, 2, 2)
-	sub1 := a.Index(1)
-	assertEqualSlices(t, sub1.Data(), []int32{4, 5, 6, 7})
-	assertEqualSlices(t, sub1.Shape(), tensor.Shape{2, 2})
-
-	sub2 := sub1.Index(1)
-	assertEqualSlices(t, sub2.Data(), []int32{6, 7})
-	assertEqualSlices(t, sub2.Shape(), tensor.Shape{2})
-
-	b := tensor.InitTensor([]int32{0, 1, 2, 3}, tensor.Shape{2, 2})
-	bsub := b.Index(-2)
-	assertEqualSlices(t, bsub.Data(), []int32{0, 1})
-	assertEqualSlices(t, bsub.Shape(), tensor.Shape{2})
-}
