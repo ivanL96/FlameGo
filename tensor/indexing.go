@@ -46,38 +46,38 @@ func (tensor *Tensor[T]) Index(indices ...int) *Tensor[T] {
 	}
 	if n_indices == n_dims {
 		return InitTensor([]T{tensor.data[flatIndex]}, Shape{1})
-	} else {
-		innerShape := tensor.shape[n_indices:]
-		// if data layout is continuous we can just take a slice start:end from data
-		if isDimOrderInit(tensor.dim_order) {
-			endFlatIndex := flatIndex + tensor.strides[n_indices-1]
-			subData := tensor.data[flatIndex:endFlatIndex]
-			return InitTensor(subData, innerShape)
-		}
-
-		// not continuous. i.e. transposed tensor
-		var innerShapeProd Dim = 1
-		for _, dim := range innerShape {
-			innerShapeProd *= dim
-		}
-
-		// prealloc output
-		subData := make([]T, innerShapeProd)
-		innerStrides := tensor.strides[n_indices:]
-		innermostStride := tensor.strides[len(tensor.strides)-1]
-		row := int(innerShape[len(innerShape)-1]) // innermost axis
-		for i := len(innerStrides) - 2; i >= 0; i-- {
-			stride := innerStrides[i]
-			subDataIdx := 0
-			for s := 0; s < int(innerShape[i]); s++ {
-				for j := 0; j < row; j++ {
-					// from innermost to outermost
-					deepIndex := flatIndex + innermostStride*j + stride*s
-					subData[subDataIdx] = tensor.data[deepIndex]
-					subDataIdx++
-				}
-			}
-		}
+	}
+	innerShape := tensor.shape[n_indices:]
+	// continuous data
+	// if data layout is continuous we can just take a slice start:end from data
+	if isDimOrderInit(tensor.dim_order) {
+		endFlatIndex := flatIndex + tensor.strides[n_indices-1]
+		subData := tensor.data[flatIndex:endFlatIndex]
 		return InitTensor(subData, innerShape)
 	}
+
+	// not continuous data. i.e. transposed tensor
+	var innerShapeProd Dim = 1
+	for _, dim := range innerShape {
+		innerShapeProd *= dim
+	}
+
+	// prealloc output
+	subData := make([]T, innerShapeProd)
+	innerStrides := tensor.strides[n_indices:]
+	innermostStride := tensor.strides[len(tensor.strides)-1]
+	row := int(innerShape[len(innerShape)-1]) // innermost axis
+	for i := len(innerStrides) - 2; i >= 0; i-- {
+		stride := innerStrides[i]
+		subDataIdx := 0
+		for s := 0; s < int(innerShape[i]); s++ {
+			for j := 0; j < row; j++ {
+				// from innermost to outermost
+				deepIndex := flatIndex + innermostStride*j + stride*s
+				subData[subDataIdx] = tensor.data[deepIndex]
+				subDataIdx++
+			}
+		}
+	}
+	return InitTensor(subData, innerShape)
 }
