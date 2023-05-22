@@ -9,6 +9,10 @@ func (tensor *Tensor[T]) getFlatIndex(indices ...int) int {
 	}
 	flatIndex := 0
 	for i, ind := range indices {
+		// bound check
+		if ind >= int(tensor.shape[i]) {
+			panic(fmt.Sprintf("Index %v is out of bounds for dim %v", ind, tensor.shape[i]))
+		}
 		flatIndex += tensor.strides[i] * ind
 	}
 	return flatIndex
@@ -45,6 +49,16 @@ func (tensor *Tensor[T]) Index(indices ...int) *Tensor[T] {
 		return InitTensor([]T{tensor.data[flatIndex]}, Shape{1})
 	}
 	innerShape := tensor.shape[n_indices:]
+	var innerShapeProd Dim = 1
+	for _, dim := range innerShape {
+		innerShapeProd *= dim
+	}
+
+	// tensor with shape (1,1,...1)
+	if innerShapeProd == 1 {
+		return InitTensor([]T{tensor.data[0]}, innerShape)
+	}
+
 	// continuous data
 	// if data layout is continuous we can just take a slice start:end from data
 	if isDimOrderInit(tensor.dim_order) {
@@ -54,14 +68,6 @@ func (tensor *Tensor[T]) Index(indices ...int) *Tensor[T] {
 	}
 
 	// not continuous data. i.e. transposed tensor
-	var innerShapeProd Dim = 1
-	for _, dim := range innerShape {
-		innerShapeProd *= dim
-	}
-	// tensor with shape (1,1,...1)
-	if innerShapeProd == 1 {
-		return InitTensor([]T{tensor.data[0]}, innerShape)
-	}
 
 	innerStrides := tensor.strides[n_indices:]
 	subShape := innerShape
