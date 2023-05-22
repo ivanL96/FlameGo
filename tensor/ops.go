@@ -29,23 +29,27 @@ func binElementwiseRoutine[T TensorType](
 		new_tensor = out
 	}
 	if isScalarLike(tensor_a.shape) && isScalarLike(tensor_b.shape) {
-		// most trivial case
+		// most trivial case (1,) & (1,)
 		new_tensor.data[0] = binOp(tensor_a.data[0], tensor_b.data[0])
 	} else if len(tensor_a.data) == len(tensor_b.data) {
-		// same shapes
+		// FIXME not aware of dim order
+		// same shapes (N,M) & (N,M)
 		for i, val := range tensor_a.data {
 			new_tensor.data[i] = binOp(val, tensor_b.data[i])
 		}
 	} else if len(tensor_b.data) == 1 {
 		// one of them scalar
+		// (N, M, ...) & (1,)
 		for i, val := range tensor_a.data {
 			new_tensor.data[i] = binOp(val, tensor_b.data[0])
 		}
 	} else if len(tensor_a.data) == 1 {
+		// (1,) & (N, M, ...)
 		for i, val := range tensor_b.data {
 			new_tensor.data[i] = binOp(val, tensor_a.data[0])
 		}
 	} else {
+		// (A, B ...) & (N, M, ...)
 		// apply operation for non scalar broadcastable tensors
 		var broadcasted_shape Shape = broadcast(tensor_a.shape, tensor_b.shape)
 

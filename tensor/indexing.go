@@ -98,3 +98,61 @@ func (tensor *Tensor[T]) Index(indices ...int) *Tensor[T] {
 	}
 	return InitTensor(subData, subShape)
 }
+
+type TensorIterator[T TensorType] struct {
+	tensor         *Tensor[T]
+	currentIndexes []int
+	Index          int
+}
+
+func (tensor *Tensor[T]) CreateIterator() *TensorIterator[T] {
+	fmt.Println("tensor", tensor)
+	ti := TensorIterator[T]{
+		tensor:         tensor,
+		currentIndexes: make([]int, len(tensor.shape)),
+		Index:          0,
+	}
+	return &ti
+}
+
+func (ti *TensorIterator[T]) Iterate() bool {
+	return ti.Index != len(ti.tensor.Data())
+}
+
+func (ti *TensorIterator[T]) Next() []int {
+	if ti.Index == 0 {
+		ti.Index++
+		return ti.currentIndexes
+	}
+
+	dimensions := make(Shape, len(ti.tensor.shape))
+	copy(dimensions, ti.tensor.shape)
+
+	indices := ti.currentIndexes
+	for j := len(indices) - 1; j >= 0; j-- {
+		indices[j]++
+		if indices[j] < int(dimensions[j]) {
+			break
+		}
+		indices[j] = 0
+	}
+	ti.currentIndexes = indices
+	ti.Index++
+	return ti.currentIndexes
+}
+
+func (tensor *Tensor[T]) AsContinuous() *Tensor[T] {
+	if isDimOrderInit(tensor.dim_order) {
+		return tensor
+	}
+	outTensor := InitEmptyTensor[T](tensor.shape...)
+
+	iter := tensor.CreateIterator()
+	for iter.Iterate() {
+		dataIndex := iter.Index
+		valueIndexes := iter.Next()
+		val := tensor.Get(valueIndexes...)
+		outTensor.data[dataIndex] = val
+	}
+	return outTensor
+}
