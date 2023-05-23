@@ -32,10 +32,12 @@ func binElementwiseRoutine[T TensorType](
 		// most trivial case (1,) & (1,)
 		new_tensor.data[0] = binOp(tensor_a.data[0], tensor_b.data[0])
 	} else if len(tensor_a.data) == len(tensor_b.data) {
-		// FIXME not aware of dim order
 		// same shapes (N,M) & (N,M)
-		for i, val := range tensor_a.data {
-			new_tensor.data[i] = binOp(val, tensor_b.data[i])
+		iter := tensor_a.CreateIterator()
+		for iter.Iterate() {
+			dataIndex := iter.Index()
+			idx := iter.Next()
+			new_tensor.data[dataIndex] = binOp(tensor_a.Get(idx...), tensor_b.Get(idx...))
 		}
 	} else if len(tensor_b.data) == 1 {
 		// one of them scalar
@@ -85,8 +87,12 @@ func binElementwiseRoutine[T TensorType](
 		if broadcasted_tensor_b == nil {
 			broadcasted_tensor_b = tensor_b
 		}
-		for i, val := range broadcasted_tensor_a.data {
-			new_tensor.data[i] = binOp(val, broadcasted_tensor_b.data[i])
+		iter := broadcasted_tensor_a.CreateIterator()
+		for iter.Iterate() {
+			dataIndex := iter.Index()
+			idx := iter.Next()
+			new_tensor.data[dataIndex] = binOp(
+				broadcasted_tensor_a.Get(idx...), broadcasted_tensor_b.Get(idx...))
 		}
 	}
 	return new_tensor

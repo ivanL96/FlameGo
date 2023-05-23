@@ -79,11 +79,7 @@ func (tensor *Tensor[T]) Broadcast(shape ...Dim) *Tensor[T] {
 	// repeat data
 	ntimes := int(shapeProd) / len(tensor.data)
 	data := repeatSlice(tensor.data, uint(ntimes))
-	return &Tensor[T]{
-		shape: broadcastedShape,
-		data:  data,
-		dtype: getTypeArray(data),
-	}
+	return InitTensor(data, broadcastedShape)
 }
 
 func (tensor *Tensor[T]) Flatten() *Tensor[T] {
