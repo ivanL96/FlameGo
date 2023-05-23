@@ -123,14 +123,7 @@ func (tensor *Tensor[T]) Transpose(axes ...uint) *Tensor[T] {
 		}
 	}
 
-	// TODO replace with InitTensor
-	outTensor := &Tensor[T]{
-		data:      tensor.data,
-		shape:     make(Shape, n_dims),
-		strides:   make([]int, n_dims),
-		dtype:     tensor.dtype,
-		dim_order: make([]int, n_dims),
-	}
+	outTensor := InitTensor(tensor.data, tensor.shape)
 
 	for i, axis := range axes {
 		outTensor.shape[i] = tensor.shape[axis]
