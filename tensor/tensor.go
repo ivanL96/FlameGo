@@ -65,14 +65,13 @@ func (tensor *Tensor[T]) IsEqual(otherTensor *Tensor[T]) bool {
 	if !Equal_1D_slices(tensor.shape, otherTensor.shape) {
 		return false
 	}
-	if !Equal_1D_slices(tensor.strides, otherTensor.strides) {
-		return false
-	}
-	if !Equal_1D_slices(tensor.dim_order, otherTensor.dim_order) {
-		return false
-	}
-	if !Equal_1D_slices(tensor.data, otherTensor.data) {
-		return false
+
+	iter := tensor.CreateIterator()
+	for iter.Iterate() {
+		idx := iter.Next()
+		if tensor.Get(idx...) != otherTensor.Get(idx...) {
+			return false
+		}
 	}
 	return true
 }

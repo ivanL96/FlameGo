@@ -21,34 +21,29 @@ func binElementwiseRoutine[T TensorType](
 			fmt.Sprintf("Shapes: %x, %x are not broadcastable", tensor_a.shape, tensor_b.shape),
 		)
 	}
-	var new_tensor *Tensor[T] = nil
-	if out == nil {
-		new_tensor = InitEmptyTensor[T](tensor_a.shape...)
-	} else {
-		// TODO use shape from "out" tensor
-		new_tensor = out
-	}
+	outTensor := prepareOutTensor(out, tensor_a.shape)
+
 	if isScalarLike(tensor_a.shape) && isScalarLike(tensor_b.shape) {
 		// most trivial case (1,) & (1,)
-		new_tensor.data[0] = binOp(tensor_a.data[0], tensor_b.data[0])
+		outTensor.data[0] = binOp(tensor_a.data[0], tensor_b.data[0])
 	} else if len(tensor_a.data) == len(tensor_b.data) {
 		// same shapes (N,M) & (N,M)
 		iter := tensor_a.CreateIterator()
 		for iter.Iterate() {
 			dataIndex := iter.Index()
 			idx := iter.Next()
-			new_tensor.data[dataIndex] = binOp(tensor_a.Get(idx...), tensor_b.Get(idx...))
+			outTensor.data[dataIndex] = binOp(tensor_a.Get(idx...), tensor_b.Get(idx...))
 		}
 	} else if len(tensor_b.data) == 1 {
 		// one of them scalar
 		// (N, M, ...) & (1,)
 		for i, val := range tensor_a.data {
-			new_tensor.data[i] = binOp(val, tensor_b.data[0])
+			outTensor.data[i] = binOp(val, tensor_b.data[0])
 		}
 	} else if len(tensor_a.data) == 1 {
 		// (1,) & (N, M, ...)
 		for i, val := range tensor_b.data {
-			new_tensor.data[i] = binOp(val, tensor_a.data[0])
+			outTensor.data[i] = binOp(val, tensor_a.data[0])
 		}
 	} else {
 		// (A, B ...) & (N, M, ...)
@@ -75,12 +70,12 @@ func binElementwiseRoutine[T TensorType](
 				}
 			}
 		}
-		new_tensor.shape = broadcasted_shape
+		outTensor.shape = broadcasted_shape
 		var length Dim = 1
 		for _, dim := range broadcasted_shape {
 			length *= dim
 		}
-		new_tensor.data = make([]T, int(length))
+		outTensor.data = make([]T, int(length))
 		if broadcasted_tensor_a == nil {
 			broadcasted_tensor_a = tensor_a
 		}
@@ -91,11 +86,11 @@ func binElementwiseRoutine[T TensorType](
 		for iter.Iterate() {
 			dataIndex := iter.Index()
 			idx := iter.Next()
-			new_tensor.data[dataIndex] = binOp(
+			outTensor.data[dataIndex] = binOp(
 				broadcasted_tensor_a.Get(idx...), broadcasted_tensor_b.Get(idx...))
 		}
 	}
-	return new_tensor
+	return outTensor
 }
 
 func unaryElementwiseRoutine[T TensorType](
@@ -103,12 +98,7 @@ func unaryElementwiseRoutine[T TensorType](
 	unaryOp UnaryScalarOp[T],
 	out *Tensor[T],
 ) *Tensor[T] {
-	var outTensor *Tensor[T] = nil
-	if out == nil {
-		outTensor = InitEmptyTensor[T](tensor.shape...)
-	} else {
-		outTensor = out
-	}
+	outTensor := prepareOutTensor(out, tensor.shape)
 	if isScalarLike(tensor.shape) {
 		outTensor.data[0] = unaryOp(tensor.data[0])
 		return outTensor

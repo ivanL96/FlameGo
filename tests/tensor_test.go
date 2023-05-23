@@ -35,6 +35,11 @@ func TestCompare(t *testing.T) {
 	assert(t, !a.IsEqual(b))
 	assert(t, !a.IsEqual(c))
 	assert(t, b.IsEqual(d))
+
+	// IsEqual is dim order aware
+	a1 := tensor.Range[int32](4).Reshape(2, 2).Transpose()
+	a2 := a1.AsContinuous()
+	assert(t, a1.IsEqual(a2))
 }
 
 func TestRange(t *testing.T) {

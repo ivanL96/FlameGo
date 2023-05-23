@@ -25,6 +25,7 @@ func (tensor *Tensor[T]) Get(indices ...int) T {
 
 // returns sub data for given indices.
 func (tensor *Tensor[T]) Index(indices ...int) *Tensor[T] {
+	// TODO advanced indexing
 	n_indices := len(indices)
 	n_dims := len(tensor.shape)
 	if n_indices == 0 {
@@ -82,7 +83,7 @@ func (tensor *Tensor[T]) Index(indices ...int) *Tensor[T] {
 	subData := make([]T, innerShapeProd)
 	innermostStride := tensor.strides[len(tensor.strides)-1]
 	row := int(innerShape[len(innerShape)-1]) // innermost axis
-	//number of dims around the 'row. Cannot be zero'
+	//number of dims around the 'row'. Cannot be zero
 	numDims := len(innerStrides) - 2
 	for i := numDims; i >= 0; i-- {
 		stride := innerStrides[i]

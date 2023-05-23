@@ -60,3 +60,10 @@ func isIntKind(tensorDType reflect.Type) bool {
 		return false
 	}
 }
+
+func prepareOutTensor[T TensorType](out *Tensor[T], shape Shape) *Tensor[T] {
+	if out == nil {
+		out = InitEmptyTensor[T](shape...)
+	}
+	return out
+}
