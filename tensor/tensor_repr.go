@@ -24,11 +24,11 @@ func joinData[T types.TensorType](sb *strings.Builder, data []T) {
 		}
 	case reflect.Float32:
 		for i, val := range data {
-			stringData[i] = strconv.FormatFloat(float64(val), 'E', -1, 32)
+			stringData[i] = strconv.FormatFloat(float64(val), 'f', -1, 32)
 		}
 	case reflect.Float64:
 		for i, val := range data {
-			stringData[i] = strconv.FormatFloat(float64(val), 'E', -1, 64)
+			stringData[i] = strconv.FormatFloat(float64(val), 'f', -1, 64)
 		}
 	default:
 		panic("Got unknown type for stringify data")
@@ -46,7 +46,7 @@ func stringRepr[T types.TensorType](sb *strings.Builder, tensor *Tensor[T], ps *
 	}
 	sb.WriteRune('[')
 	if len(tensor.shape) == 1 {
-		if len(tensor.data) > 30 {
+		if len(tensor.data) > 30 { // TODO count for the innermost dim
 			joinData(sb, tensor.data[:5])
 			sb.WriteString("...")
 			joinData(sb, tensor.data[len(tensor.data)-5:])
@@ -83,10 +83,11 @@ func (tensor *Tensor[T]) ToString() string {
 	if len(tensor.shape) > 1 {
 		strData = "\n" + strData
 	}
-	return fmt.Sprintf("Tensor(data=%v, shape=%v, dtype=%v, order=%v, strides=%v)",
+	return fmt.Sprintf(
+		"Tensor(data=%v, shape=%v, dtype=%v, order=%v, strides=%v)",
 		strData,
 		tensor.shape,
-		tensor.dtype.String(),
+		tensor.dtype.Kind().String(),
 		tensor.dim_order,
 		tensor.strides,
 	)
