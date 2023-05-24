@@ -1,6 +1,9 @@
 package tensor
 
-import "fmt"
+import (
+	"fmt"
+	types "gograd/tensor/types"
+)
 
 func (tensor *Tensor[T]) getFlatIndex(indices ...int) int {
 	if len(indices) != len(tensor.shape) {
@@ -47,10 +50,10 @@ func (tensor *Tensor[T]) Index(indices ...int) *Tensor[T] {
 		flatIndex += tensor.strides[i] * ind
 	}
 	if n_indices == n_dims {
-		return InitTensor([]T{tensor.data[flatIndex]}, Shape{1})
+		return InitTensor([]T{tensor.data[flatIndex]}, types.Shape{1})
 	}
 	innerShape := tensor.shape[n_indices:]
-	var innerShapeProd Dim = 1
+	var innerShapeProd types.Dim = 1
 	for _, dim := range innerShape {
 		innerShapeProd *= dim
 	}
@@ -75,7 +78,7 @@ func (tensor *Tensor[T]) Index(indices ...int) *Tensor[T] {
 	// expand innerShape
 	// TODO this is extra step, better to do something with the loop
 	if len(innerShape) == 1 {
-		innerShape = Shape{1, innerShape[0]}
+		innerShape = types.Shape{1, innerShape[0]}
 		innerStrides = []int{innerStrides[0], innerStrides[0]}
 	}
 
@@ -100,12 +103,25 @@ func (tensor *Tensor[T]) Index(indices ...int) *Tensor[T] {
 	return InitTensor(subData, subShape)
 }
 
-type TensorIterator[T TensorType] struct {
+func (tensor *Tensor[T]) GetAxis(axis uint, shift uint) *Tensor[T] {
+	stride := tensor.strides[axis]
+	index := int(shift)
+	for i := 0; i < int(tensor.shape[axis]); i++ {
+		fmt.Println(tensor.data[index])
+		index += stride
+	}
+	return tensor
+}
+
+// tensor iterator
+
+type TensorIterator[T types.TensorType] struct {
 	tensor         *Tensor[T]
 	currentIndexes []int
 	index          int
 }
 
+// iterates over tensor data and gives N-dim index for each element
 func (tensor *Tensor[T]) CreateIterator() *TensorIterator[T] {
 	ti := TensorIterator[T]{
 		tensor:         tensor,

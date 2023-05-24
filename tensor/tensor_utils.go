@@ -1,11 +1,12 @@
 package tensor
 
 import (
+	types "gograd/tensor/types"
 	"reflect"
 )
 
-func squeeze_shape(shape Shape) Shape {
-	result := Shape{1}
+func squeeze_shape(shape types.Shape) types.Shape {
+	result := types.Shape{1}
 	for _, v := range shape {
 		if v > 1 {
 			result = append(result, v)
@@ -14,14 +15,14 @@ func squeeze_shape(shape Shape) Shape {
 	return result
 }
 
-func isScalarLike(shape Shape) bool {
+func IsScalarLike(shape types.Shape) bool {
 	if len(shape) <= 1 && shape[0] <= 1 {
 		return true
 	}
 	return false
 }
 
-func getStrides(shape Shape) []int {
+func getStrides(shape types.Shape) []int {
 	strides := make([]int, len(shape))
 	stride := 1
 	for i := len(shape) - 1; i >= 0; i-- {
@@ -31,7 +32,7 @@ func getStrides(shape Shape) []int {
 	return strides
 }
 
-func initDimOrder(shape Shape) []int {
+func initDimOrder(shape types.Shape) []int {
 	dimOrder := make([]int, len(shape))
 	for i := range dimOrder {
 		dimOrder[i] = i
@@ -61,7 +62,7 @@ func isIntKind(tensorDType reflect.Type) bool {
 	}
 }
 
-func prepareOutTensor[T TensorType](out *Tensor[T], shape Shape) *Tensor[T] {
+func PrepareOutTensor[T types.TensorType](out *Tensor[T], shape types.Shape) *Tensor[T] {
 	if out == nil {
 		out = InitEmptyTensor[T](shape...)
 	}

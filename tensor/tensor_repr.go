@@ -2,6 +2,7 @@ package tensor
 
 import (
 	"fmt"
+	types "gograd/tensor/types"
 	"reflect"
 	"strconv"
 	"strings"
@@ -12,7 +13,7 @@ type printSettings struct {
 	lastCharClosed   bool
 }
 
-func joinData[T TensorType](sb *strings.Builder, data []T) {
+func joinData[T types.TensorType](sb *strings.Builder, data []T) {
 	stringData := make([]string, len(data))
 	dtype := getTypeArray(data)
 	switch dtype.Kind() {
@@ -35,7 +36,7 @@ func joinData[T TensorType](sb *strings.Builder, data []T) {
 	sb.WriteString(strings.Join(stringData, ", "))
 }
 
-func stringRepr[T TensorType](sb *strings.Builder, tensor *Tensor[T], ps *printSettings) {
+func stringRepr[T types.TensorType](sb *strings.Builder, tensor *Tensor[T], ps *printSettings) {
 	// TODO shrink height of printed array
 	if ps.lastCharClosed {
 		for j := 0; j < ps.whitespaceOffset; j++ {

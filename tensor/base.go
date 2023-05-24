@@ -1,33 +1,19 @@
 package tensor
 
 import (
+	types "gograd/tensor/types"
 	"reflect"
-
-	"golang.org/x/exp/constraints"
 )
 
-type Any interface{}
-
-type Float interface {
-	float32 | float64
-}
-
-type TensorType interface {
-	constraints.Float | constraints.Integer
-}
-
-type Dim uint
-type Shape []Dim
-
-type Tensor[T TensorType] struct {
+type Tensor[T types.TensorType] struct {
 	dtype     reflect.Type
 	data      []T
-	shape     Shape
+	shape     types.Shape
 	strides   []int
 	dim_order []int
 }
 
-func (tensor *Tensor[T]) Shape() Shape {
+func (tensor *Tensor[T]) Shape() types.Shape {
 	return tensor.shape
 }
 

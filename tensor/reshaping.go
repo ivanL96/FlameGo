@@ -1,11 +1,14 @@
 package tensor
 
-import "fmt"
+import (
+	"fmt"
+	types "gograd/tensor/types"
+)
 
 // set of operations for shaping routines
 
-func are_broadcastable(shape_a, shape_b Shape) bool {
-	if (isScalarLike(shape_a) && isScalarLike(shape_b)) ||
+func AreBroadcastable(shape_a, shape_b types.Shape) bool {
+	if (IsScalarLike(shape_a) && IsScalarLike(shape_b)) ||
 		Equal_1D_slices(shape_a, shape_b) {
 		return true
 	}
@@ -28,8 +31,8 @@ func are_broadcastable(shape_a, shape_b Shape) bool {
 	return true
 }
 
-func broadcast(shape_a, shape_b Shape) Shape {
-	if isScalarLike(shape_a) && isScalarLike(shape_b) || Equal_1D_slices(shape_a, shape_b) {
+func Broadcast(shape_a, shape_b types.Shape) types.Shape {
+	if IsScalarLike(shape_a) && IsScalarLike(shape_b) || Equal_1D_slices(shape_a, shape_b) {
 		return shape_a
 	}
 	if len(shape_a) < len(shape_b) {
@@ -40,7 +43,7 @@ func broadcast(shape_a, shape_b Shape) Shape {
 		shape_b = addLeftPadding(shape_b, ones_size, 1)
 	}
 	// # Start from the trailing dimensions and work forward
-	result_shape := make(Shape, len(shape_a))
+	result_shape := make(types.Shape, len(shape_a))
 	for i := len(shape_a) - 1; i >= 0; i-- {
 		dim1 := shape_a[i]
 		dim2 := shape_b[i]
@@ -64,14 +67,14 @@ func broadcast(shape_a, shape_b Shape) Shape {
 	return result_shape
 }
 
-func (tensor *Tensor[T]) Broadcast(shape ...Dim) *Tensor[T] {
+func (tensor *Tensor[T]) Broadcast(shape ...types.Dim) *Tensor[T] {
 	// tries to broadcast the shape and replicate the data accordingly
 	if Equal_1D_slices(tensor.shape, shape) {
 		return tensor
 	}
 
-	broadcastedShape := broadcast(tensor.shape, shape)
-	var shapeProd Dim = 1 // new number of elements
+	broadcastedShape := Broadcast(tensor.shape, shape)
+	var shapeProd types.Dim = 1 // new number of elements
 	for _, dim := range broadcastedShape {
 		shapeProd *= dim
 	}
@@ -84,14 +87,14 @@ func (tensor *Tensor[T]) Broadcast(shape ...Dim) *Tensor[T] {
 
 func (tensor *Tensor[T]) Flatten() *Tensor[T] {
 	outTensor := tensor.Copy()
-	outTensor.shape = Shape{Dim(len(tensor.data))}
+	outTensor.shape = types.Shape{types.Dim(len(tensor.data))}
 	outTensor.strides = []int{1}
 	return outTensor
 }
 
 func (tensor *Tensor[T]) Squeeze() *Tensor[T] {
 	outTensor := tensor.Copy()
-	if isScalarLike(tensor.shape) {
+	if IsScalarLike(tensor.shape) {
 		return outTensor
 	}
 	outTensor.shape = squeeze_shape(tensor.shape)
@@ -100,8 +103,8 @@ func (tensor *Tensor[T]) Squeeze() *Tensor[T] {
 	return outTensor
 }
 
-func (tensor *Tensor[T]) Reshape(newShape ...Dim) *Tensor[T] {
-	var new_shape_prod Dim = 1
+func (tensor *Tensor[T]) Reshape(newShape ...types.Dim) *Tensor[T] {
+	var new_shape_prod types.Dim = 1
 	for _, dim := range newShape {
 		new_shape_prod *= dim
 	}

@@ -2,10 +2,11 @@ package tensor
 
 import (
 	"fmt"
+	types "gograd/tensor/types"
 )
 
-func makeTensor[T TensorType](dataPtr *[]T, shape Shape) *Tensor[T] {
-	var shapeProd Dim = 1
+func makeTensor[T types.TensorType](dataPtr *[]T, shape types.Shape) *Tensor[T] {
+	var shapeProd types.Dim = 1
 	for _, dim := range shape {
 		shapeProd *= dim
 	}
@@ -22,7 +23,7 @@ func makeTensor[T TensorType](dataPtr *[]T, shape Shape) *Tensor[T] {
 	}
 	dim_order := initDimOrder(shape)
 	return &Tensor[T]{
-		shape:     append(Shape(nil), shape...),
+		shape:     append(types.Shape(nil), shape...),
 		strides:   getStrides(shape),
 		data:      data,
 		dtype:     getTypeArray(data),
@@ -31,15 +32,15 @@ func makeTensor[T TensorType](dataPtr *[]T, shape Shape) *Tensor[T] {
 }
 
 // inits a tensor with data
-func InitTensor[T TensorType](value []T, shape Shape) *Tensor[T] {
+func InitTensor[T types.TensorType](value []T, shape types.Shape) *Tensor[T] {
 	return makeTensor(&value, shape)
 }
 
-func InitEmptyTensor[T TensorType](shape ...Dim) *Tensor[T] {
+func InitEmptyTensor[T types.TensorType](shape ...types.Dim) *Tensor[T] {
 	return makeTensor[T](nil, shape)
 }
 
-func AsType[OLDT TensorType, NEWT TensorType](tensor *Tensor[OLDT]) *Tensor[NEWT] {
+func AsType[OLDT types.TensorType, NEWT types.TensorType](tensor *Tensor[OLDT]) *Tensor[NEWT] {
 	// naive impl with copying the data & tensor
 	// example:
 	// AsType(int32, float64)(tensor) ==> float64 tensor
@@ -60,7 +61,6 @@ func (tensor *Tensor[T]) Copy() *Tensor[T] {
 }
 
 func (tensor *Tensor[T]) IsEqual(otherTensor *Tensor[T]) bool {
-	// FIXME this should be aware of tensor.strides
 	// iterates over two tensors and compares elementwise
 	if !Equal_1D_slices(tensor.shape, otherTensor.shape) {
 		return false
@@ -76,7 +76,7 @@ func (tensor *Tensor[T]) IsEqual(otherTensor *Tensor[T]) bool {
 	return true
 }
 
-func Range[T TensorType](limits ...int) *Tensor[T] {
+func Range[T types.TensorType](limits ...int) *Tensor[T] {
 	// Created a tensor with data ranged from 'start' to 'end'
 	// limits: min 1 and max 3 arguments. Start, End, Step
 	if len(limits) == 0 {
@@ -94,7 +94,7 @@ func Range[T TensorType](limits ...int) *Tensor[T] {
 		step = limits[2]
 	}
 	length := ((end - start) + step - 1) / step
-	tensor := InitEmptyTensor[T](Dim(length))
+	tensor := InitEmptyTensor[T](types.Dim(length))
 	for i := 0; i < length; i++ {
 		tensor.data[i] = T(start)
 		start += step
@@ -130,3 +130,8 @@ func (tensor *Tensor[T]) Set(indexes []int, value T) {
 	flatIndex := tensor.getFlatIndex(indexes...)
 	tensor.data[flatIndex] = value
 }
+
+// this method only updates tensor's Shape. No other properties will be updated.
+// func (tensor *Tensor[T]) SetShape(newShape ...types.Dim) {
+// 	tensor.shape = newShape
+// }

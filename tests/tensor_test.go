@@ -2,12 +2,13 @@ package main
 
 import (
 	"gograd/tensor"
+	types "gograd/tensor/types"
 	"reflect"
 	"testing"
 )
 
 func TestAsType(t *testing.T) {
-	a := tensor.InitTensor([]int32{1, 2, 3}, tensor.Shape{3, 1})
+	a := tensor.InitTensor([]int32{1, 2, 3}, types.Shape{3, 1})
 	b := tensor.AsType[int32, int32](a)
 	assert(t, a.DType() == b.DType())
 
@@ -18,7 +19,7 @@ func TestAsType(t *testing.T) {
 }
 
 func TestCopy(t *testing.T) {
-	a := tensor.InitTensor([]int32{1, 2, 3}, tensor.Shape{3, 1})
+	a := tensor.InitTensor([]int32{1, 2, 3}, types.Shape{3, 1})
 	b := a.Copy().SetData([]int32{7, 8, 9})
 	a_data := a.Data()
 	b_data := b.Data()
@@ -28,10 +29,10 @@ func TestCopy(t *testing.T) {
 }
 
 func TestCompare(t *testing.T) {
-	a := tensor.InitTensor([]int32{1, 2, 3}, tensor.Shape{3, 1})
-	b := tensor.InitTensor([]int32{1, 2, 3}, tensor.Shape{1, 3})
-	c := tensor.InitTensor([]int32{1, 2, 3, 4}, tensor.Shape{1, 4})
-	d := tensor.InitTensor([]int32{1, 2, 3}, tensor.Shape{1, 3})
+	a := tensor.InitTensor([]int32{1, 2, 3}, types.Shape{3, 1})
+	b := tensor.InitTensor([]int32{1, 2, 3}, types.Shape{1, 3})
+	c := tensor.InitTensor([]int32{1, 2, 3, 4}, types.Shape{1, 4})
+	d := tensor.InitTensor([]int32{1, 2, 3}, types.Shape{1, 3})
 	assert(t, !a.IsEqual(b))
 	assert(t, !a.IsEqual(c))
 	assert(t, b.IsEqual(d))
@@ -47,17 +48,17 @@ func TestRange(t *testing.T) {
 	var b *tensor.Tensor[int32] = nil
 
 	a = tensor.Range[int32](6)
-	b = tensor.InitTensor([]int32{0, 1, 2, 3, 4, 5}, tensor.Shape{6})
+	b = tensor.InitTensor([]int32{0, 1, 2, 3, 4, 5}, types.Shape{6})
 	assertEqualSlices(t, a.Data(), b.Data())
 	assertEqualSlices(t, a.Shape(), b.Shape())
 
 	a = tensor.Range[int32](2, 6, 1)
-	b = tensor.InitTensor([]int32{2, 3, 4, 5}, tensor.Shape{4})
+	b = tensor.InitTensor([]int32{2, 3, 4, 5}, types.Shape{4})
 	assertEqualSlices(t, a.Data(), b.Data())
 	assertEqualSlices(t, a.Shape(), b.Shape())
 
 	a = tensor.Range[int32](1, 6, 2)
-	b = tensor.InitTensor([]int32{1, 3, 5}, tensor.Shape{3})
+	b = tensor.InitTensor([]int32{1, 3, 5}, types.Shape{3})
 	assertEqualSlices(t, a.Data(), b.Data())
 	assertEqualSlices(t, a.Shape(), b.Shape())
 }

@@ -1,6 +1,8 @@
 package tensor
 
-func bubbleSort[T TensorType](slice []T) {
+import types "gograd/tensor/types"
+
+func bubbleSort[T types.TensorType](slice []T) {
 	n := len(slice)
 	for i := 0; i < n-1; i++ {
 		for j := 0; j < n-i-1; j++ {
@@ -11,7 +13,7 @@ func bubbleSort[T TensorType](slice []T) {
 	}
 }
 
-func quickSort[T TensorType](arr []T, low int, high int) {
+func quickSort[T types.TensorType](arr []T, low int, high int) {
 	if low < high {
 		/* pi is partitioning index, arr[pi] is now at right place */
 		pi := qsPartition(arr, low, high)
@@ -25,7 +27,7 @@ This function takes last element as pivot, places the pivot element
 at its correct position in sorted array, and places all smaller
 (smaller than pivot) to left of pivot and all greater elements to right of pivot
 */
-func qsPartition[T TensorType](arr []T, low int, high int) int {
+func qsPartition[T types.TensorType](arr []T, low int, high int) int {
 	// pivot (Element to be placed at right position)
 	pivot := arr[high]
 	i := (low - 1) // Index of smaller element and indicates the

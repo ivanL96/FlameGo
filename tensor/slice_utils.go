@@ -1,6 +1,7 @@
 package tensor
 
 import (
+	types "gograd/tensor/types"
 	"reflect"
 	"unsafe"
 )
@@ -28,7 +29,7 @@ func reverse_slice_copy[T any](slice []T) []T {
 	return rev_slice
 }
 
-func Equal_1D_slices[T TensorType](slice1, slice2 []T) bool {
+func Equal_1D_slices[T types.TensorType](slice1, slice2 []T) bool {
 	if len(slice1) != len(slice2) {
 		return false
 	}
@@ -40,11 +41,11 @@ func Equal_1D_slices[T TensorType](slice1, slice2 []T) bool {
 	return true
 }
 
-func getTypeArray[T TensorType](arr []T) reflect.Type {
+func getTypeArray[T types.TensorType](arr []T) reflect.Type {
 	return reflect.TypeOf(arr).Elem()
 }
 
-func convert_slice_type[OLD_T, NEW_T TensorType](slice []OLD_T) []NEW_T {
+func convert_slice_type[OLD_T, NEW_T types.TensorType](slice []OLD_T) []NEW_T {
 	// doesnt work yet
 	origSizeof := unsafe.Sizeof(slice[0])
 	newSizeof := unsafe.Sizeof(NEW_T(0))
@@ -53,7 +54,7 @@ func convert_slice_type[OLD_T, NEW_T TensorType](slice []OLD_T) []NEW_T {
 	return converted
 }
 
-func repeatSlice[T TensorType](data []T, ntimes uint) []T {
+func repeatSlice[T types.TensorType](data []T, ntimes uint) []T {
 	length := len(data) * int(ntimes)
 	replicatedData := make([]T, 0, int(length))
 	for i := 0; i < int(ntimes); i++ {
@@ -62,7 +63,7 @@ func repeatSlice[T TensorType](data []T, ntimes uint) []T {
 	return replicatedData
 }
 
-func addLeftPadding[T TensorType](slice []T, paddingSize, paddingVal int) []T {
+func addLeftPadding[T types.TensorType](slice []T, paddingSize, paddingVal int) []T {
 	// example: addLeftPadding([1,2,3], 4, 0) ==> [0,0,0,0,1,2,3]
 	expandedSlice := make([]T, len(slice)+paddingSize)
 	for i := range expandedSlice {
