@@ -31,7 +31,7 @@ func AreBroadcastable(shape_a, shape_b types.Shape) bool {
 	return true
 }
 
-func Broadcast(shape_a, shape_b types.Shape) types.Shape {
+func BroadcastShapes(shape_a, shape_b types.Shape) types.Shape {
 	if IsScalarLike(shape_a) && IsScalarLike(shape_b) || Equal_1D_slices(shape_a, shape_b) {
 		return shape_a
 	}
@@ -73,7 +73,7 @@ func (tensor *Tensor[T]) Broadcast(shape ...types.Dim) *Tensor[T] {
 		return tensor
 	}
 
-	broadcastedShape := Broadcast(tensor.shape, shape)
+	broadcastedShape := BroadcastShapes(tensor.shape, shape)
 	var shapeProd types.Dim = 1 // new number of elements
 	for _, dim := range broadcastedShape {
 		shapeProd *= dim
