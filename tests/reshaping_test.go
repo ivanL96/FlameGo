@@ -8,7 +8,7 @@ import (
 
 // RESHAPING
 func TestBroadcast(t *testing.T) {
-	a := tensor.InitEmptyTensor[int32](3, 2)
+	a := tensor.InitEmptyTensor[int32](1, 3, 2)
 	br_a := a.Broadcast(3, 1, 1)
 	assertEqualSlices(t, br_a.Shape(), types.Shape{3, 3, 2})
 

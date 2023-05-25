@@ -59,9 +59,11 @@ func (tensor *Tensor[T]) Index(indices ...int) *Tensor[T] {
 	}
 
 	// tensor with shape (1,1,...1)
-	if innerShapeProd == 1 {
-		return InitTensor([]T{tensor.data[0]}, innerShape)
-	}
+	// FIXME should be innerShapeProd * outerShapeProd
+	// is this really needed?
+	// if innerShapeProd == 1 {
+	// 	return InitTensor([]T{tensor.data[0]}, innerShape)
+	// }
 
 	// continuous data
 	// if data layout is continuous we can just take a slice start:end from data

@@ -48,7 +48,7 @@ func BaseBinElementwiseOp[T types.TensorType](
 	} else {
 		// (A, B ...) & (N, M, ...)
 		// apply operation for non scalar broadcastable tensors
-		var broadcasted_shape types.Shape = BroadcastShapes(tensor_a.Shape(), tensor_b.Shape())
+		broadcasted_shape, _ := BroadcastShapes(tensor_a.Shape(), tensor_b.Shape())
 
 		// define which tensor (at least 1) should be broadcasted
 		var broadcasted_tensor_a *Tensor[T] = nil
@@ -71,6 +71,8 @@ func BaseBinElementwiseOp[T types.TensorType](
 			}
 		}
 		outTensor.shape = broadcasted_shape
+		outTensor.strides = getStrides(broadcasted_shape)
+		outTensor.dim_order = initDimOrder(broadcasted_shape)
 		var length types.Dim = 1
 		for _, dim := range broadcasted_shape {
 			length *= dim

@@ -31,9 +31,9 @@ func AreBroadcastable(shape_a, shape_b types.Shape) bool {
 	return true
 }
 
-func BroadcastShapes(shape_a, shape_b types.Shape) types.Shape {
+func BroadcastShapes(shape_a, shape_b types.Shape) (types.Shape, int) {
 	if IsScalarLike(shape_a) && IsScalarLike(shape_b) || Equal_1D_slices(shape_a, shape_b) {
-		return shape_a
+		return shape_a, -1
 	}
 	if len(shape_a) < len(shape_b) {
 		ones_size := len(shape_b) - len(shape_a)
@@ -42,8 +42,9 @@ func BroadcastShapes(shape_a, shape_b types.Shape) types.Shape {
 		ones_size := len(shape_a) - len(shape_b)
 		shape_b = addLeftPadding(shape_b, ones_size, 1)
 	}
-	// # Start from the trailing dimensions and work forward
+	// # Start from the trailing dimensions
 	result_shape := make(types.Shape, len(shape_a))
+	nDimBroadcasted := 0
 	for i := len(shape_a) - 1; i >= 0; i-- {
 		dim1 := shape_a[i]
 		dim2 := shape_b[i]
@@ -57,14 +58,16 @@ func BroadcastShapes(shape_a, shape_b types.Shape) types.Shape {
 		if dim1 == dim2 {
 			result_shape[i] = dim1
 		} else if dim2 != 1 {
+			nDimBroadcasted = i
 			result_shape[i] = dim2
 		} else if dim1 != 1 {
+			nDimBroadcasted = i
 			result_shape[i] = dim1
 		} else {
 			panic("Something went wrong during broadcasting")
 		}
 	}
-	return result_shape
+	return result_shape, nDimBroadcasted
 }
 
 func (tensor *Tensor[T]) Broadcast(shape ...types.Dim) *Tensor[T] {
@@ -73,7 +76,7 @@ func (tensor *Tensor[T]) Broadcast(shape ...types.Dim) *Tensor[T] {
 		return tensor
 	}
 
-	broadcastedShape := BroadcastShapes(tensor.shape, shape)
+	broadcastedShape, nDimBroadcasted := BroadcastShapes(tensor.shape, shape)
 	var shapeProd types.Dim = 1 // new number of elements
 	for _, dim := range broadcastedShape {
 		shapeProd *= dim
@@ -81,8 +84,18 @@ func (tensor *Tensor[T]) Broadcast(shape ...types.Dim) *Tensor[T] {
 
 	// repeat data
 	ntimes := int(shapeProd) / len(tensor.data)
-	data := repeatSlice(tensor.data, uint(ntimes))
-	return InitTensor(data, broadcastedShape)
+	outTensor := InitEmptyTensor[T](broadcastedShape...)
+	iter := tensor.CreateIterator()
+	for iter.Iterate() {
+		idx := iter.Next()
+		value := tensor.Get(idx...)
+		outIdx := append([]int(nil), idx...)
+		for i := 0; i < ntimes; i++ {
+			outTensor.data[outTensor.getFlatIndex(outIdx...)] = value
+			outIdx[nDimBroadcasted]++
+		}
+	}
+	return outTensor
 }
 
 func (tensor *Tensor[T]) Flatten() *Tensor[T] {
