@@ -167,13 +167,14 @@ func (tensor *Tensor[T]) MatMul(other_tensor *Tensor[T]) *Tensor[T] {
 	}
 	tensor_a := tensor.AsContinuous()
 	tensor_b := other_tensor.AsContinuous()
-	outShape := tensor.shape
+
+	outShape := types.Shape{tensor.shape[0], other_tensor.shape[1]}
 	outTensor := InitEmptyTensor[T](outShape...)
 	for i := 0; i < int(tensor.shape[0]); i++ {
 		for j := 0; j < int(other_tensor.shape[1]); j++ {
 			for k := 0; k < int(tensor.shape[1]); k++ {
-				dataIdx := outTensor.getFlatIndex(i, j)
-				outTensor.data[dataIdx] += tensor_a.Get(i, k) * tensor_b.Get(k, j)
+				idx := outTensor.getFlatIndex(i, j)
+				outTensor.data[idx] += tensor_a.Get(i, k) * tensor_b.Get(k, j)
 			}
 		}
 	}

@@ -49,3 +49,23 @@ func TestMul(t *testing.T) {
 	assertEqualSlices(t, ab.Data(), []int32{6, 6, 6, 6, 6, 6})
 	assertEqualSlices(t, ab.Shape(), types.Shape{3, 2})
 }
+
+func TestMatMul(t *testing.T) {
+	a := tensor.Range[int32](9).Reshape(3, 3)
+	b := tensor.Range[int32](9).Reshape(3, 3)
+	c := a.MatMul(b)
+	assertEqualSlices(t, c.Data(), []int32{15, 18, 21, 42, 54, 66, 69, 90, 111})
+	assertEqualSlices(t, c.Shape(), types.Shape{3, 3})
+
+	a1 := tensor.Range[int32](3).Reshape(1, 3)
+	b1 := tensor.Range[int32](3).Reshape(3, 1)
+	c1 := a1.MatMul(b1)
+	assertEqualSlices(t, c1.Data(), []int32{5})
+	assertEqualSlices(t, c1.Shape(), types.Shape{1, 1})
+
+	a2 := tensor.Range[int32](8).Reshape(2, 4)
+	b2 := tensor.Range[int32](8).Reshape(4, 2)
+	c2 := a2.MatMul(b2)
+	assertEqualSlices(t, c2.Data(), []int32{28, 34, 76, 98})
+	assertEqualSlices(t, c2.Shape(), types.Shape{2, 2})
+}
