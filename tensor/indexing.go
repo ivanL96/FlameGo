@@ -11,9 +11,9 @@ func (tensor *Tensor[T]) getFlatIndex(indices ...int) int {
 		// resolve negative indexes
 		if ind < 0 {
 			ind = int(tensor.shape[i]) + ind
-		}
-		if ind < 0 {
-			panic(fmt.Sprintf("Index %v is out of bounds", ind))
+			if ind < 0 {
+				panic(fmt.Sprintf("Index %v is out of bounds", ind))
+			}
 		}
 		// bound check
 		if ind >= int(tensor.shape[i]) {
@@ -22,6 +22,15 @@ func (tensor *Tensor[T]) getFlatIndex(indices ...int) int {
 		flatIndex += tensor.strides[i] * ind
 	}
 	return flatIndex
+}
+
+// faster Get() without bounds checking. Does not support negative indexing
+func (tensor *Tensor[T]) get_fast(indices ...int) T {
+	flatIndex := 0
+	for i, ind := range indices {
+		flatIndex += tensor.strides[i] * ind
+	}
+	return tensor.data[flatIndex]
 }
 
 func (tensor *Tensor[T]) Get(indices ...int) T {
@@ -55,13 +64,6 @@ func (tensor *Tensor[T]) Index(indices ...int) *Tensor[T] {
 	for _, dim := range innerShape {
 		innerShapeProd *= dim
 	}
-
-	// tensor with shape (1,1,...1)
-	// FIXME should be innerShapeProd * outerShapeProd
-	// is this really needed?
-	// if innerShapeProd == 1 {
-	// 	return InitTensor([]T{tensor.data[0]}, innerShape)
-	// }
 
 	// continuous data
 	// if data layout is continuous we can just take a slice start:end from data

@@ -39,7 +39,7 @@ func BaseBinElementwiseOp[T types.TensorType](
 		for iter.Iterate() {
 			dataIndex := iter.Index()
 			idx := iter.Next()
-			outTensor.Data()[dataIndex] = binOp(tensor_a.Get(idx...), tensor_b.Get(idx...))
+			outTensor.Data()[dataIndex] = binOp(tensor_a.get_fast(idx...), tensor_b.get_fast(idx...))
 		}
 	} else if len(tensor_b.Data()) == 1 {
 		// tensor_b is scalar
@@ -68,7 +68,7 @@ func BaseBinElementwiseOp[T types.TensorType](
 				dim_a := tensor_a.Shape()[i]
 				if dim_a < brc_dim && broadcasted_tensor_a == nil {
 					// need to broadcast tensor_a
-					// TODO how to avoid additional Broadcast()
+					// TODO minor. how to avoid additional Broadcast()
 					broadcasted_tensor_a = tensor_a.Broadcast(broadcasted_shape...)
 				}
 			}

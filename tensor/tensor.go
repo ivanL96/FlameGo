@@ -81,9 +81,9 @@ func (tensor *Tensor[T]) IsEqual(otherTensor *Tensor[T]) bool {
 	return true
 }
 
+// Creates a tensor with data ranged from 'start' to 'end'
+// limits: min 1 and max 3 arguments. Start, End, Step
 func Range[T types.TensorType](limits ...int) *Tensor[T] {
-	// Created a tensor with data ranged from 'start' to 'end'
-	// limits: min 1 and max 3 arguments. Start, End, Step
 	if len(limits) == 0 {
 		panic("Range requires at least one argument")
 	}
@@ -108,6 +108,7 @@ func Range[T types.TensorType](limits ...int) *Tensor[T] {
 	return tensor
 }
 
+// Fills tensor with same value
 func (tensor *Tensor[T]) Fill(value T) *Tensor[T] {
 	tensor.setFlag(SameValuesFlag)
 	for i := range tensor.data {
@@ -115,6 +116,9 @@ func (tensor *Tensor[T]) Fill(value T) *Tensor[T] {
 	}
 	return tensor
 }
+
+// TODO finish Eye(). Must be stride aware
+// func (tensor *Tensor[T]) Eye() *Tensor[T]
 
 // sets new value of the same shape
 func (tensor *Tensor[T]) SetData(value []T) *Tensor[T] {
