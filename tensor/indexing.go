@@ -122,15 +122,17 @@ func (tensor *Tensor[T]) GetAxis(axis uint, shift uint) *Tensor[T] {
 // tensor iterator
 
 type TensorIterator[T types.TensorType] struct {
-	tensor         *Tensor[T]
+	shape          types.Shape
 	currentIndexes []int
+	dataLen        int
 	index          int
 }
 
 // iterates over tensor data and gives N-dim index for each element
 func (tensor *Tensor[T]) CreateIterator() *TensorIterator[T] {
 	ti := TensorIterator[T]{
-		tensor: tensor,
+		dataLen: len(tensor.data),
+		shape:   tensor.shape,
 		// currentIndexes will not be copied for each Next() call.
 		currentIndexes: make([]int, len(tensor.shape)),
 		index:          0,
@@ -143,7 +145,7 @@ func (ti *TensorIterator[T]) Index() int {
 }
 
 func (ti *TensorIterator[T]) Iterate() bool {
-	return ti.index != len(ti.tensor.data)
+	return ti.index != ti.dataLen
 }
 
 func (ti *TensorIterator[T]) Next() []int {
@@ -153,7 +155,7 @@ func (ti *TensorIterator[T]) Next() []int {
 	}
 
 	indexes := ti.currentIndexes
-	shape := ti.tensor.shape
+	shape := ti.shape
 	for j := len(indexes) - 1; j >= 0; j-- {
 		indexes[j]++
 		if indexes[j] < int(shape[j]) {
