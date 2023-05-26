@@ -45,6 +45,18 @@ func BenchmarkSigmoid(b *testing.B) {
 	}
 }
 
+// BenchmarkMatMul-8   	   26259	     43096 ns/op	     616 B/op	       7 allocs/op
+// BenchmarkMatMul-8   	       1	69653349600 ns/op	12020000 B/op	      31 allocs/op
+// go matmul 69.653.349.600
+// numpy matmul 4.910.045.600
+func BenchmarkMatMul(b *testing.B) {
+	a1 := tensor.Range[int32](1000*1000).Reshape(1000, 1000)
+	b1 := tensor.Range[int32](1000*1000).Reshape(1000, 1000)
+	for i := 0; i < b.N; i++ {
+		a1.MatMul(b1)
+	}
+}
+
 // type X struct {
 // 	data []int
 // }
