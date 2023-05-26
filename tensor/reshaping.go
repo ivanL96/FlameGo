@@ -121,6 +121,9 @@ func (tensor *Tensor[T]) Reshape(newShape ...types.Dim) *Tensor[T] {
 	for _, dim := range newShape {
 		new_shape_prod *= dim
 	}
+	if new_shape_prod == 0 {
+		panic("Shape cannot have 0 dim.")
+	}
 	if len(tensor.data) != int(new_shape_prod) {
 		panic(fmt.Sprintf("Cannot reshape to %v", newShape))
 	}
