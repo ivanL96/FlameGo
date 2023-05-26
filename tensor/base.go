@@ -14,6 +14,31 @@ type Tensor[T types.TensorType] struct {
 	flags     uint8
 }
 
+type TensorList[T types.TensorType] []*Tensor[T]
+
+func (tensor *Tensor[T]) Shape() types.Shape {
+	return tensor.shape
+}
+
+func (tensor *Tensor[T]) Strides() []int {
+	return tensor.strides
+}
+
+func (tensor *Tensor[T]) Order() []uint16 {
+	return tensor.dim_order
+}
+
+// accessing internal data struct will automatically disable all optimization flags for this Tensor.
+func (tensor *Tensor[T]) Data() []T {
+	tensor.ResetFlags()
+	return tensor.data
+}
+
+func (tensor *Tensor[T]) DType() reflect.Type {
+	return tensor.dtype
+}
+
+// tensor helper flags
 const (
 	SameValuesFlag uint8 = 1 << iota
 )
@@ -39,27 +64,3 @@ func (tensor *Tensor[T]) ResetFlags() {
 // 		tensor.hasFlag(flag)
 // 	}
 // }
-
-type TensorList[T types.TensorType] []*Tensor[T]
-
-func (tensor *Tensor[T]) Shape() types.Shape {
-	return tensor.shape
-}
-
-func (tensor *Tensor[T]) Strides() []int {
-	return tensor.strides
-}
-
-func (tensor *Tensor[T]) Order() []uint16 {
-	return tensor.dim_order
-}
-
-// accessing internal data struct will automatically disable all optimization flags for this Tensor.
-func (tensor *Tensor[T]) Data() []T {
-	tensor.ResetFlags()
-	return tensor.data
-}
-
-func (tensor *Tensor[T]) DType() reflect.Type {
-	return tensor.dtype
-}

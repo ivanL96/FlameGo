@@ -15,19 +15,23 @@ func BaseBinElementwiseOp[T types.TensorType](
 	binOp BinaryScalarOp[T],
 	out *Tensor[T],
 ) *Tensor[T] {
+	var outTensor *Tensor[T]
+	if IsScalarLike(tensor_a.shape) && IsScalarLike(tensor_b.shape) {
+		outTensor = PrepareOutTensor(out, tensor_a.shape)
+		// most trivial case (1,) & (1,)
+		outTensor.data[0] = binOp(tensor_a.data[0], tensor_b.data[0])
+		return outTensor
+	}
+
 	// tensors should have equal shapes or at least one of them should be scalar-like
 	if !AreBroadcastable(tensor_a.Shape(), tensor_b.Shape()) {
 		panic(
 			fmt.Sprintf("Shapes: %x, %x are not broadcastable", tensor_a.Shape(), tensor_b.Shape()),
 		)
 	}
-	outTensor := PrepareOutTensor(out, tensor_a.Shape())
-
-	if IsScalarLike(tensor_a.Shape()) && IsScalarLike(tensor_b.Shape()) {
-		// most trivial case (1,) & (1,)
-		outTensor.data[0] = binOp(tensor_a.data[0], tensor_b.data[0])
-	} else if len(tensor_a.data) == len(tensor_b.data) {
-		// same shapes (N,M) & (N,M)
+	if len(tensor_a.data) == len(tensor_b.data) {
+		// same broadcastable shapes (N,M) & (N,M)
+		outTensor = PrepareOutTensor(out, tensor_a.shape)
 
 		// if two tensors are filled with same values. For example [2,2,2] and [3,3,3]
 		if tensor_a.hasFlag(SameValuesFlag) && tensor_b.hasFlag(SameValuesFlag) {
@@ -44,6 +48,7 @@ func BaseBinElementwiseOp[T types.TensorType](
 	} else if len(tensor_b.data) == 1 {
 		// tensor_b is scalar
 		// (N, M, ...) & (1,)
+		outTensor = PrepareOutTensor(out, tensor_a.shape)
 		value := tensor_b.data[0]
 		for i, val := range tensor_a.data {
 			outTensor.data[i] = binOp(val, value)
@@ -51,6 +56,7 @@ func BaseBinElementwiseOp[T types.TensorType](
 	} else if len(tensor_a.data) == 1 {
 		// tensor_a is scalar
 		// (1,) & (N, M, ...)
+		outTensor = PrepareOutTensor(out, tensor_b.shape)
 		value := tensor_a.data[0]
 		for i, val := range tensor_b.data {
 			outTensor.data[i] = binOp(val, value)
@@ -60,7 +66,7 @@ func BaseBinElementwiseOp[T types.TensorType](
 		// apply operation for non scalar broadcastable tensors
 		broadcasted_shape, _ := BroadcastShapes(tensor_a.Shape(), tensor_b.Shape())
 
-		// define which tensor (at least 1) should be broadcasted
+		// determine which tensor (at least 1) should be broadcasted
 		var broadcasted_tensor_a *Tensor[T] = nil
 		var broadcasted_tensor_b *Tensor[T] = nil
 		for i, brc_dim := range broadcasted_shape {
@@ -80,14 +86,7 @@ func BaseBinElementwiseOp[T types.TensorType](
 				}
 			}
 		}
-		outTensor.shape = broadcasted_shape
-		outTensor.strides = getStrides(broadcasted_shape)
-		outTensor.dim_order = initDimOrder(broadcasted_shape)
-		var length types.Dim = 1
-		for _, dim := range broadcasted_shape {
-			length *= dim
-		}
-		outTensor.data = make([]T, int(length))
+		outTensor = PrepareOutTensor(out, broadcasted_shape)
 		if broadcasted_tensor_a == nil {
 			broadcasted_tensor_a = tensor_a
 		}
@@ -126,36 +125,36 @@ func _add[T types.TensorType](a, b T) T {
 	return a + b
 }
 
-func (tensor *Tensor[T]) Add(other_tensor *Tensor[T]) *Tensor[T] {
-	return BaseBinElementwiseOp(tensor, other_tensor, _add[T], nil)
+func (tensor *Tensor[T]) Add(other_tensor, out *Tensor[T]) *Tensor[T] {
+	return BaseBinElementwiseOp(tensor, other_tensor, _add[T], out)
 }
 
 func _sub[T types.TensorType](a, b T) T {
 	return a - b
 }
-func (tensor *Tensor[T]) Sub(other_tensor *Tensor[T]) *Tensor[T] {
-	return BaseBinElementwiseOp(tensor, other_tensor, _sub[T], nil)
+func (tensor *Tensor[T]) Sub(other_tensor, out *Tensor[T]) *Tensor[T] {
+	return BaseBinElementwiseOp(tensor, other_tensor, _sub[T], out)
 }
 
 func _mul[T types.TensorType](a, b T) T {
 	return a * b
 }
-func (tensor *Tensor[T]) Mul(other_tensor *Tensor[T]) *Tensor[T] {
-	return BaseBinElementwiseOp(tensor, other_tensor, _mul[T], nil)
+func (tensor *Tensor[T]) Mul(other_tensor, out *Tensor[T]) *Tensor[T] {
+	return BaseBinElementwiseOp(tensor, other_tensor, _mul[T], out)
 }
 
 func _div[T types.TensorType](a, b T) T {
 	return a / b
 }
-func (tensor *Tensor[T]) Div(other_tensor *Tensor[T]) *Tensor[T] {
-	return BaseBinElementwiseOp(tensor, other_tensor, _div[T], nil)
+func (tensor *Tensor[T]) Div(other_tensor, out *Tensor[T]) *Tensor[T] {
+	return BaseBinElementwiseOp(tensor, other_tensor, _div[T], out)
 }
 
 func _sigmoid[T types.TensorType](a T) T {
 	return T(1. / (1. + math.Pow(math.E, float64(-a))))
 }
-func (tensor *Tensor[T]) Sigmoid() *Tensor[T] {
-	return unaryElementwiseRoutine(tensor, _sigmoid[T], nil)
+func (tensor *Tensor[T]) Sigmoid(out *Tensor[T]) *Tensor[T] {
+	return unaryElementwiseRoutine(tensor, _sigmoid[T], out)
 }
 
 // input A and B, both n by n matrices
