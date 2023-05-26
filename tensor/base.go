@@ -10,7 +10,7 @@ type Tensor[T types.TensorType] struct {
 	data      []T
 	shape     types.Shape
 	strides   []int
-	dim_order []int
+	dim_order []uint16
 	flags     uint8
 }
 
@@ -50,7 +50,7 @@ func (tensor *Tensor[T]) Strides() []int {
 	return tensor.strides
 }
 
-func (tensor *Tensor[T]) Order() []int {
+func (tensor *Tensor[T]) Order() []uint16 {
 	return tensor.dim_order
 }
 

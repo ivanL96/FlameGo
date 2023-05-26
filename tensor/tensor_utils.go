@@ -32,17 +32,17 @@ func getStrides(shape types.Shape) []int {
 	return strides
 }
 
-func initDimOrder(shape types.Shape) []int {
-	dimOrder := make([]int, len(shape))
+func initDimOrder(shape types.Shape) []uint16 {
+	dimOrder := make([]uint16, len(shape))
 	for i := range dimOrder {
-		dimOrder[i] = i
+		dimOrder[i] = uint16(i)
 	}
 	return dimOrder
 }
 
 // if dim order is not shuffled
-func isDimOrderInit(dimOrder []int) bool {
-	min := 0
+func isDimOrderInit(dimOrder []uint16) bool {
+	var min uint16 = 0
 	for _, dim := range dimOrder {
 		if dim > min {
 			return false
