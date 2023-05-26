@@ -16,7 +16,7 @@ func squeeze_shape(shape types.Shape) types.Shape {
 }
 
 func IsScalarLike(shape types.Shape) bool {
-	if len(shape) == 1 && shape[0] <= 1 {
+	if len(shape) == 1 && shape[0] == 1 {
 		return true
 	}
 	return false

@@ -108,8 +108,12 @@ func Range[T types.TensorType](limits ...int) *Tensor[T] {
 // Fills tensor with same value
 func (tensor *Tensor[T]) Fill(value T) *Tensor[T] {
 	tensor.setFlag(SameValuesFlag)
-	for i := range tensor.data {
-		tensor.data[i] = value
+	if len(tensor.data) >= 12 {
+		fill_data_unroll4(&tensor.data, value)
+	} else {
+		for i := range tensor.data {
+			tensor.data[i] = value
+		}
 	}
 	return tensor
 }

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"gograd/tensor"
 	types "gograd/tensor/types"
 	"reflect"
@@ -61,4 +62,14 @@ func TestRange(t *testing.T) {
 	b = tensor.InitTensor([]int32{1, 3, 5}, types.Shape{3})
 	assertEqualSlices(t, a.Data(), b.Data())
 	assertEqualSlices(t, a.Shape(), b.Shape())
+}
+
+// test -timeout 30s -run ^TestFill$ gograd/tests
+func TestFill(t *testing.T) {
+	a := tensor.InitEmptyTensor[int32](12)
+	b := a.Copy()
+	a.Fill(2)
+	fmt.Println(b.ToString(), a.ToString())
+	assertEqualSlices(t, a.Shape(), b.Shape())
+	assertNotEqualSlices(t, a.Data(), b.Data())
 }

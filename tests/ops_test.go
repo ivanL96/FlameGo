@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"gograd/tensor"
 	types "gograd/tensor/types"
 	"testing"
@@ -9,6 +10,7 @@ import (
 func TestAdd(t *testing.T) {
 	a := tensor.InitEmptyTensor[int32](3, 2).Fill(2)
 	b := tensor.InitEmptyTensor[int32](3, 1).Fill(3)
+	fmt.Println(a.ToString(), b.ToString())
 	ab := a.Add(b)
 	assertEqualSlices(t, ab.Data(), []int32{5, 5, 5, 5, 5, 5})
 	assertEqualSlices(t, ab.Shape(), types.Shape{3, 2})
@@ -22,6 +24,7 @@ func TestAdd(t *testing.T) {
 	e := tensor.InitEmptyTensor[int32](1).Fill(4)
 	f := tensor.InitEmptyTensor[int32](1).Fill(1)
 	ef := e.Add(f)
+	fmt.Println(ef.ToString())
 	assertEqualSlices(t, ef.Data(), []int32{5})
 	assertEqualSlices(t, ef.Shape(), types.Shape{1})
 

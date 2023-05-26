@@ -75,3 +75,15 @@ func addLeftPadding[T types.TensorType](slice []T, paddingSize, paddingVal int) 
 	}
 	return expandedSlice
 }
+
+func fill_data_unroll4[T types.TensorType](tensor_data *[]T, value T) {
+	data := *tensor_data
+
+	for i := 0; i < len(data); i += 4 {
+		bb := (*[4]T)(unsafe.Pointer(&data[i]))
+		bb[0] = value
+		bb[1] = value
+		bb[2] = value
+		bb[3] = value
+	}
+}
