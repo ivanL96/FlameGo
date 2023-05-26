@@ -26,11 +26,15 @@ func (tensor *Tensor[T]) getFlatIndex(indices ...int) int {
 
 // faster Get() without bounds checking. Does not support negative indexing
 func (tensor *Tensor[T]) get_fast(indices ...int) T {
+	return tensor.data[tensor.get_flat_idx_fast(indices...)]
+}
+
+func (tensor *Tensor[T]) get_flat_idx_fast(indices ...int) int {
 	flatIndex := 0
 	for i, ind := range indices {
 		flatIndex += tensor.strides[i] * ind
 	}
-	return tensor.data[flatIndex]
+	return flatIndex
 }
 
 func (tensor *Tensor[T]) Get(indices ...int) T {
@@ -149,9 +153,10 @@ func (ti *TensorIterator[T]) Next() []int {
 	}
 
 	indexes := ti.currentIndexes
+	shape := ti.tensor.shape
 	for j := len(indexes) - 1; j >= 0; j-- {
 		indexes[j]++
-		if indexes[j] < int(ti.tensor.shape[j]) {
+		if indexes[j] < int(shape[j]) {
 			break
 		}
 		indexes[j] = 0
@@ -176,7 +181,7 @@ func (tensor *Tensor[T]) AsContinuous() *Tensor[T] {
 	for iter.Iterate() {
 		dataIndex := iter.Index()
 		valueIndexes := iter.Next()
-		val := tensor.Get(valueIndexes...)
+		val := tensor.get_fast(valueIndexes...)
 		outTensor.data[dataIndex] = val
 	}
 	return outTensor

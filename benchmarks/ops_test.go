@@ -17,9 +17,9 @@ func BenchmarkAdd(b *testing.B) {
 
 // init/range data
 // 26	  42.891.900 ns/op	 4.314.271 B/op	       7 allocs/op
-// fast get/range data
+// get_fast/range data
 // 44     23.705.093 ns/op   4.188.202 B/op          7 allocs/op
-// out Tensor prepared/fast-get/range data
+// out Tensor prepared/get_fast/range data
 // 50     23.525.360 ns/op   160.285 B/op          1 allocs/op
 // Fill() unrolled 4
 // 654    1.885.201 ns/op    4.018.343 B/op          6 allocs/op

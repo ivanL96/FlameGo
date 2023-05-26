@@ -23,12 +23,11 @@ func makeTensor[T types.TensorType](dataPtr *[]T, shape types.Shape) *Tensor[T] 
 	if len(shape) == 0 || int(shapeProd) != len(data) {
 		panic(fmt.Sprintf("makeTensor: Value length %v cannot have shape %v", len(data), shape))
 	}
-	dim_order := initDimOrder(shape)
 	return &Tensor[T]{
 		shape:     append(types.Shape(nil), shape...),
 		strides:   getStrides(shape),
 		data:      data,
-		dim_order: dim_order,
+		dim_order: initDimOrder(shape),
 	}
 }
 
@@ -40,6 +39,17 @@ func InitTensor[T types.TensorType](value []T, shape types.Shape) *Tensor[T] {
 // inits an empty tensor with specific shape
 func InitEmptyTensor[T types.TensorType](shape ...types.Dim) *Tensor[T] {
 	return makeTensor[T](nil, shape)
+}
+
+// Creates a tensor without copying the data
+func AsTensor[T types.TensorType](data []T, shape types.Shape) *Tensor[T] {
+	t := &Tensor[T]{
+		strides:   getStrides(shape),
+		data:      data,
+		dim_order: initDimOrder(shape),
+		shape:     shape,
+	}
+	return t
 }
 
 func AsType[OLDT types.TensorType, NEWT types.TensorType](tensor *Tensor[OLDT]) *Tensor[NEWT] {
@@ -72,7 +82,7 @@ func (tensor *Tensor[T]) IsEqual(otherTensor *Tensor[T]) bool {
 	iter := tensor.CreateIterator()
 	for iter.Iterate() {
 		idx := iter.Next()
-		if tensor.Get(idx...) != otherTensor.Get(idx...) {
+		if tensor.get_fast(idx...) != otherTensor.get_fast(idx...) {
 			return false
 		}
 	}

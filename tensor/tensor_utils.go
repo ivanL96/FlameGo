@@ -74,3 +74,50 @@ func PrepareOutTensor[T types.TensorType](out *Tensor[T], shape types.Shape) *Te
 	}
 	return out
 }
+
+func SplitTensor[T types.TensorType](
+	tensor, outA, outB, outC, outD *Tensor[T],
+) (a, b, c, d *Tensor[T]) {
+	if len(tensor.shape) != 2 {
+		panic("Tensor must have (N,N) shape")
+	}
+	// only 2-dim, squared matrices
+	cols, rows := tensor.shape[0], tensor.shape[1]
+	row2, col2 := rows/2, cols/2
+	subTensorShape := types.Shape{row2, col2}
+	a = PrepareOutTensor(outA, subTensorShape)
+	b = PrepareOutTensor(outB, subTensorShape)
+	c = PrepareOutTensor(outC, subTensorShape)
+	d = PrepareOutTensor(outD, subTensorShape)
+	iter := tensor.CreateIterator()
+	icol2, irow2 := int(col2), int(row2)
+	for iter.Iterate() {
+		idx := iter.Next()
+		idx0 := idx[0]
+		idx1 := idx[1]
+		value := tensor.get_fast(idx0, idx1)
+		if idx0 < irow2 && idx1 < icol2 {
+			a.data[a.get_flat_idx_fast(idx0, idx1)] = value
+		} else if idx0 < irow2 && idx1 >= icol2 {
+			if idx1 >= icol2 {
+				idx1 -= icol2
+			}
+			b.data[b.get_flat_idx_fast(idx0, idx1)] = value
+		} else if idx0 >= irow2 && idx1 < icol2 {
+			if idx0 >= irow2 {
+				idx0 -= irow2
+			}
+			c.data[c.get_flat_idx_fast(idx0, idx1)] = value
+		} else if idx0 >= irow2 && idx1 >= icol2 {
+			if idx0 >= irow2 {
+				idx0 -= irow2
+			}
+			if idx1 >= icol2 {
+				idx1 -= icol2
+			}
+			d.data[d.get_flat_idx_fast(idx0, idx1)] = value
+		}
+	}
+	return
+}
+
