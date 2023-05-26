@@ -82,38 +82,37 @@ func SplitTensor[T types.TensorType](
 		panic("Tensor must have (N,N) shape")
 	}
 	// only 2-dim, squared matrices
-	cols, rows := tensor.shape[0], tensor.shape[1]
-	row2, col2 := rows/2, cols/2
-	subTensorShape := types.Shape{row2, col2}
-	a = PrepareOutTensor(outA, subTensorShape)
-	b = PrepareOutTensor(outB, subTensorShape)
-	c = PrepareOutTensor(outC, subTensorShape)
-	d = PrepareOutTensor(outD, subTensorShape)
+	rows, cols := tensor.shape[0], tensor.shape[1]
+	row2, col2 := int(rows/2), int(cols/2)
+	sub_tensor_shape := types.Shape{types.Dim(row2), types.Dim(col2)}
+	a = PrepareOutTensor(outA, sub_tensor_shape)
+	b = PrepareOutTensor(outB, sub_tensor_shape)
+	c = PrepareOutTensor(outC, sub_tensor_shape)
+	d = PrepareOutTensor(outD, sub_tensor_shape)
 	iter := tensor.CreateIterator()
-	icol2, irow2 := int(col2), int(row2)
 	for iter.Iterate() {
 		idx := iter.Next()
 		idx0 := idx[0]
 		idx1 := idx[1]
 		value := tensor.get_fast(idx0, idx1)
-		if idx0 < irow2 && idx1 < icol2 {
+		if idx0 < row2 && idx1 < col2 {
 			a.data[a.get_flat_idx_fast(idx0, idx1)] = value
-		} else if idx0 < irow2 && idx1 >= icol2 {
-			if idx1 >= icol2 {
-				idx1 -= icol2
+		} else if idx0 < row2 && idx1 >= col2 {
+			if idx1 >= col2 {
+				idx1 -= col2
 			}
 			b.data[b.get_flat_idx_fast(idx0, idx1)] = value
-		} else if idx0 >= irow2 && idx1 < icol2 {
-			if idx0 >= irow2 {
-				idx0 -= irow2
+		} else if idx0 >= row2 && idx1 < col2 {
+			if idx0 >= row2 {
+				idx0 -= row2
 			}
 			c.data[c.get_flat_idx_fast(idx0, idx1)] = value
-		} else if idx0 >= irow2 && idx1 >= icol2 {
-			if idx0 >= irow2 {
-				idx0 -= irow2
+		} else if idx0 >= row2 && idx1 >= col2 {
+			if idx0 >= row2 {
+				idx0 -= row2
 			}
-			if idx1 >= icol2 {
-				idx1 -= icol2
+			if idx1 >= col2 {
+				idx1 -= col2
 			}
 			d.data[d.get_flat_idx_fast(idx0, idx1)] = value
 		}
@@ -121,3 +120,58 @@ func SplitTensor[T types.TensorType](
 	return
 }
 
+func SplitTensor2[T types.TensorType](
+	tensor, outA, outB, outC, outD *Tensor[T],
+) (a, b, c, d *Tensor[T]) {
+	if len(tensor.shape) != 2 {
+		panic("Tensor must have (N,N) shape")
+	}
+	// only 2-dim, squared matrices
+	rows, cols := tensor.shape[0], tensor.shape[1]
+	row2, col2 := int(rows/2), int(cols/2)
+	sub_tensor_shape := types.Shape{types.Dim(row2), types.Dim(col2)}
+	a = PrepareOutTensor(outA, sub_tensor_shape)
+	b = PrepareOutTensor(outB, sub_tensor_shape)
+	c = PrepareOutTensor(outC, sub_tensor_shape)
+	d = PrepareOutTensor(outD, sub_tensor_shape)
+	// assume continuous data
+	aidx, bidx, cidx, didx := 0, 0, 0, 0
+	for i := 0; i < int(rows)*2; i++ {
+		row := tensor.data[col2*i : col2*(i+1)]
+		if i < row2 {
+			for j, v := range row {
+				a.data[j+aidx] = v
+			}
+			aidx += col2
+		} else if i >= row2 && i < int(rows) {
+			for j, v := range row {
+				b.data[j+bidx] = v
+			}
+			bidx += col2
+		} else if i >= int(rows) && i < int(rows)+row2 {
+			for j, v := range row {
+				c.data[j+cidx] = v
+			}
+			cidx += col2
+		} else if i >= int(rows)+row2 {
+			for j, v := range row {
+				d.data[j+didx] = v
+			}
+			didx += col2
+		}
+	}
+	return
+}
+
+// TODO
+// unites subtensors splitted by SplitTensor
+// func UniteTensors[T types.TensorType](a, b, c, d *Tensor[T]) *Tensor[T] {
+// 	outShape := a.shape
+// 	outShape[0] *= 2
+// 	outShape[1] *= 2
+// 	outTensor := InitEmptyTensor[T](outShape...)
+
+// 	for i := 0; i < int(outShape[0]); i++ {
+// 		if i < a.shape
+// 	}
+// }

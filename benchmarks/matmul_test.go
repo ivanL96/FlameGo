@@ -21,6 +21,10 @@ import (
 // BenchmarkMatMulSplit-8              4537            254.710 ns/op              42 B/op          2 allocs/op
 // BenchmarkMatMulSplit-8              4986            211.388 ns/op              40 B/op          2 allocs/op
 // BenchmarkMatMulSplit-8              5218            241.416 ns/op              39 B/op          2 allocs/op
+// ======================Split version 2: native loop & prealloc output
+// BenchmarkMatMulSplit-8             41451             28753 ns/op               9 B/op          1 allocs/op
+// BenchmarkMatMulSplit-8             38742             28343 ns/op              10 B/op          1 allocs/op
+// BenchmarkMatMulSplit-8             38750             31582 ns/op              10 B/op          1 allocs/op
 func BenchmarkMatMulSplit(b *testing.B) {
 	X := tensor.Range[int32](100*100).Reshape(100, 100)
 	a1 := tensor.InitEmptyTensor[int32](50, 50)
@@ -28,6 +32,7 @@ func BenchmarkMatMulSplit(b *testing.B) {
 	c1 := tensor.InitEmptyTensor[int32](50, 50)
 	d1 := tensor.InitEmptyTensor[int32](50, 50)
 	for i := 0; i < b.N; i++ {
-		tensor.SplitTensor(X, a1, b1, c1, d1)
+		tensor.SplitTensor2(X, a1, b1, c1, d1)
+		// tensor.SplitTensor2(X, nil, nil, nil, nil)
 	}
 }

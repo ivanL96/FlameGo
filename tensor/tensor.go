@@ -154,8 +154,3 @@ func (tensor *Tensor[T]) Set(indexes []int, value T) {
 	flatIndex := tensor.getFlatIndex(indexes...)
 	tensor.data[flatIndex] = value
 }
-
-// this method only updates tensor's Shape. No other properties will be updated.
-// func (tensor *Tensor[T]) SetShape(newShape ...types.Dim) {
-// 	tensor.shape = newShape
-// }
