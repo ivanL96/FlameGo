@@ -14,9 +14,12 @@ func BenchmarkAdd(b *testing.B) {
 	}
 }
 
+// 26	  42.891.900 ns/op	 4314271 B/op	       7 allocs/op
+// SAME VALUE FLAG
+// 445	   2.637.615 ns/op	 4024107 B/op	       6 allocs/op
 func BenchmarkBigAdd(b *testing.B) {
-	a1 := tensor.Range[int32](1000000).Reshape(1000, 1000)
-	a2 := tensor.Range[int32](1000000).Reshape(1000, 1000)
+	a1 := tensor.Range[int32](1000000).Reshape(1000, 1000).Fill(1)
+	a2 := tensor.Range[int32](1000000).Reshape(1000, 1000).Fill(1)
 	for i := 0; i < b.N; i++ {
 		a1.Add(a2)
 	}

@@ -5,6 +5,8 @@ import (
 	types "gograd/tensor/types"
 )
 
+// set of primitive common tensor methods
+
 func makeTensor[T types.TensorType](dataPtr *[]T, shape types.Shape) *Tensor[T] {
 	var shapeProd types.Dim = 1
 	for _, dim := range shape {
@@ -37,7 +39,9 @@ func InitTensor[T types.TensorType](value []T, shape types.Shape) *Tensor[T] {
 }
 
 func InitEmptyTensor[T types.TensorType](shape ...types.Dim) *Tensor[T] {
-	return makeTensor[T](nil, shape)
+	tensor := makeTensor[T](nil, shape)
+	tensor.setFlag(SameValuesFlag)
+	return tensor
 }
 
 func AsType[OLDT types.TensorType, NEWT types.TensorType](tensor *Tensor[OLDT]) *Tensor[NEWT] {
@@ -57,6 +61,7 @@ func (tensor *Tensor[T]) Copy() *Tensor[T] {
 	newTensor := InitTensor(newData, tensor.shape)
 	newTensor.strides = tensor.strides
 	newTensor.dim_order = tensor.dim_order
+	newTensor.flags = tensor.flags
 	return newTensor
 }
 
@@ -99,18 +104,20 @@ func Range[T types.TensorType](limits ...int) *Tensor[T] {
 		tensor.data[i] = T(start)
 		start += step
 	}
+	tensor.clearFlag(SameValuesFlag)
 	return tensor
 }
 
 func (tensor *Tensor[T]) Fill(value T) *Tensor[T] {
+	tensor.setFlag(SameValuesFlag)
 	for i := range tensor.data {
 		tensor.data[i] = value
 	}
 	return tensor
 }
 
+// sets new value of the same shape
 func (tensor *Tensor[T]) SetData(value []T) *Tensor[T] {
-	// sets new value of the same shape
 	length := uint(len(value))
 	var prod uint = 1
 	for _, dim := range tensor.shape {
@@ -123,10 +130,12 @@ func (tensor *Tensor[T]) SetData(value []T) *Tensor[T] {
 		)
 	}
 	tensor.data = value
+	tensor.clearFlag(SameValuesFlag)
 	return tensor
 }
 
 func (tensor *Tensor[T]) Set(indexes []int, value T) {
+	tensor.clearFlag(SameValuesFlag)
 	flatIndex := tensor.getFlatIndex(indexes...)
 	tensor.data[flatIndex] = value
 }

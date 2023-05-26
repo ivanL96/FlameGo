@@ -72,9 +72,8 @@ func (tensor *Tensor[T]) Index(indices ...int) *Tensor[T] {
 	}
 
 	// not continuous data. i.e. transposed tensor
-
-	innerStrides := tensor.strides[n_indices:]
 	subShape := innerShape
+	innerStrides := tensor.strides[n_indices:]
 	// expand innerShape
 	// TODO this is extra step, better to do something within the loop
 	if len(innerShape) == 1 {
@@ -167,6 +166,9 @@ func (tensor *Tensor[T]) AsContinuous() *Tensor[T] {
 		return tensor
 	}
 	outTensor := InitEmptyTensor[T](tensor.shape...)
+	if tensor.hasFlag(SameValuesFlag) {
+		return outTensor.Fill(tensor.data[0])
+	}
 
 	iter := tensor.CreateIterator()
 	for iter.Iterate() {

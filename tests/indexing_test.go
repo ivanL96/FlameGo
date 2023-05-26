@@ -20,6 +20,12 @@ func TestIndex(t *testing.T) {
 	bsub := b.Index(-2)
 	assertEqualSlices(t, bsub.Data(), []int32{0, 1})
 	assertEqualSlices(t, bsub.Shape(), types.Shape{2})
+
+	c := tensor.Range[int32](100).Reshape(10, 10).Fill(7)
+	c.Set([]int{0, 0}, 1)
+	csub := c.Index(0)
+	// fmt.Println(csub.ToString())
+	assertEqualSlices(t, csub.Shape(), types.Shape{10})
 }
 
 func TestTransposeAndIndex(t *testing.T) {

@@ -28,6 +28,13 @@ func BaseBinElementwiseOp[T types.TensorType](
 		outTensor.Data()[0] = binOp(tensor_a.Data()[0], tensor_b.Data()[0])
 	} else if len(tensor_a.Data()) == len(tensor_b.Data()) {
 		// same shapes (N,M) & (N,M)
+
+		// if two tensors are filled with same values. For example [2,2,2] and [3,3,3]
+		if tensor_a.hasFlag(SameValuesFlag) && tensor_b.hasFlag(SameValuesFlag) {
+			outTensor.Fill(binOp(tensor_a.Data()[0], tensor_b.Data()[0]))
+			return outTensor
+		}
+
 		iter := tensor_a.CreateIterator()
 		for iter.Iterate() {
 			dataIndex := iter.Index()
@@ -35,15 +42,18 @@ func BaseBinElementwiseOp[T types.TensorType](
 			outTensor.Data()[dataIndex] = binOp(tensor_a.Get(idx...), tensor_b.Get(idx...))
 		}
 	} else if len(tensor_b.Data()) == 1 {
-		// one of them scalar
+		// tensor_b is scalar
 		// (N, M, ...) & (1,)
+		value := tensor_b.Data()[0]
 		for i, val := range tensor_a.Data() {
-			outTensor.Data()[i] = binOp(val, tensor_b.Data()[0])
+			outTensor.Data()[i] = binOp(val, value)
 		}
 	} else if len(tensor_a.Data()) == 1 {
+		// tensor_a is scalar
 		// (1,) & (N, M, ...)
+		value := tensor_a.Data()[0]
 		for i, val := range tensor_b.Data() {
-			outTensor.Data()[i] = binOp(val, tensor_a.Data()[0])
+			outTensor.Data()[i] = binOp(val, value)
 		}
 	} else {
 		// (A, B ...) & (N, M, ...)
@@ -168,15 +178,23 @@ func (tensor *Tensor[T]) MatMul(other_tensor *Tensor[T]) *Tensor[T] {
 	tensor_a := tensor.AsContinuous()
 	tensor_b := other_tensor.AsContinuous()
 
-	outShape := types.Shape{tensor.shape[0], other_tensor.shape[1]}
+	outShape := types.Shape{tensor_a.shape[0], tensor_b.shape[1]}
 	outTensor := InitEmptyTensor[T](outShape...)
-	for i := 0; i < int(tensor.shape[0]); i++ {
-		for j := 0; j < int(other_tensor.shape[1]); j++ {
-			for k := 0; k < int(tensor.shape[1]); k++ {
+	matMulSimple(tensor_a, tensor_b, outTensor)
+	return outTensor
+}
+
+func matMulSimple[T types.TensorType](tensor_a, tensor_b, outTensor *Tensor[T]) {
+	for i := 0; i < int(tensor_a.shape[0]); i++ {
+		for j := 0; j < int(tensor_b.shape[1]); j++ {
+			for k := 0; k < int(tensor_a.shape[1]); k++ {
 				idx := outTensor.getFlatIndex(i, j)
 				outTensor.data[idx] += tensor_a.Get(i, k) * tensor_b.Get(k, j)
 			}
 		}
 	}
-	return outTensor
 }
+
+// func matMulStrassen[T types.TensorType](tensor_a, tensor_b, outTensor *Tensor[T]) {
+
+// }

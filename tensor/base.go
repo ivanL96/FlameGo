@@ -11,7 +11,34 @@ type Tensor[T types.TensorType] struct {
 	shape     types.Shape
 	strides   []int
 	dim_order []int
+	flags     uint8
 }
+
+const (
+	SameValuesFlag uint8 = 1 << iota
+)
+
+func (tensor *Tensor[T]) setFlag(flag uint8) {
+	tensor.flags |= flag
+}
+func (tensor *Tensor[T]) clearFlag(flag uint8) {
+	tensor.flags &^= flag
+}
+func (tensor *Tensor[T]) toggleFlag(flag uint8) {
+	tensor.flags ^= flag
+}
+func (tensor *Tensor[T]) hasFlag(flag uint8) bool {
+	return tensor.flags&flag != 0
+}
+func (tensor *Tensor[T]) ResetFlags() {
+	tensor.flags = 0
+}
+
+// func (tensor *Tensor[T]) Flags() {
+// 	for i, flag := range []uint8{SameValuesFlag} {
+// 		tensor.hasFlag(flag)
+// 	}
+// }
 
 type TensorList[T types.TensorType] []*Tensor[T]
 

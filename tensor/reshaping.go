@@ -81,10 +81,14 @@ func (tensor *Tensor[T]) Broadcast(shape ...types.Dim) *Tensor[T] {
 	for _, dim := range broadcastedShape {
 		shapeProd *= dim
 	}
-
-	// repeat data
-	ntimes := int(shapeProd) / len(tensor.data)
 	outTensor := InitEmptyTensor[T](broadcastedShape...)
+	if tensor.hasFlag(SameValuesFlag) {
+		outTensor.Fill(tensor.data[0])
+		return outTensor
+	}
+
+	// repeat data to fill broadcasted dims
+	ntimes := int(shapeProd) / len(tensor.data)
 	iter := tensor.CreateIterator()
 	for iter.Iterate() {
 		idx := iter.Next()
@@ -95,6 +99,7 @@ func (tensor *Tensor[T]) Broadcast(shape ...types.Dim) *Tensor[T] {
 			outIdx[nDimBroadcasted]++
 		}
 	}
+	outTensor.clearFlag(SameValuesFlag)
 	return outTensor
 }
 
@@ -135,6 +140,9 @@ func (tensor *Tensor[T]) Reshape(newShape ...types.Dim) *Tensor[T] {
 
 func (tensor *Tensor[T]) Transpose(axes ...uint) *Tensor[T] {
 	n_dims := len(tensor.shape)
+	if n_dims == 1 {
+		return tensor.Copy()
+	}
 	if len(axes) == 0 {
 		axes = make([]uint, n_dims)
 		for i := range axes {
