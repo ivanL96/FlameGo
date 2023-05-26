@@ -28,7 +28,6 @@ func makeTensor[T types.TensorType](dataPtr *[]T, shape types.Shape) *Tensor[T] 
 		shape:     append(types.Shape(nil), shape...),
 		strides:   getStrides(shape),
 		data:      data,
-		dtype:     getTypeArray(data),
 		dim_order: dim_order,
 	}
 }

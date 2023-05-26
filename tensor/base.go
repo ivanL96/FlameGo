@@ -5,8 +5,8 @@ import (
 	"reflect"
 )
 
+// fieldalignment -fix gograd/tensor
 type Tensor[T types.TensorType] struct {
-	dtype     reflect.Type
 	data      []T
 	shape     types.Shape
 	strides   []int
@@ -35,7 +35,7 @@ func (tensor *Tensor[T]) Data() []T {
 }
 
 func (tensor *Tensor[T]) DType() reflect.Type {
-	return tensor.dtype
+	return getTypeArray(tensor.data)
 }
 
 // tensor helper flags

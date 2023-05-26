@@ -87,7 +87,7 @@ func (tensor *Tensor[T]) ToString() string {
 		"Tensor(%v, shape=%v, dtype=%v, order=%v, strides=%v)",
 		strData,
 		tensor.shape,
-		tensor.dtype.Kind().String(),
+		getTypeArray(tensor.data).Kind().String(),
 		tensor.dim_order,
 		tensor.strides,
 	)
