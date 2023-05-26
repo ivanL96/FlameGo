@@ -25,13 +25,13 @@ func BaseBinElementwiseOp[T types.TensorType](
 
 	if IsScalarLike(tensor_a.Shape()) && IsScalarLike(tensor_b.Shape()) {
 		// most trivial case (1,) & (1,)
-		outTensor.Data()[0] = binOp(tensor_a.Data()[0], tensor_b.Data()[0])
-	} else if len(tensor_a.Data()) == len(tensor_b.Data()) {
+		outTensor.data[0] = binOp(tensor_a.data[0], tensor_b.data[0])
+	} else if len(tensor_a.data) == len(tensor_b.data) {
 		// same shapes (N,M) & (N,M)
 
 		// if two tensors are filled with same values. For example [2,2,2] and [3,3,3]
 		if tensor_a.hasFlag(SameValuesFlag) && tensor_b.hasFlag(SameValuesFlag) {
-			outTensor.Fill(binOp(tensor_a.Data()[0], tensor_b.Data()[0]))
+			outTensor.Fill(binOp(tensor_a.data[0], tensor_b.data[0]))
 			return outTensor
 		}
 
@@ -39,21 +39,21 @@ func BaseBinElementwiseOp[T types.TensorType](
 		for iter.Iterate() {
 			dataIndex := iter.Index()
 			idx := iter.Next()
-			outTensor.Data()[dataIndex] = binOp(tensor_a.get_fast(idx...), tensor_b.get_fast(idx...))
+			outTensor.data[dataIndex] = binOp(tensor_a.get_fast(idx...), tensor_b.get_fast(idx...))
 		}
-	} else if len(tensor_b.Data()) == 1 {
+	} else if len(tensor_b.data) == 1 {
 		// tensor_b is scalar
 		// (N, M, ...) & (1,)
-		value := tensor_b.Data()[0]
-		for i, val := range tensor_a.Data() {
-			outTensor.Data()[i] = binOp(val, value)
+		value := tensor_b.data[0]
+		for i, val := range tensor_a.data {
+			outTensor.data[i] = binOp(val, value)
 		}
-	} else if len(tensor_a.Data()) == 1 {
+	} else if len(tensor_a.data) == 1 {
 		// tensor_a is scalar
 		// (1,) & (N, M, ...)
-		value := tensor_a.Data()[0]
-		for i, val := range tensor_b.Data() {
-			outTensor.Data()[i] = binOp(val, value)
+		value := tensor_a.data[0]
+		for i, val := range tensor_b.data {
+			outTensor.data[i] = binOp(val, value)
 		}
 	} else {
 		// (A, B ...) & (N, M, ...)
@@ -98,7 +98,7 @@ func BaseBinElementwiseOp[T types.TensorType](
 		for iter.Iterate() {
 			dataIndex := iter.Index()
 			idx := iter.Next()
-			outTensor.Data()[dataIndex] = binOp(
+			outTensor.data[dataIndex] = binOp(
 				broadcasted_tensor_a.Get(idx...), broadcasted_tensor_b.Get(idx...))
 		}
 	}
@@ -112,11 +112,11 @@ func unaryElementwiseRoutine[T types.TensorType](
 ) *Tensor[T] {
 	outTensor := PrepareOutTensor(out, tensor.Shape())
 	if IsScalarLike(tensor.Shape()) {
-		outTensor.Data()[0] = unaryOp(tensor.Data()[0])
+		outTensor.data[0] = unaryOp(tensor.data[0])
 		return outTensor
 	}
-	for i, val := range tensor.Data() {
-		outTensor.Data()[i] = unaryOp(val)
+	for i, val := range tensor.data {
+		outTensor.data[i] = unaryOp(val)
 	}
 	return outTensor
 }

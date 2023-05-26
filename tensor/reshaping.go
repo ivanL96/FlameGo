@@ -83,6 +83,7 @@ func (tensor *Tensor[T]) Broadcast(shape ...types.Dim) *Tensor[T] {
 	}
 	outTensor := InitEmptyTensor[T](broadcastedShape...)
 	if tensor.hasFlag(SameValuesFlag) {
+		outTensor.setFlag(SameValuesFlag)
 		outTensor.Fill(tensor.data[0])
 		return outTensor
 	}

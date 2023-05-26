@@ -54,7 +54,9 @@ func (tensor *Tensor[T]) Order() []int {
 	return tensor.dim_order
 }
 
+// accessing internal data struct will automatically disable all optimization flags for this Tensor.
 func (tensor *Tensor[T]) Data() []T {
+	tensor.ResetFlags()
 	return tensor.data
 }
 

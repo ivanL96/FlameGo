@@ -39,9 +39,7 @@ func InitTensor[T types.TensorType](value []T, shape types.Shape) *Tensor[T] {
 }
 
 func InitEmptyTensor[T types.TensorType](shape ...types.Dim) *Tensor[T] {
-	tensor := makeTensor[T](nil, shape)
-	tensor.setFlag(SameValuesFlag)
-	return tensor
+	return makeTensor[T](nil, shape)
 }
 
 func AsType[OLDT types.TensorType, NEWT types.TensorType](tensor *Tensor[OLDT]) *Tensor[NEWT] {
@@ -104,7 +102,6 @@ func Range[T types.TensorType](limits ...int) *Tensor[T] {
 		tensor.data[i] = T(start)
 		start += step
 	}
-	tensor.clearFlag(SameValuesFlag)
 	return tensor
 }
 
