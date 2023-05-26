@@ -6,12 +6,15 @@ import (
 )
 
 func (tensor *Tensor[T]) getFlatIndex(indices ...int) int {
-	if len(indices) != len(tensor.shape) {
-		panic(fmt.Sprintf(
-			"Incorrect number of indices. Must be %v got %v", len(tensor.shape), len(indices)))
-	}
 	flatIndex := 0
 	for i, ind := range indices {
+		// resolve negative indexes
+		if ind < 0 {
+			ind = int(tensor.shape[i]) + ind
+		}
+		if ind < 0 {
+			panic(fmt.Sprintf("Index %v is out of bounds", ind))
+		}
 		// bound check
 		if ind >= int(tensor.shape[i]) {
 			panic(fmt.Sprintf("Index %v is out of bounds for dim %v", ind, tensor.shape[i]))
@@ -22,6 +25,10 @@ func (tensor *Tensor[T]) getFlatIndex(indices ...int) int {
 }
 
 func (tensor *Tensor[T]) Get(indices ...int) T {
+	if len(indices) != len(tensor.shape) {
+		panic(fmt.Sprintf(
+			"Incorrect number of indices. Must be %v got %v", len(tensor.shape), len(indices)))
+	}
 	flatIndex := tensor.getFlatIndex(indices...)
 	return tensor.data[flatIndex]
 }
@@ -38,17 +45,8 @@ func (tensor *Tensor[T]) Index(indices ...int) *Tensor[T] {
 		panic("Too many indices")
 	}
 
-	flatIndex := 0 // index of the first elem in the sub tensor
-	for i, ind := range indices {
-		// resolve negative indexes
-		if ind < 0 {
-			ind = int(tensor.shape[i]) + ind
-		}
-		if ind < 0 {
-			panic(fmt.Sprintf("Index %v is out of bounds", ind))
-		}
-		flatIndex += tensor.strides[i] * ind
-	}
+	// index of the first elem in the sub tensor
+	flatIndex := tensor.getFlatIndex(indices...)
 	if n_indices == n_dims {
 		return InitTensor([]T{tensor.data[flatIndex]}, types.Shape{1})
 	}
@@ -78,7 +76,7 @@ func (tensor *Tensor[T]) Index(indices ...int) *Tensor[T] {
 	innerStrides := tensor.strides[n_indices:]
 	subShape := innerShape
 	// expand innerShape
-	// TODO this is extra step, better to do something with the loop
+	// TODO this is extra step, better to do something within the loop
 	if len(innerShape) == 1 {
 		innerShape = types.Shape{1, innerShape[0]}
 		innerStrides = []int{innerStrides[0], innerStrides[0]}
@@ -105,6 +103,7 @@ func (tensor *Tensor[T]) Index(indices ...int) *Tensor[T] {
 	return InitTensor(subData, subShape)
 }
 
+// TODO GetAxis not finished
 func (tensor *Tensor[T]) GetAxis(axis uint, shift uint) *Tensor[T] {
 	stride := tensor.strides[axis]
 	index := int(shift)
@@ -126,7 +125,8 @@ type TensorIterator[T types.TensorType] struct {
 // iterates over tensor data and gives N-dim index for each element
 func (tensor *Tensor[T]) CreateIterator() *TensorIterator[T] {
 	ti := TensorIterator[T]{
-		tensor:         tensor,
+		tensor: tensor,
+		// currentIndexes will not be copied for each Next() call.
 		currentIndexes: make([]int, len(tensor.shape)),
 		index:          0,
 	}
@@ -138,7 +138,7 @@ func (ti *TensorIterator[T]) Index() int {
 }
 
 func (ti *TensorIterator[T]) Iterate() bool {
-	return ti.index != len(ti.tensor.Data())
+	return ti.index != len(ti.tensor.data)
 }
 
 func (ti *TensorIterator[T]) Next() []int {
@@ -147,19 +147,21 @@ func (ti *TensorIterator[T]) Next() []int {
 		return ti.currentIndexes
 	}
 
-	indices := ti.currentIndexes
-	for j := len(indices) - 1; j >= 0; j-- {
-		indices[j]++
-		if indices[j] < int(ti.tensor.shape[j]) {
+	indexes := ti.currentIndexes
+	for j := len(indexes) - 1; j >= 0; j-- {
+		indexes[j]++
+		if indexes[j] < int(ti.tensor.shape[j]) {
 			break
 		}
-		indices[j] = 0
+		indexes[j] = 0
 	}
-	ti.currentIndexes = indices
+	ti.currentIndexes = indexes
 	ti.index++
 	return ti.currentIndexes
 }
 
+// reorders data layout to continuous format.
+// it is useful for optimizing indexing/iterating for transposed & other non-continuous tensors
 func (tensor *Tensor[T]) AsContinuous() *Tensor[T] {
 	if isDimOrderInit(tensor.dim_order) {
 		return tensor
