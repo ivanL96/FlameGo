@@ -76,9 +76,9 @@ func addLeftPadding[T types.TensorType](slice []T, paddingSize, paddingVal int) 
 	return expandedSlice
 }
 
-func fill_data_unroll4[T types.TensorType](tensor_data *[]T, value T) {
-	data := *tensor_data
-
+// sets specific value to []T buffer using loop unrolling opt
+func fill_data_unroll4[T types.TensorType](buffer *[]T, value T) {
+	data := *buffer
 	for i := 0; i < len(data); i += 4 {
 		bb := (*[4]T)(unsafe.Pointer(&data[i]))
 		bb[0] = value

@@ -38,6 +38,7 @@ func InitTensor[T types.TensorType](value []T, shape types.Shape) *Tensor[T] {
 	return makeTensor(&value, shape)
 }
 
+// inits an empty tensor with specific shape
 func InitEmptyTensor[T types.TensorType](shape ...types.Dim) *Tensor[T] {
 	return makeTensor[T](nil, shape)
 }

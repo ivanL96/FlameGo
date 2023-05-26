@@ -23,6 +23,9 @@ func IsScalarLike(shape types.Shape) bool {
 }
 
 func getStrides(shape types.Shape) []int {
+	if len(shape) == 1 {
+		return []int{1}
+	}
 	strides := make([]int, len(shape))
 	stride := 1
 	for i := len(shape) - 1; i >= 0; i-- {
@@ -33,6 +36,9 @@ func getStrides(shape types.Shape) []int {
 }
 
 func initDimOrder(shape types.Shape) []uint16 {
+	if len(shape) == 1 {
+		return []uint16{0}
+	}
 	dimOrder := make([]uint16, len(shape))
 	for i := range dimOrder {
 		dimOrder[i] = uint16(i)
@@ -64,7 +70,7 @@ func isIntKind(tensorDType reflect.Type) bool {
 
 func PrepareOutTensor[T types.TensorType](out *Tensor[T], shape types.Shape) *Tensor[T] {
 	if out == nil {
-		out = InitEmptyTensor[T](shape...)
+		return InitEmptyTensor[T](shape...)
 	}
 	return out
 }
