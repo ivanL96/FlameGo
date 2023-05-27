@@ -117,3 +117,30 @@ func SplitTensorImpl[T types.TensorType](
 	}
 	return
 }
+
+// unites subtensors splitted by SplitTensor
+// assumed all tensors are square and have same shapes
+func UniteTensors[T types.TensorType](
+	sub_dim,
+	sub_stride int,
+	a_data,
+	b_data,
+	c_data,
+	d_data,
+	out_data []T,
+) {
+	outDim := sub_dim * 2
+	out_stride := sub_stride * 2
+
+	for i := 0; i < int(outDim); i++ {
+		start, end := i*out_stride, out_stride*(i+1)
+		if i < sub_dim {
+			copy(out_data[start:start+sub_stride], a_data[i*sub_stride:(i+1)*sub_stride])
+			copy(out_data[start+sub_stride:end], b_data[i*sub_stride:(i+1)*sub_stride])
+		} else {
+			j := i - sub_dim
+			copy(out_data[start:start+sub_stride], c_data[j*sub_stride:(j+1)*sub_stride])
+			copy(out_data[start+sub_stride:end], d_data[j*sub_stride:(j+1)*sub_stride])
+		}
+	}
+}

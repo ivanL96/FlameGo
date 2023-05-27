@@ -9,6 +9,7 @@ import (
 type BinaryScalarOp[T types.TensorType] func(T, T) T
 type UnaryScalarOp[T types.TensorType] func(T) T
 
+// general use Binary operator
 func BaseBinElementwiseOp[T types.TensorType](
 	tensor_a,
 	tensor_b *Tensor[T],
@@ -24,9 +25,9 @@ func BaseBinElementwiseOp[T types.TensorType](
 	}
 
 	// tensors should have equal shapes or at least one of them should be scalar-like
-	if !AreBroadcastable(tensor_a.Shape(), tensor_b.Shape()) {
+	if !AreBroadcastable(tensor_a.shape, tensor_b.shape) {
 		panic(
-			fmt.Sprintf("Shapes: %x, %x are not broadcastable", tensor_a.Shape(), tensor_b.Shape()),
+			fmt.Sprintf("Shapes: %x, %x are not broadcastable", tensor_a.shape, tensor_b.shape),
 		)
 	}
 	if len(tensor_a.data) == len(tensor_b.data) {
@@ -161,11 +162,11 @@ func (tensor *Tensor[T]) MatMul(other_tensor *Tensor[T]) *Tensor[T] {
 	adim0, bdim1 := a.shape[0], b.shape[1]
 	outTensor := InitEmptyTensor[T](adim0, bdim1)
 	// if adim0 == bdim1 { // squared
-	ops.MatMulSquareNaiveImpl(a.data, b.data, a.shape, a.strides, outTensor.data)
+	// 	ops.MatMulSquareNaiveImpl(a.data, b.data, a.shape, a.strides, outTensor.data)
 	// } else {
-	// ops.MatMulNaiveImpl(a.data, b.data, a.shape, b.shape,
-	// 	a.strides, b.strides,
-	// 	outTensor.data, outTensor.strides)
+	ops.MatMulNaiveImpl(a.data, b.data, a.shape, b.shape,
+		a.strides, b.strides,
+		outTensor.data, outTensor.strides)
 	// }
 	return outTensor
 }
@@ -188,6 +189,9 @@ func SplitTensor[T types.TensorType](
 	return
 }
 
-// func matMulStrassen[T types.TensorType](tensor_a, tensor_b, outTensor *Tensor[T]) {
+func UniteTensors[T types.TensorType](a, b, c, d, out *Tensor[T]) *Tensor[T] {
+	out_tensor := PrepareOutTensor(out, types.Shape{a.shape[0] * 2, a.shape[0] * 2})
+	ops.UniteTensors(int(a.shape[0]), a.strides[0], a.data, b.data, c.data, d.data, out_tensor.data)
+	return out_tensor
+}
 
-// }
