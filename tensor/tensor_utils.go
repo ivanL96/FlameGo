@@ -127,9 +127,9 @@ func SplitTensor2[T types.TensorType](
 		panic("Tensor must have (N,N) shape")
 	}
 	// only 2-dim, squared matrices
-	rows, cols := tensor.shape[0], tensor.shape[1]
-	row2, col2 := int(rows/2), int(cols/2)
-	sub_tensor_shape := types.Shape{types.Dim(row2), types.Dim(col2)}
+	rows := tensor.shape[0]
+	row2 := int(rows / 2)
+	sub_tensor_shape := types.Shape{types.Dim(row2), types.Dim(row2)}
 	a = PrepareOutTensor(outA, sub_tensor_shape)
 	b = PrepareOutTensor(outB, sub_tensor_shape)
 	c = PrepareOutTensor(outC, sub_tensor_shape)
@@ -137,27 +137,27 @@ func SplitTensor2[T types.TensorType](
 	// assume continuous data
 	aidx, bidx, cidx, didx := 0, 0, 0, 0
 	for i := 0; i < int(rows)*2; i++ {
-		row := tensor.data[col2*i : col2*(i+1)]
-		if i < row2 {
+		row := tensor.data[row2*i : row2*(i+1)]
+		if i%2 == 0 && i < int(rows) {
 			for j, v := range row {
 				a.data[j+aidx] = v
 			}
-			aidx += col2
-		} else if i >= row2 && i < int(rows) {
+			aidx += row2
+		} else if i%2 == 1 && i < int(rows) {
 			for j, v := range row {
 				b.data[j+bidx] = v
 			}
-			bidx += col2
-		} else if i >= int(rows) && i < int(rows)+row2 {
+			bidx += row2
+		} else if i%2 == 0 && i >= int(rows) {
 			for j, v := range row {
 				c.data[j+cidx] = v
 			}
-			cidx += col2
-		} else if i >= int(rows)+row2 {
+			cidx += row2
+		} else if i%2 == 1 && i >= int(rows) {
 			for j, v := range row {
 				d.data[j+didx] = v
 			}
-			didx += col2
+			didx += row2
 		}
 	}
 	return
