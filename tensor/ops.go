@@ -158,10 +158,15 @@ func (tensor *Tensor[T]) MatMul(other_tensor *Tensor[T]) *Tensor[T] {
 	}
 	a := tensor.AsContinuous(nil)
 	b := other_tensor.AsContinuous(nil)
-	outTensor := InitEmptyTensor[T](a.Shape()[0], b.Shape()[1])
-	ops.MatMulImplSimple(a.data, b.data, a.shape, b.shape,
-		a.strides, b.strides,
-		outTensor.data, outTensor.strides)
+	adim0, bdim1 := a.shape[0], b.shape[1]
+	outTensor := InitEmptyTensor[T](adim0, bdim1)
+	// if adim0 == bdim1 { // squared
+	ops.MatMulSquareNaiveImpl(a.data, b.data, a.shape, a.strides, outTensor.data)
+	// } else {
+	// ops.MatMulNaiveImpl(a.data, b.data, a.shape, b.shape,
+	// 	a.strides, b.strides,
+	// 	outTensor.data, outTensor.strides)
+	// }
 	return outTensor
 }
 
