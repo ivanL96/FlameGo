@@ -4,15 +4,7 @@ import (
 	"gograd/tensor/types"
 )
 
-// copy of the same method from indexing.go
-func get_flat_idx_fast(strides []int, indices ...int) int {
-	flatIndex := 0
-	for i, ind := range indices {
-		flatIndex += strides[i] * ind
-	}
-	return flatIndex
-}
-
+// Naive implementation of matrix multiplication with time complexity n^3
 // input A and B, both n by n matrices
 // initialize C to be an n by n matrix of all zeros
 // for i from 1 to n:
@@ -22,7 +14,7 @@ func get_flat_idx_fast(strides []int, indices ...int) int {
 //	        C[i][j] = C[i][j] + A[i][k]*B[k][j]
 //
 // output C (as A*B)
-func MatMulImplSimple[T types.TensorType](
+func MatMulNaiveImpl[T types.TensorType](
 	a_data,
 	b_data []T,
 	a_shape,
@@ -35,16 +27,54 @@ func MatMulImplSimple[T types.TensorType](
 	a_dim0 := int(a_shape[0])
 	a_dim1 := int(a_shape[1])
 	b_dim1 := int(b_shape[1])
+	out_stride0 := out_strides[0]
+	a_stride0 := a_strides[0]
+	b_stride0 := b_strides[0]
 	for i := 0; i < a_dim0; i++ {
+		a_stride0_i := a_stride0 * i
+		out_stride0_i := out_stride0 * i
+		a_idx := a_stride0_i + 1
 		for j := 0; j < b_dim1; j++ {
-			for k := 0; k < a_dim1; k++ {
-				out_idx := get_flat_idx_fast(out_strides, i, j)
-				// out_strides[0]
-				a_idx := get_flat_idx_fast(a_strides, i, k)
-				b_idx := get_flat_idx_fast(b_strides, k, j)
-				av := a_data[a_idx]
-				bv := b_data[b_idx]
-				out_data[out_idx] += av * bv
+			// k=0
+			out_idx := out_stride0_i + j
+			out_data[out_idx] += a_data[a_stride0_i] * b_data[j]
+			// k=1
+			b_idx := b_stride0 + j
+			out_data[out_idx] += a_data[a_idx] * b_data[b_idx]
+			for k := 2; k < a_dim1; k++ {
+				a_idx := a_stride0_i + k
+				b_idx := b_stride0*k + j
+				out_data[out_idx] += a_data[a_idx] * b_data[b_idx]
+			}
+		}
+	}
+}
+
+// matMul for square matrices with the same shape: (N,N)
+func MatMulSquareNaiveImpl[T types.TensorType](
+	a_data,
+	b_data []T,
+	a_shape types.Shape,
+	a_strides []int,
+	out_data []T,
+) {
+	a_dim0 := int(a_shape[0])
+	a_stride0 := a_strides[0]
+	for i := 0; i < a_dim0; i++ {
+		a_stride0_i := a_stride0 * i
+		out_stride0_i := a_stride0 * i
+		a_idx := a_stride0_i + 1
+		for j := 0; j < a_dim0; j++ {
+			// k=0
+			out_idx := out_stride0_i + j
+			out_data[out_idx] += a_data[a_stride0_i] * b_data[j]
+			//k=1
+			b_idx := a_stride0 + j
+			out_data[out_idx] += a_data[a_idx] * b_data[b_idx]
+			for k := 2; k < a_dim0; k++ {
+				a_idx := a_stride0_i + k
+				b_idx := a_stride0*k + j
+				out_data[out_idx] += a_data[a_idx] * b_data[b_idx]
 			}
 		}
 	}
