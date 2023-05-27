@@ -93,10 +93,10 @@ func (tensor *Tensor[T]) Broadcast(shape ...types.Dim) *Tensor[T] {
 	iter := tensor.CreateIterator()
 	for iter.Iterate() {
 		idx := iter.Next()
-		value := tensor.get_fast(idx...)
+		value := tensor.Get_fast(idx...)
 		outIdx := append([]int(nil), idx...)
 		for i := 0; i < ntimes; i++ {
-			outTensor.data[outTensor.get_flat_idx_fast(outIdx...)] = value
+			outTensor.data[get_flat_idx_fast(outTensor.strides, outIdx...)] = value
 			outIdx[nDimBroadcasted]++
 		}
 	}

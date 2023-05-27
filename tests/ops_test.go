@@ -29,7 +29,7 @@ func TestAdd(t *testing.T) {
 	assertEqualSlices(t, ef.Shape(), types.Shape{1})
 
 	e1 := tensor.Range[int32](10).Reshape(5, 2).Transpose()
-	e2 := tensor.Range[int32](10).Reshape(5, 2).Transpose().AsContinuous()
+	e2 := tensor.Range[int32](10).Reshape(5, 2).Transpose().AsContinuous(nil)
 	f1 := tensor.Range[int32](10).Reshape(2, 5)
 	ef1 := e1.Add(f1, nil)
 	ef2 := e2.Add(f1, nil)
@@ -39,7 +39,7 @@ func TestAdd(t *testing.T) {
 
 	g1 := tensor.Range[int32](5).Reshape(5, 1).Transpose()
 	g2 := tensor.Range[int32](15).Reshape(5, 3).Transpose()
-	g22 := tensor.Range[int32](15).Reshape(5, 3).Transpose().AsContinuous()
+	g22 := tensor.Range[int32](15).Reshape(5, 3).Transpose().AsContinuous(nil)
 	g3 := g1.Add(g2, nil)
 	g4 := g1.Add(g22, nil)
 	assertEqualSlices(t, g3.Data(), g4.Data())

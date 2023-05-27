@@ -25,14 +25,14 @@ func (tensor *Tensor[T]) getFlatIndex(indices ...int) int {
 }
 
 // faster Get() without bounds checking. Does not support negative indexing
-func (tensor *Tensor[T]) get_fast(indices ...int) T {
-	return tensor.data[tensor.get_flat_idx_fast(indices...)]
+func (tensor *Tensor[T]) Get_fast(indices ...int) T {
+	return tensor.data[get_flat_idx_fast(tensor.strides, indices...)]
 }
 
-func (tensor *Tensor[T]) get_flat_idx_fast(indices ...int) int {
+func get_flat_idx_fast(strides []int, indices ...int) int {
 	flatIndex := 0
 	for i, ind := range indices {
-		flatIndex += tensor.strides[i] * ind
+		flatIndex += strides[i] * ind
 	}
 	return flatIndex
 }
@@ -119,71 +119,22 @@ func (tensor *Tensor[T]) GetAxis(axis uint, shift uint) *Tensor[T] {
 	return tensor
 }
 
-// tensor iterator
-
-type TensorIterator[T types.TensorType] struct {
-	shape          types.Shape
-	currentIndexes []int
-	dataLen        int
-	index          int
-}
-
-// iterates over tensor data and gives N-dim index for each element
-func (tensor *Tensor[T]) CreateIterator() *TensorIterator[T] {
-	ti := TensorIterator[T]{
-		dataLen: len(tensor.data),
-		shape:   tensor.shape,
-		// currentIndexes will not be copied for each Next() call.
-		currentIndexes: make([]int, len(tensor.shape)),
-		index:          0,
-	}
-	return &ti
-}
-
-func (ti *TensorIterator[T]) Index() int {
-	return ti.index
-}
-
-func (ti *TensorIterator[T]) Iterate() bool {
-	return ti.index != ti.dataLen
-}
-
-func (ti *TensorIterator[T]) Next() []int {
-	if ti.index == 0 {
-		ti.index++
-		return ti.currentIndexes
-	}
-
-	indexes := ti.currentIndexes
-	shape := ti.shape
-	for j := len(indexes) - 1; j >= 0; j-- {
-		indexes[j]++
-		if indexes[j] < int(shape[j]) {
-			break
-		}
-		indexes[j] = 0
-	}
-	ti.currentIndexes = indexes
-	ti.index++
-	return ti.currentIndexes
-}
-
 // reorders data layout to continuous format.
 // it is useful for optimizing indexing/iterating for transposed & other non-continuous tensors
-func (tensor *Tensor[T]) AsContinuous() *Tensor[T] {
+func (tensor *Tensor[T]) AsContinuous(outTensor *Tensor[T]) *Tensor[T] {
 	if isDimOrderInit(tensor.dim_order) {
 		return tensor
 	}
-	outTensor := InitEmptyTensor[T](tensor.shape...)
 	if tensor.hasFlag(SameValuesFlag) {
-		return outTensor.Fill(tensor.data[0])
+		return tensor
 	}
 
+	outTensor = PrepareOutTensor(outTensor, tensor.shape)
 	iter := tensor.CreateIterator()
 	for iter.Iterate() {
 		dataIndex := iter.Index()
 		valueIndexes := iter.Next()
-		val := tensor.get_fast(valueIndexes...)
+		val := tensor.Get_fast(valueIndexes...)
 		outTensor.data[dataIndex] = val
 	}
 	return outTensor

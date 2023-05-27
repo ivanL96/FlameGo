@@ -17,9 +17,9 @@ func BenchmarkAdd(b *testing.B) {
 
 // init/range data
 // 26	  42.891.900 ns/op	 4.314.271 B/op	       7 allocs/op
-// get_fast/range data
+// Get_fast/range data
 // 44     23.705.093 ns/op   4.188.202 B/op          7 allocs/op
-// out Tensor prepared/get_fast/range data
+// out Tensor prepared/Get_fast/range data
 // 50     23.525.360 ns/op   160.285 B/op          1 allocs/op
 // Fill() unrolled 4
 // 654    1.885.201 ns/op    4.018.343 B/op          6 allocs/op
@@ -54,18 +54,6 @@ func BenchmarkSigmoid(b *testing.B) {
 	a1 := tensor.RandomFloat32Tensor(types.Shape{100, 100}, 0)
 	for i := 0; i < b.N; i++ {
 		a1.Sigmoid(nil)
-	}
-}
-
-// BenchmarkMatMul-8   	   26259	     43096 ns/op	     616 B/op	       7 allocs/op
-// BenchmarkMatMul-8   	       1	69653349600 ns/op	12020000 B/op	      31 allocs/op
-// go matmul 69.653.349.600
-// numpy matmul 4.910.045.600
-func BenchmarkMatMul(b *testing.B) {
-	a1 := tensor.Range[int32](1000*1000).Reshape(1000, 1000)
-	b1 := tensor.Range[int32](1000*1000).Reshape(1000, 1000)
-	for i := 0; i < b.N; i++ {
-		a1.MatMul(b1)
 	}
 }
 

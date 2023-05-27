@@ -14,3 +14,14 @@ type TensorType interface {
 
 type Dim uint32
 type Shape []Dim
+
+type ITensor[T TensorType] interface {
+	Shape() Shape
+	Strides() []int
+	Data() []T
+	Order() []uint16
+
+	// indexing ops
+	Get_fast(indices ...int) T
+	Get(indices ...int) T
+}

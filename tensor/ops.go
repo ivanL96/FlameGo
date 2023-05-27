@@ -2,6 +2,7 @@ package tensor
 
 import (
 	"fmt"
+	ops "gograd/tensor/ops"
 	types "gograd/tensor/types"
 	"math"
 )
@@ -43,7 +44,7 @@ func BaseBinElementwiseOp[T types.TensorType](
 		for iter.Iterate() {
 			dataIndex := iter.Index()
 			idx := iter.Next()
-			outTensor.data[dataIndex] = binOp(tensor_a.get_fast(idx...), tensor_b.get_fast(idx...))
+			outTensor.data[dataIndex] = binOp(tensor_a.Get_fast(idx...), tensor_b.Get_fast(idx...))
 		}
 	} else if len(tensor_b.data) == 1 {
 		// tensor_b is scalar
@@ -175,24 +176,29 @@ func (tensor *Tensor[T]) MatMul(other_tensor *Tensor[T]) *Tensor[T] {
 			"Tensors inner shapes are different. %v != %v", tensor.shape[1], other_tensor.shape[0],
 		))
 	}
-	tensor_a := tensor.AsContinuous()
-	tensor_b := other_tensor.AsContinuous()
-
-	outShape := types.Shape{tensor_a.shape[0], tensor_b.shape[1]}
-	outTensor := InitEmptyTensor[T](outShape...)
-	matMulSimple(tensor_a, tensor_b, outTensor)
-	return outTensor
+	var a types.ITensor[T] = tensor.AsContinuous(nil)
+	var b types.ITensor[T] = other_tensor.AsContinuous(nil)
+	var outTensor types.ITensor[T] = InitEmptyTensor[T](a.Shape()[0], b.Shape()[1])
+	ops.MatMulImplSimple(a, b, outTensor)
+	return outTensor.(*Tensor[T])
 }
 
-func matMulSimple[T types.TensorType](tensor_a, tensor_b, outTensor *Tensor[T]) {
-	for i := 0; i < int(tensor_a.shape[0]); i++ {
-		for j := 0; j < int(tensor_b.shape[1]); j++ {
-			for k := 0; k < int(tensor_a.shape[1]); k++ {
-				idx := outTensor.getFlatIndex(i, j)
-				outTensor.data[idx] += tensor_a.Get(i, k) * tensor_b.Get(k, j)
-			}
-		}
+// matmul ops
+func SplitTensor[T types.TensorType](
+	tensor, outA, outB, outC, outD *Tensor[T],
+) (a, b, c, d *Tensor[T]) {
+	if len(tensor.shape) != 2 {
+		panic("Tensor must have (N,N) shape")
 	}
+	rows := int(tensor.shape[0])
+	row2 := rows / 2
+	sub_tensor_shape := types.Shape{types.Dim(row2), types.Dim(row2)}
+	a = PrepareOutTensor(outA, sub_tensor_shape)
+	b = PrepareOutTensor(outB, sub_tensor_shape)
+	c = PrepareOutTensor(outC, sub_tensor_shape)
+	d = PrepareOutTensor(outD, sub_tensor_shape)
+	ops.SplitTensorImpl(tensor.data, rows, a.data, b.data, c.data, d.data)
+	return
 }
 
 // func matMulStrassen[T types.TensorType](tensor_a, tensor_b, outTensor *Tensor[T]) {

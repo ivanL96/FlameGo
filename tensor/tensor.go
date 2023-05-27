@@ -2,6 +2,7 @@ package tensor
 
 import (
 	"fmt"
+	"gograd/tensor/iter"
 	types "gograd/tensor/types"
 )
 
@@ -79,10 +80,10 @@ func (tensor *Tensor[T]) IsEqual(otherTensor *Tensor[T]) bool {
 		return false
 	}
 
-	iter := tensor.CreateIterator()
-	for iter.Iterate() {
-		idx := iter.Next()
-		if tensor.get_fast(idx...) != otherTensor.get_fast(idx...) {
+	it := tensor.CreateIterator()
+	for it.Iterate() {
+		idx := it.Next()
+		if tensor.Get_fast(idx...) != otherTensor.Get_fast(idx...) {
 			return false
 		}
 	}
@@ -153,4 +154,8 @@ func (tensor *Tensor[T]) Set(indexes []int, value T) {
 	tensor.clearFlag(SameValuesFlag)
 	flatIndex := tensor.getFlatIndex(indexes...)
 	tensor.data[flatIndex] = value
+}
+
+func (tensor *Tensor[T]) CreateIterator() *iter.TensorIterator[T] {
+	return iter.CreateIterator[T](tensor.data, tensor.shape)
 }
