@@ -42,9 +42,7 @@ func MatMulNaiveImpl[T types.TensorType](
 			b_idx := b_stride0 + j
 			out_data[out_idx] += a_data[a_idx] * b_data[b_idx]
 			for k := 2; k < a_dim1; k++ {
-				a_idx := a_stride0_i + k
-				b_idx := b_stride0*k + j
-				out_data[out_idx] += a_data[a_idx] * b_data[b_idx]
+				out_data[out_idx] += a_data[a_stride0_i+k] * b_data[b_stride0*k+j]
 			}
 		}
 	}
@@ -72,9 +70,7 @@ func MatMulSquareNaiveImpl[T types.TensorType](
 			b_idx := a_stride0 + j
 			out_data[out_idx] += a_data[a_idx] * b_data[b_idx]
 			for k := 2; k < a_dim0; k++ {
-				a_idx := a_stride0_i + k
-				b_idx := a_stride0*k + j
-				out_data[out_idx] += a_data[a_idx] * b_data[b_idx]
+				out_data[out_idx] += a_data[a_stride0_i+k] * b_data[a_stride0*k+j]
 			}
 		}
 	}
