@@ -23,7 +23,7 @@ func TestBroadcast(t *testing.T) {
 
 func TestFlatten(t *testing.T) {
 	super_nested_arr := tensor.InitTensor([]int32{1, 2, 3, 4, 5, 6, 7, 8, 9}, types.Shape{3, 1, 3, 1, 1})
-	assertEqualSlices(t, super_nested_arr.Flatten().Shape(), types.Shape{9})
+	assertEqualSlices(t, super_nested_arr.Flatten(nil).Shape(), types.Shape{9})
 }
 
 func TestReshape(t *testing.T) {
