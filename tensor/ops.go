@@ -4,7 +4,6 @@ import (
 	"fmt"
 	ops "gograd/tensor/ops"
 	types "gograd/tensor/types"
-	"math"
 )
 
 type BinaryScalarOp[T types.TensorType] func(T, T) T
@@ -123,49 +122,30 @@ func unaryElementwiseRoutine[T types.TensorType](
 }
 
 // binary ops
-func _add[T types.TensorType](a, b T) T {
-	return a + b
-}
-
 func (tensor *Tensor[T]) Add(other_tensor, out *Tensor[T]) *Tensor[T] {
-	return BaseBinElementwiseOp(tensor, other_tensor, _add[T], out)
+	return BaseBinElementwiseOp(tensor, other_tensor, ops.Add[T], out)
 }
 
-func _sub[T types.TensorType](a, b T) T {
-	return a - b
-}
 func (tensor *Tensor[T]) Sub(other_tensor, out *Tensor[T]) *Tensor[T] {
-	return BaseBinElementwiseOp(tensor, other_tensor, _sub[T], out)
+	return BaseBinElementwiseOp(tensor, other_tensor, ops.Sub[T], out)
 }
 
-func _mul[T types.TensorType](a, b T) T {
-	return a * b
-}
 func (tensor *Tensor[T]) Mul(other_tensor, out *Tensor[T]) *Tensor[T] {
-	return BaseBinElementwiseOp(tensor, other_tensor, _mul[T], out)
+	return BaseBinElementwiseOp(tensor, other_tensor, ops.Mul[T], out)
 }
 
-func _div[T types.TensorType](a, b T) T {
-	return a / b
-}
 func (tensor *Tensor[T]) Div(other_tensor, out *Tensor[T]) *Tensor[T] {
-	return BaseBinElementwiseOp(tensor, other_tensor, _div[T], out)
+	return BaseBinElementwiseOp(tensor, other_tensor, ops.Div[T], out)
 }
 
-func _sigmoid[T types.TensorType](a T) T {
-	return T(1. / (1. + math.Pow(math.E, float64(-a))))
+// unary
+func (tensor *Tensor[T]) Neg(out *Tensor[T]) *Tensor[T] {
+	return unaryElementwiseRoutine(tensor, ops.Neg[T], out)
 }
+
 func (tensor *Tensor[T]) Sigmoid(out *Tensor[T]) *Tensor[T] {
-	return unaryElementwiseRoutine(tensor, _sigmoid[T], out)
+	return unaryElementwiseRoutine(tensor, ops.Sigmoid[T], out)
 }
-
-// input A and B, both n by n matrices
-// initialize C to be an n by n matrix of all zeros
-// for i from 1 to n:
-//     for j from 1 to n:
-//         for k from 1 to n:
-//             C[i][j] = C[i][j] + A[i][k]*B[k][j]
-// output C (as A*B)
 
 func (tensor *Tensor[T]) MatMul(other_tensor *Tensor[T]) *Tensor[T] {
 	if len(tensor.shape) != 2 || len(other_tensor.shape) != 2 {
@@ -176,11 +156,13 @@ func (tensor *Tensor[T]) MatMul(other_tensor *Tensor[T]) *Tensor[T] {
 			"Tensors inner shapes are different. %v != %v", tensor.shape[1], other_tensor.shape[0],
 		))
 	}
-	var a types.ITensor[T] = tensor.AsContinuous(nil)
-	var b types.ITensor[T] = other_tensor.AsContinuous(nil)
-	var outTensor types.ITensor[T] = InitEmptyTensor[T](a.Shape()[0], b.Shape()[1])
-	ops.MatMulImplSimple(a, b, outTensor)
-	return outTensor.(*Tensor[T])
+	a := tensor.AsContinuous(nil)
+	b := other_tensor.AsContinuous(nil)
+	outTensor := InitEmptyTensor[T](a.Shape()[0], b.Shape()[1])
+	ops.MatMulImplSimple(a.data, b.data, a.shape, b.shape,
+		a.strides, b.strides,
+		outTensor.data, outTensor.strides)
+	return outTensor
 }
 
 // matmul ops

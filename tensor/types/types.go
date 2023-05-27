@@ -22,6 +22,5 @@ type ITensor[T TensorType] interface {
 	Order() []uint16
 
 	// indexing ops
-	Get_fast(indices ...int) T
 	Get(indices ...int) T
 }

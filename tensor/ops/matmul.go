@@ -13,12 +13,38 @@ func get_flat_idx_fast(strides []int, indices ...int) int {
 	return flatIndex
 }
 
-func MatMulImplSimple[T types.TensorType](tensor_a, tensor_b, outTensor types.ITensor[T]) {
-	for i := 0; i < int(tensor_a.Shape()[0]); i++ {
-		for j := 0; j < int(tensor_b.Shape()[1]); j++ {
-			for k := 0; k < int(tensor_a.Shape()[1]); k++ {
-				idx := get_flat_idx_fast(outTensor.Strides(), i, j)
-				outTensor.Data()[idx] += tensor_a.Get_fast(i, k) * tensor_b.Get_fast(k, j)
+// input A and B, both n by n matrices
+// initialize C to be an n by n matrix of all zeros
+// for i from 1 to n:
+//
+//	for j from 1 to n:
+//	    for k from 1 to n:
+//	        C[i][j] = C[i][j] + A[i][k]*B[k][j]
+//
+// output C (as A*B)
+func MatMulImplSimple[T types.TensorType](
+	a_data,
+	b_data []T,
+	a_shape,
+	b_shape types.Shape,
+	a_strides []int,
+	b_strides []int,
+	out_data []T,
+	out_strides []int,
+) {
+	a_dim0 := int(a_shape[0])
+	a_dim1 := int(a_shape[1])
+	b_dim1 := int(b_shape[1])
+	for i := 0; i < a_dim0; i++ {
+		for j := 0; j < b_dim1; j++ {
+			for k := 0; k < a_dim1; k++ {
+				out_idx := get_flat_idx_fast(out_strides, i, j)
+				// out_strides[0]
+				a_idx := get_flat_idx_fast(a_strides, i, k)
+				b_idx := get_flat_idx_fast(b_strides, k, j)
+				av := a_data[a_idx]
+				bv := b_data[b_idx]
+				out_data[out_idx] += av * bv
 			}
 		}
 	}
