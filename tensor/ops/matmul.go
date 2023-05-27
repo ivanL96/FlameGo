@@ -76,47 +76,6 @@ func MatMulSquareNaiveImpl[T types.TensorType](
 	}
 }
 
-// func SplitTensorImplSlow[T types.TensorType](
-// 	tensor types.ITensor[T],
-// 	nrows int,
-// 	a,
-// 	b,
-// 	c,
-// 	d types.ITensor[T],
-// ) (types.ITensor[T], types.ITensor[T], types.ITensor[T], types.ITensor[T]) {
-// 	// only 2-dim, squared matrices
-// 	row2 := nrows / 2
-// 	it := iter.CreateIterator(tensor.Data(), tensor.Shape())
-// 	for it.Iterate() {
-// 		idx := it.Next()
-// 		idx0 := idx[0]
-// 		idx1 := idx[1]
-// 		value := tensor.Get_fast(idx0, idx1)
-// 		if idx0 < row2 && idx1 < row2 {
-// 			a.Data()[get_flat_idx_fast(a.Strides(), idx0, idx1)] = value
-// 		} else if idx0 < row2 && idx1 >= row2 {
-// 			if idx1 >= row2 {
-// 				idx1 -= row2
-// 			}
-// 			b.Data()[get_flat_idx_fast(b.Strides(), idx0, idx1)] = value
-// 		} else if idx0 >= row2 && idx1 < row2 {
-// 			if idx0 >= row2 {
-// 				idx0 -= row2
-// 			}
-// 			c.Data()[get_flat_idx_fast(c.Strides(), idx0, idx1)] = value
-// 		} else if idx0 >= row2 && idx1 >= row2 {
-// 			if idx0 >= row2 {
-// 				idx0 -= row2
-// 			}
-// 			if idx1 >= row2 {
-// 				idx1 -= row2
-// 			}
-// 			d.Data()[get_flat_idx_fast(d.Strides(), idx0, idx1)] = value
-// 		}
-// 	}
-// 	return a, b, c, d
-// }
-
 // ~30x faster compared to v1
 func SplitTensorImpl[T types.TensorType](
 	tensor_data []T,
@@ -158,16 +117,3 @@ func SplitTensorImpl[T types.TensorType](
 	}
 	return
 }
-
-// TODO
-// unites subtensors splitted by SplitTensor
-// func UniteTensors[T types.TensorType](a, b, c, d *Tensor[T]) *Tensor[T] {
-// 	outShape := a.shape
-// 	outShape[0] *= 2
-// 	outShape[1] *= 2
-// 	outTensor := InitEmptyTensor[T](outShape...)
-
-// 	for i := 0; i < int(outShape[0]); i++ {
-// 		if i < a.shape
-// 	}
-// }
