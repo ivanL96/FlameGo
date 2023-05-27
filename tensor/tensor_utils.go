@@ -127,37 +127,39 @@ func SplitTensor2[T types.TensorType](
 		panic("Tensor must have (N,N) shape")
 	}
 	// only 2-dim, squared matrices
-	rows := tensor.shape[0]
-	row2 := int(rows / 2)
+	rows := int(tensor.shape[0])
+	row2 := rows / 2
 	sub_tensor_shape := types.Shape{types.Dim(row2), types.Dim(row2)}
 	a = PrepareOutTensor(outA, sub_tensor_shape)
 	b = PrepareOutTensor(outB, sub_tensor_shape)
 	c = PrepareOutTensor(outC, sub_tensor_shape)
 	d = PrepareOutTensor(outD, sub_tensor_shape)
 	// assume continuous data
-	aidx, bidx, cidx, didx := 0, 0, 0, 0
+	// TODO parallel exec
+	astride, bstride, cstride, dstride := 0, 0, 0, 0
 	for i := 0; i < int(rows)*2; i++ {
 		row := tensor.data[row2*i : row2*(i+1)]
-		if i%2 == 0 && i < int(rows) {
-			for j, v := range row {
-				a.data[j+aidx] = v
+		switch i % 2 {
+		case 0:
+			if i < rows {
+				step := astride + row2
+				copy(a.data[astride:step], row)
+				astride = step
+			} else if i >= rows {
+				step := cstride + row2
+				copy(c.data[cstride:step], row)
+				cstride = step
 			}
-			aidx += row2
-		} else if i%2 == 1 && i < int(rows) {
-			for j, v := range row {
-				b.data[j+bidx] = v
+		case 1:
+			if i < rows {
+				step := bstride + row2
+				copy(b.data[bstride:step], row)
+				bstride = step
+			} else if i >= rows {
+				step := dstride + row2
+				copy(d.data[dstride:step], row)
+				dstride = step
 			}
-			bidx += row2
-		} else if i%2 == 0 && i >= int(rows) {
-			for j, v := range row {
-				c.data[j+cidx] = v
-			}
-			cidx += row2
-		} else if i%2 == 1 && i >= int(rows) {
-			for j, v := range row {
-				d.data[j+didx] = v
-			}
-			didx += row2
 		}
 	}
 	return

@@ -25,6 +25,14 @@ import (
 // BenchmarkMatMulSplit-8             43425             30.704 ns/op               9 B/op          1 allocs/op
 // BenchmarkMatMulSplit-8             42649             27.424 ns/op               9 B/op          1 allocs/op
 // BenchmarkMatMulSplit-8             39824             33.213 ns/op              10 B/op          1 allocs/op
+// ======================Split version 2: native loop & prealloc output & switch case
+// BenchmarkMatMulSplit-8             43924             24.775 ns/op               9 B/op          1 allocs/op
+// BenchmarkMatMulSplit-8             45523             28.197 ns/op               9 B/op          1 allocs/op
+// BenchmarkMatMulSplit-8             45511             24.464 ns/op               9 B/op          1 allocs/op
+// ======================Split version 2: + copy instead of set data loop
+// BenchmarkMatMulSplit-8            160952              7864 ns/op               8 B/op          1 allocs/op
+// BenchmarkMatMulSplit-8            159236              7121 ns/op               8 B/op          1 allocs/op
+// BenchmarkMatMulSplit-8            170288              8406 ns/op               8 B/op          1 allocs/op
 func BenchmarkMatMulSplit(b *testing.B) {
 	X := tensor.Range[int32](100*100).Reshape(100, 100)
 	a1 := tensor.InitEmptyTensor[int32](50, 50)
