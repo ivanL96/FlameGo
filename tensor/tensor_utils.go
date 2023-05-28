@@ -1,6 +1,7 @@
 package tensor
 
 import (
+	"fmt"
 	types "gograd/tensor/types"
 	"reflect"
 )
@@ -19,7 +20,12 @@ func IsScalarLike(shape types.Shape) bool {
 	if len(shape) == 1 && shape[0] == 1 {
 		return true
 	}
-	return false
+	for _, v := range shape {
+		if v > 1 {
+			return false
+		}
+	}
+	return true
 }
 
 func getStrides(shape types.Shape) []int {
@@ -71,6 +77,16 @@ func isIntKind(tensorDType reflect.Type) bool {
 func PrepareOutTensor[T types.TensorType](out *Tensor[T], shape types.Shape) *Tensor[T] {
 	if out == nil {
 		return InitEmptyTensor[T](shape...)
+	}
+	// check if 'out' tensor has shape less than required.
+	// however having bigger shape is OK since the 'out' tensor can serve as a buffer for different outputs
+	if len(out.shape) != len(shape) {
+		panic("Output tensor has less dims than required")
+	}
+	for i, dim := range shape {
+		if dim > out.shape[i] {
+			panic(fmt.Sprintf("Output tensor dim %v is less than required dim %v", out.shape[i], dim))
+		}
 	}
 	return out
 }

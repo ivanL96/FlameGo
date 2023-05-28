@@ -121,7 +121,7 @@ func (tensor *Tensor[T]) GetAxis(axis uint, shift uint) *Tensor[T] {
 
 // reorders data layout to continuous format.
 // it is useful for optimizing indexing/iterating for transposed & other non-continuous tensors
-func (tensor *Tensor[T]) AsContinuous(outTensor *Tensor[T]) *Tensor[T] {
+func (tensor *Tensor[T]) AsContinuous(out *Tensor[T]) *Tensor[T] {
 	if isDimOrderInit(tensor.dim_order) {
 		return tensor
 	}
@@ -129,7 +129,7 @@ func (tensor *Tensor[T]) AsContinuous(outTensor *Tensor[T]) *Tensor[T] {
 		return tensor
 	}
 
-	outTensor = PrepareOutTensor(outTensor, tensor.shape)
+	outTensor := PrepareOutTensor(out, tensor.shape)
 	iter := tensor.CreateIterator()
 	for iter.Iterate() {
 		dataIndex := iter.Index()

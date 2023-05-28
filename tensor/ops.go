@@ -35,16 +35,18 @@ func BaseBinElementwiseOp[T types.TensorType](
 		outTensor = PrepareOutTensor(out, tensor_a.shape)
 
 		// if two tensors are filled with same values. For example [2,2,2] and [3,3,3]
-		if tensor_a.hasFlag(SameValuesFlag) && tensor_b.hasFlag(SameValuesFlag) {
+		// FIXME wrong behaviour if out tensor has bigger size than input tensors
+		if Equal_1D_slices(outTensor.shape, tensor_a.shape) &&
+			tensor_a.hasFlag(SameValuesFlag) && tensor_b.hasFlag(SameValuesFlag) {
 			outTensor.Fill(binOp(tensor_a.data[0], tensor_b.data[0]))
 			return outTensor
 		}
 
 		iter := tensor_a.CreateIterator()
 		for iter.Iterate() {
-			dataIndex := iter.Index()
 			idx := iter.Next()
-			outTensor.data[dataIndex] = binOp(tensor_a.Get_fast(idx...), tensor_b.Get_fast(idx...))
+			outIdx := get_flat_idx_fast(outTensor.strides, idx...)
+			outTensor.data[outIdx] = binOp(tensor_a.Get_fast(idx...), tensor_b.Get_fast(idx...))
 		}
 	} else if len(tensor_b.data) == 1 {
 		// tensor_b is scalar
