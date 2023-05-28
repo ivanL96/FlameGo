@@ -45,13 +45,14 @@ func stringRepr[T types.TensorType](sb *strings.Builder, tensor *Tensor[T], ps *
 		ps.lastCharClosed = false
 	}
 	sb.WriteRune('[')
-	if len(tensor.shape) == 1 {
-		if len(tensor.data) > 30 { // TODO count for the innermost dim
+	if len(tensor.shape) == 1 { // at this point tensor is subset created from mainTensor.Index()
+		lastDim := tensor.shape[0]
+		if lastDim > 30 {
 			joinData(sb, tensor.data[:5])
 			sb.WriteString("...")
 			joinData(sb, tensor.data[len(tensor.data)-5:])
 		} else {
-			joinData(sb, tensor.data)
+			joinData(sb, tensor.data[:lastDim])
 		}
 		sb.WriteRune(']')
 		ps.whitespaceOffset -= 1
@@ -75,8 +76,14 @@ func stringRepr[T types.TensorType](sb *strings.Builder, tensor *Tensor[T], ps *
 }
 
 func (tensor *Tensor[T]) ToString() string {
-	var sb strings.Builder
-	var ps printSettings
+	var shape_prod types.Dim = 1
+	for _, dim := range tensor.shape {
+		shape_prod *= dim
+	}
+	var (
+		sb strings.Builder
+		ps printSettings
+	)
 	stringRepr(&sb, tensor, &ps)
 	strData := sb.String()
 
