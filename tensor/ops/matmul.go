@@ -85,7 +85,7 @@ func SplitTensorImpl[T types.TensorType](
 	c_data,
 	d_data []T,
 ) (a, b, c, d []T) {
-	// only 2-dim, squared matrices
+	// only 2-dim, squared matrices with even dims
 	// assume continuous data
 	// TODO parallel exec
 	row2 := nrows / 2
@@ -143,4 +143,40 @@ func UniteTensors[T types.TensorType](
 			copy(out_data[start+sub_stride:end], d_data[j*sub_stride:(j+1)*sub_stride])
 		}
 	}
+}
+
+func PaddingMat[T types.TensorType](data []T, shape types.Shape, pad_before, pad_after uint) ([]T, types.Shape) {
+	if len(shape) != 2 {
+		panic("Shape must be 2-dim")
+	}
+	pad_shape := make(types.Shape, len(shape))
+	pad_shape_prod := 1
+	shape_prod := 1
+	for i, dim := range shape {
+		out_dim := dim + types.Dim(pad_before+pad_after)
+		pad_shape[i] = out_dim
+		pad_shape_prod *= int(out_dim)
+		shape_prod *= int(dim)
+	}
+
+	pad_data := make([]T, pad_shape_prod)
+	before := 0
+	pad_outermost_dim := pad_shape_prod / int(pad_shape[0])
+	if pad_before > 0 {
+		// skip rows that are padded
+		before = pad_outermost_dim * int(pad_before)
+	}
+	stride := shape_prod / int(shape[0])
+	offset := 0
+	for i := 0; i < int(shape[0]); i++ {
+		row := data[i*stride : stride*(i+1)]
+		if i > 0 {
+			offset += int(pad_before + pad_after)
+		}
+		pad_data_start := before + int(pad_before) + stride*i + offset
+		pad_data_end := before + int(pad_before) + stride*(i+1) + offset
+
+		copy(pad_data[pad_data_start:pad_data_end], row)
+	}
+	return pad_data, pad_shape
 }

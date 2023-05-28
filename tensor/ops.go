@@ -170,6 +170,7 @@ func (tensor *Tensor[T]) MatMul(other_tensor *Tensor[T]) *Tensor[T] {
 		a.strides, b.strides,
 		outTensor.data, outTensor.strides)
 	// }
+	// outTensor = matMulStrassen(a, b)
 	return outTensor
 }
 
@@ -180,14 +181,17 @@ func SplitTensor[T types.TensorType](
 	if len(tensor.shape) != 2 {
 		panic("Tensor must have (N,N) shape")
 	}
-	rows := int(tensor.shape[0])
-	row2 := rows / 2
-	sub_tensor_shape := types.Shape{types.Dim(row2), types.Dim(row2)}
-	a = PrepareOutTensor(outA, sub_tensor_shape)
-	b = PrepareOutTensor(outB, sub_tensor_shape)
-	c = PrepareOutTensor(outC, sub_tensor_shape)
-	d = PrepareOutTensor(outD, sub_tensor_shape)
-	ops.SplitTensorImpl(tensor.data, rows, a.data, b.data, c.data, d.data)
+	nrows := int(tensor.shape[0])
+	rowleft := types.Dim(nrows / 2)
+	rowright := rowleft
+	if nrows%2 != 0 {
+		rowright = types.Dim(nrows) - rowleft
+	}
+	a = PrepareOutTensor(outA, types.Shape{rowleft, rowleft})
+	b = PrepareOutTensor(outB, types.Shape{rowleft, rowright})
+	c = PrepareOutTensor(outC, types.Shape{rowright, rowleft})
+	d = PrepareOutTensor(outD, types.Shape{rowright, rowright})
+	ops.SplitTensorImpl(tensor.data, nrows, a.data, b.data, c.data, d.data)
 	return
 }
 
