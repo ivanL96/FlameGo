@@ -130,24 +130,24 @@ func (tensor *Tensor[T]) Add(other_tensor, out *Tensor[T]) *Tensor[T] {
 }
 
 func (tensor *Tensor[T]) Sub(other_tensor, out *Tensor[T]) *Tensor[T] {
-	return BaseBinElementwiseOp(tensor, other_tensor, ops.Sub[T], out)
+	return BaseBinElementwiseOp(tensor, other_tensor, ops.SubAtomic[T], out)
 }
 
 func (tensor *Tensor[T]) Mul(other_tensor, out *Tensor[T]) *Tensor[T] {
-	return BaseBinElementwiseOp(tensor, other_tensor, ops.Mul[T], out)
+	return BaseBinElementwiseOp(tensor, other_tensor, ops.MulAtomic[T], out)
 }
 
 func (tensor *Tensor[T]) Div(other_tensor, out *Tensor[T]) *Tensor[T] {
-	return BaseBinElementwiseOp(tensor, other_tensor, ops.Div[T], out)
+	return BaseBinElementwiseOp(tensor, other_tensor, ops.DivAtomic[T], out)
 }
 
 // unary
 func (tensor *Tensor[T]) Neg(out *Tensor[T]) *Tensor[T] {
-	return unaryElementwiseRoutine(tensor, ops.Neg[T], out)
+	return unaryElementwiseRoutine(tensor, ops.NegAtomic[T], out)
 }
 
 func (tensor *Tensor[T]) Sigmoid(out *Tensor[T]) *Tensor[T] {
-	return unaryElementwiseRoutine(tensor, ops.Sigmoid[T], out)
+	return unaryElementwiseRoutine(tensor, ops.SigmoidAtomic[T], out)
 }
 
 func (tensor *Tensor[T]) MatMul(other_tensor *Tensor[T]) *Tensor[T] {
@@ -166,9 +166,10 @@ func (tensor *Tensor[T]) MatMul(other_tensor *Tensor[T]) *Tensor[T] {
 	// if adim0 == bdim1 { // squared
 	// 	ops.MatMulSquareNaiveImpl(a.data, b.data, a.shape, a.strides, outTensor.data)
 	// } else {
-	ops.MatMulNaiveImpl(a.data, b.data, a.shape, b.shape,
-		a.strides, b.strides,
-		outTensor.data, outTensor.strides)
+	// ops.MatMulNaiveImpl(a.data, b.data, a.shape, b.shape,
+	// 	a.strides, b.strides,
+	// 	outTensor.data, outTensor.strides)
+	outTensor.data = ops.MatMulStrassen(a.data, b.data, a.shape)
 	// }
 	// outTensor = matMulStrassen(a, b)
 	return outTensor
@@ -200,4 +201,3 @@ func UniteTensors[T types.TensorType](a, b, c, d, out *Tensor[T]) *Tensor[T] {
 	ops.UniteTensors(int(a.shape[0]), a.strides[0], a.data, b.data, c.data, d.data, out_tensor.data)
 	return out_tensor
 }
-

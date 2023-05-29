@@ -76,6 +76,47 @@ func MatMulSquareNaiveImpl[T types.TensorType](
 	}
 }
 
+func MatMulStrassen[T types.TensorType](a_data, b_data []T, a_shape types.Shape) []T {
+	if a_shape[0] == 1 {
+		return MulMatx(a_data, b_data, nil)
+	}
+
+	original_shape := a_shape
+	if original_shape[0]%2 == 1 {
+		a_data_pad, a_shape_pad := PaddingMat(a_data, a_shape, 0, 1)
+		b_data, _ = PaddingMat(b_data, a_shape, 0, 1)
+		a_data = a_data_pad
+		a_shape = a_shape_pad
+	}
+	nrows := int(a_shape[0])
+
+	subsize := (nrows / 2) * (nrows / 2)
+	a, b, c, d := make([]T, subsize), make([]T, subsize), make([]T, subsize), make([]T, subsize)
+	e, f, g, h := make([]T, subsize), make([]T, subsize), make([]T, subsize), make([]T, subsize)
+	SplitTensorImpl(a_data, nrows, a, b, c, d)
+	SplitTensorImpl(b_data, nrows, e, f, g, h)
+	sub_shape := types.Shape{a_shape[0] / 2, a_shape[1] / 2}
+
+	p1 := MatMulStrassen(a, SubMatx(f, h, nil), sub_shape)
+	p2 := MatMulStrassen(AddMatx(a, b, nil), h, sub_shape)
+	p3 := MatMulStrassen(AddMatx(c, d, nil), e, sub_shape)
+	p4 := MatMulStrassen(d, SubMatx(g, e, nil), sub_shape)
+	p5 := MatMulStrassen(AddMatx(a, d, nil), AddMatx(e, h, nil), sub_shape)
+	p6 := MatMulStrassen(SubMatx(b, d, nil), AddMatx(g, h, nil), sub_shape)
+	p7 := MatMulStrassen(SubMatx(a, c, nil), AddMatx(e, f, nil), sub_shape)
+	c11 := AddMatx(SubMatx(AddMatx(p5, p4, nil), p2, nil), p6, nil)
+	c12 := AddMatx(p1, p2, nil)
+	c21 := AddMatx(p3, p4, nil)
+	c22 := SubMatx(SubMatx(AddMatx(p1, p5, nil), p3, nil), p7, nil)
+
+	out := make([]T, len(a_data))
+	UniteTensors(int(sub_shape[0]), int(sub_shape[1]), c11, c12, c21, c22, out)
+	if original_shape[0]%2 == 1 {
+		out = RemovePaddingMat(out, a_shape, 0, 1)
+	}
+	return out
+}
+
 // ~30x faster compared to v1
 func SplitTensorImpl[T types.TensorType](
 	tensor_data []T,
@@ -179,4 +220,25 @@ func PaddingMat[T types.TensorType](data []T, shape types.Shape, pad_before, pad
 		copy(pad_data[pad_data_start:pad_data_end], row)
 	}
 	return pad_data, pad_shape
+}
+
+func RemovePaddingMat[T types.TensorType](data []T, shape types.Shape, pad_before, pad_after uint) []T {
+	shape_prod := 1
+	unpadded_shape := make(types.Shape, len(shape))
+	for i, dim := range shape {
+		unpdim := int(dim) - int(pad_before+pad_after)
+		shape_prod *= unpdim
+		unpadded_shape[i] = types.Dim(unpdim)
+	}
+	out := make([]T, shape_prod)
+	row_len := int(unpadded_shape[1])
+	skip_rows_before := int(pad_before) * int(shape[1])
+	offset := 0
+	for i := 0; i < int(unpadded_shape[0]); i++ {
+		start := row_len*i + int(pad_before) + skip_rows_before + offset
+		end := row_len*(i+1) + int(pad_before) + skip_rows_before + offset
+		offset += int(pad_before + pad_after)
+		copy(out[row_len*i:row_len*(i+1)], data[start:end])
+	}
+	return out
 }
