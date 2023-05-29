@@ -162,7 +162,7 @@ func (tensor *Tensor[T]) MatMul(other_tensor *Tensor[T]) *Tensor[T] {
 	a := tensor.AsContinuous(nil)
 	b := other_tensor.Transpose().AsContinuous(nil)
 	adim0, bdim1 := a.shape[0], b.shape[1]
-	outTensor := InitEmptyTensor[T](adim0, bdim1)
+	outTensor := CreateEmptyTensor[T](adim0, bdim1)
 	a_data, b_data := types.Any(a.data).([]float32), types.Any(b.data).([]float32)
 	out_data := types.Any(outTensor.data).([]float32)
 	// if adim0 == bdim1 { // squared

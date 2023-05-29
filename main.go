@@ -3,21 +3,29 @@ package main
 import (
 	"fmt"
 	"gograd/tensor"
+	"gograd/tensor/types"
 )
 
 func main() {
-	a := tensor.Range[int32](4).Reshape(2, 2)
-	// b := a.Index(1)
-	// b.Fill(6)
-	// fmt.Println(b.ToString())
-	fmt.Println(a.ToString())
-	fmt.Println(a.Transpose().ToString())
-	// a.Transpose()
-	// a := tensor.Range[int32](16)
-	// fmt.Println(a.Index(0).ToString())
-	// fmt.Println(a.Index(1).ToString())
+	// a := []float32{1, 2, 3, 4, 5, 6, 7, 8}
+	// b := []float32{1, 2, 3, 4, 5, 6, 7, 8}
+	// var c float32
+	// result_noasm := noasm.Dot(a, b, c)
+	// result := cpu.AVX.Dot(a, b)
+	// fmt.Println("asm", result_noasm, result)
 
-	// aa := tensor.AsType[int32, int64](a)
-	// fmt.Printf("%v\n", a.ToString())
-	// fmt.Printf("%v\n", aa.ToString())
+	// 4x4:
+	// 	# [[56, 62, 68, 74]
+	// #  [152, 174, 196, 218]
+	// #  [248, 286, 324, 362]
+	// #  [344, 398, 452, 506]],
+	var dim types.Dim = 10
+	ten := tensor.Scalar[float32](10)
+	aa := tensor.Range[float32](int(dim*dim)).Reshape(dim, dim).Div(ten, nil)
+	bb := tensor.Range[float32](int(dim*dim)).Reshape(dim, dim).Div(ten, nil)
+	fmt.Println(aa.ToString())
+	fmt.Println(bb.ToString())
+	cc := aa.MatMul(bb)
+	// res := tensor.AsType[float32, int64](cc)
+	fmt.Println(cc.ToString())
 }

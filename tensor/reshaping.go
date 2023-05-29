@@ -81,7 +81,7 @@ func (tensor *Tensor[T]) Broadcast(shape ...types.Dim) *Tensor[T] {
 	for _, dim := range broadcastedShape {
 		shapeProd *= dim
 	}
-	outTensor := InitEmptyTensor[T](broadcastedShape...)
+	outTensor := CreateEmptyTensor[T](broadcastedShape...)
 	if tensor.hasFlag(SameValuesFlag) {
 		outTensor.setFlag(SameValuesFlag)
 		outTensor.Fill(tensor.data[0])
@@ -151,7 +151,7 @@ func (tensor *Tensor[T]) Transpose(axes ...uint) *Tensor[T] {
 		}
 	}
 
-	outTensor := InitTensor(tensor.data, tensor.shape)
+	outTensor := CreateTensor(tensor.data, tensor.shape)
 
 	for i, axis := range axes {
 		outTensor.shape[i] = tensor.shape[axis]

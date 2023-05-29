@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"gograd/tensor"
 	"gograd/tensor/types"
 	"testing"
@@ -30,10 +31,10 @@ import (
 func BenchmarkMatMulSplit(b *testing.B) {
 	var dim types.Dim = 100
 	X := tensor.Range[int32](int(dim*dim)).Reshape(dim, dim)
-	a1 := tensor.InitEmptyTensor[int32](dim/2, dim/2)
-	b1 := tensor.InitEmptyTensor[int32](dim/2, dim/2)
-	c1 := tensor.InitEmptyTensor[int32](dim/2, dim/2)
-	d1 := tensor.InitEmptyTensor[int32](dim/2, dim/2)
+	a1 := tensor.CreateEmptyTensor[int32](dim/2, dim/2)
+	b1 := tensor.CreateEmptyTensor[int32](dim/2, dim/2)
+	c1 := tensor.CreateEmptyTensor[int32](dim/2, dim/2)
+	d1 := tensor.CreateEmptyTensor[int32](dim/2, dim/2)
 	for i := 0; i < b.N; i++ {
 		tensor.SplitTensor(X, a1, b1, c1, d1)
 		// tensor.SplitTensor(X, nil, nil, nil, nil)
@@ -46,10 +47,10 @@ func BenchmarkMatMulSplit(b *testing.B) {
 func BenchmarkMatMulUnite(b *testing.B) {
 	var dim types.Dim = 100
 	X := tensor.Range[int32](int(dim*dim)).Reshape(dim, dim)
-	a1 := tensor.InitEmptyTensor[int32](dim/2, dim/2)
-	b1 := tensor.InitEmptyTensor[int32](dim/2, dim/2)
-	c1 := tensor.InitEmptyTensor[int32](dim/2, dim/2)
-	d1 := tensor.InitEmptyTensor[int32](dim/2, dim/2)
+	a1 := tensor.CreateEmptyTensor[int32](dim/2, dim/2)
+	b1 := tensor.CreateEmptyTensor[int32](dim/2, dim/2)
+	c1 := tensor.CreateEmptyTensor[int32](dim/2, dim/2)
+	d1 := tensor.CreateEmptyTensor[int32](dim/2, dim/2)
 	tensor.SplitTensor(X, a1, b1, c1, d1)
 	for i := 0; i < b.N; i++ {
 		tensor.UniteTensors(a1, b1, c1, d1, X)
@@ -65,13 +66,22 @@ func BenchmarkMatMulUnite(b *testing.B) {
 // removed extra computations, minor loop unrolling
 // BenchmarkMatMul-8              1        6.891.281.300 ns/op        12.019.960 B/op         29 allocs/op
 // BenchmarkMatMul-8              1        7.084.445.400 ns/op        12.018.168 B/op         25 allocs/op
-// numpy matmul
+//
+//	Using noasm Dot()
+//
+// BenchmarkMatMul-8              1        3.074.711.000 ns/op        20.032.064 B/op         40 allocs/op
+// GOASM AVX !!!!!!
+// BenchmarkMatMul-8              2          509.863.150 ns/op        20.024.276 B/op    1000028 allocs/op
+// BenchmarkMatMul-8              2          555.004.700 ns/op        20.024.208 B/op    1000027 allocs/op
+// numpy matmul:
 // 4.184.719.133 ~ 4.910.045.600 ns
 func BenchmarkMatMul(b *testing.B) {
-	var size types.Dim = 1000
+	var size types.Dim = 10
 	a1 := tensor.Range[float32](int(size*size)).Reshape(size, size)
 	b1 := tensor.Range[float32](int(size*size)).Reshape(size, size)
 	for i := 0; i < b.N; i++ {
 		a1.MatMul(b1)
 	}
+	c1 := a1.MatMul(b1)
+	fmt.Println(tensor.AsType[float32, int32](c1).Hash())
 }

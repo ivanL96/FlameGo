@@ -76,7 +76,7 @@ func isIntKind(tensorDType reflect.Type) bool {
 
 func PrepareOutTensor[T types.TensorType](out *Tensor[T], shape types.Shape) *Tensor[T] {
 	if out == nil {
-		return InitEmptyTensor[T](shape...)
+		return CreateEmptyTensor[T](shape...)
 	}
 	// check if 'out' tensor has shape less than required.
 	// however having bigger shape is OK since the 'out' tensor can serve as a buffer for different outputs

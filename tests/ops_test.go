@@ -8,23 +8,23 @@ import (
 )
 
 func TestAdd(t *testing.T) {
-	a := tensor.InitEmptyTensor[int32](3, 2).Fill(2)
-	b := tensor.InitEmptyTensor[int32](3, 1).Fill(3)
+	a := tensor.CreateEmptyTensor[int32](3, 2).Fill(2)
+	b := tensor.CreateEmptyTensor[int32](3, 1).Fill(3)
 	fmt.Println(a.ToString(), b.ToString())
 	ab := a.Add(b, nil)
 	assertEqualSlices(t, ab.Data(), []int32{5, 5, 5, 5, 5, 5})
 	assertEqualSlices(t, ab.Shape(), types.Shape{3, 2})
 }
 func TestAdd1(t *testing.T) {
-	c := tensor.InitEmptyTensor[int32](3, 3).Fill(4)
-	d := tensor.InitEmptyTensor[int32](1).Fill(1)
+	c := tensor.CreateEmptyTensor[int32](3, 3).Fill(4)
+	d := tensor.CreateEmptyTensor[int32](1).Fill(1)
 	cd := c.Add(d, nil)
 	assertEqualSlices(t, cd.Data(), []int32{5, 5, 5, 5, 5, 5, 5, 5, 5})
 	assertEqualSlices(t, cd.Shape(), types.Shape{3, 3})
 }
 func TestAdd2(t *testing.T) {
-	e := tensor.InitEmptyTensor[int32](1).Fill(4)
-	f := tensor.InitEmptyTensor[int32](1).Fill(1)
+	e := tensor.CreateEmptyTensor[int32](1).Fill(4)
+	f := tensor.CreateEmptyTensor[int32](1).Fill(1)
 	ef := e.Add(f, nil)
 	fmt.Println(ef.ToString())
 	assertEqualSlices(t, ef.Data(), []int32{5})
@@ -50,29 +50,29 @@ func TestAdd4(t *testing.T) {
 }
 
 func TestMul(t *testing.T) {
-	a := tensor.InitEmptyTensor[int32](3, 2).Fill(2)
-	b := tensor.InitEmptyTensor[int32](3, 1).Fill(3)
+	a := tensor.CreateEmptyTensor[int32](3, 2).Fill(2)
+	b := tensor.CreateEmptyTensor[int32](3, 1).Fill(3)
 	ab := a.Mul(b, nil)
 	assertEqualSlices(t, ab.Data(), []int32{6, 6, 6, 6, 6, 6})
 	assertEqualSlices(t, ab.Shape(), types.Shape{3, 2})
 }
 
 func TestMatMul(t *testing.T) {
-	a := tensor.Range[int32](9).Reshape(3, 3)
-	b := tensor.Range[int32](9).Reshape(3, 3)
+	a := tensor.Range[float32](9).Reshape(3, 3)
+	b := tensor.Range[float32](9).Reshape(3, 3)
 	c := a.MatMul(b)
-	assertEqualSlices(t, c.Data(), []int32{15, 18, 21, 42, 54, 66, 69, 90, 111})
+	assertEqualSlices(t, c.Data(), []float32{15, 18, 21, 42, 54, 66, 69, 90, 111})
 	assertEqualSlices(t, c.Shape(), types.Shape{3, 3})
 
-	a1 := tensor.Range[int32](3).Reshape(1, 3)
-	b1 := tensor.Range[int32](3).Reshape(3, 1)
+	a1 := tensor.Range[float32](3).Reshape(1, 3)
+	b1 := tensor.Range[float32](3).Reshape(3, 1)
 	c1 := a1.MatMul(b1)
-	assertEqualSlices(t, c1.Data(), []int32{5})
+	assertEqualSlices(t, c1.Data(), []float32{5})
 	assertEqualSlices(t, c1.Shape(), types.Shape{1, 1})
 
-	a2 := tensor.Range[int32](8).Reshape(2, 4)
-	b2 := tensor.Range[int32](8).Reshape(4, 2)
+	a2 := tensor.Range[float32](8).Reshape(2, 4)
+	b2 := tensor.Range[float32](8).Reshape(4, 2)
 	c2 := a2.MatMul(b2)
-	assertEqualSlices(t, c2.Data(), []int32{28, 34, 76, 98})
+	assertEqualSlices(t, c2.Data(), []float32{28, 34, 76, 98})
 	assertEqualSlices(t, c2.Shape(), types.Shape{2, 2})
 }

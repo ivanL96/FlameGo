@@ -61,7 +61,7 @@ func (tensor *Tensor[T]) Index(indices ...int) *Tensor[T] {
 	// index of the first elem in the sub tensor
 	flatIndex := tensor.getFlatIndex(indices...)
 	if n_indices == n_dims {
-		return InitTensor([]T{tensor.data[flatIndex]}, types.Shape{1})
+		return CreateTensor([]T{tensor.data[flatIndex]}, types.Shape{1})
 	}
 	innerShape := tensor.shape[n_indices:]
 	var innerShapeProd types.Dim = 1
@@ -74,7 +74,15 @@ func (tensor *Tensor[T]) Index(indices ...int) *Tensor[T] {
 	if isDimOrderInit(tensor.dim_order) {
 		endFlatIndex := flatIndex + tensor.strides[n_indices-1]
 		subData := tensor.data[flatIndex:endFlatIndex]
-		return InitTensor(subData, innerShape)
+		// return CreateTensor(subData, innerShape)
+		// TODO finish this. Tensor creation here should be without shape validation.
+		// because data can be larger on purpose (buffer)
+		return &Tensor[T]{
+			data:      subData,
+			shape:     innerShape,
+			dim_order: initDimOrder(innerShape),
+			strides:   getStrides(innerShape),
+		}
 	}
 
 	// not continuous data. i.e. transposed tensor
@@ -105,7 +113,7 @@ func (tensor *Tensor[T]) Index(indices ...int) *Tensor[T] {
 			}
 		}
 	}
-	return InitTensor(subData, subShape)
+	return CreateTensor(subData, subShape)
 }
 
 // TODO GetAxis not finished

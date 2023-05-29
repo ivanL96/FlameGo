@@ -7,7 +7,7 @@ import (
 )
 
 func TestSort(t *testing.T) {
-	a := tensor.InitTensor(
+	a := tensor.CreateTensor(
 		[]int32{3, 2, 5, 0, 6, 1, 0, 5}, types.Shape{2, 2, 2})
 	sort_a := a.Sort()
 	assertEqualSlices(t,

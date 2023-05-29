@@ -8,8 +8,8 @@ import (
 )
 
 func BenchmarkAdd(b *testing.B) {
-	a1 := tensor.InitEmptyTensor[int32](100, 100).Fill(100)
-	a2 := tensor.InitEmptyTensor[int32](100, 100).Fill(99)
+	a1 := tensor.CreateEmptyTensor[int32](100, 100).Fill(100)
+	a2 := tensor.CreateEmptyTensor[int32](100, 100).Fill(99)
 	for i := 0; i < b.N; i++ {
 		a1.Add(a2, nil)
 	}
@@ -28,23 +28,24 @@ func BenchmarkAdd(b *testing.B) {
 func BenchmarkBigAdd(b *testing.B) {
 	a1 := tensor.Range[int32](1000000).Reshape(1000, 1000) //.Fill(1)
 	a2 := tensor.Range[int32](1000000).Reshape(1000, 1000) //.Fill(1)
+	out := tensor.CreateEmptyTensor[int32](1000, 1000)
 	for i := 0; i < b.N; i++ {
-		a1.Add(a2, nil)
+		a1.Add(a2, out)
 	}
-	fmt.Println(a1.Get(999, 999))
+	fmt.Println(out.Get(999, 999))
 }
 
 func BenchmarkMul(b *testing.B) {
-	a1 := tensor.InitEmptyTensor[int32](100, 100).Fill(100)
-	a2 := tensor.InitEmptyTensor[int32](100, 100).Fill(99)
+	a1 := tensor.CreateEmptyTensor[int32](100, 100).Fill(100)
+	a2 := tensor.CreateEmptyTensor[int32](100, 100).Fill(99)
 	for i := 0; i < b.N; i++ {
 		a1.Mul(a2, nil)
 	}
 }
 
 func BenchmarkMulScalar(b *testing.B) {
-	a1 := tensor.InitEmptyTensor[int32](1).Fill(100)
-	a2 := tensor.InitEmptyTensor[int32](1).Fill(99)
+	a1 := tensor.CreateEmptyTensor[int32](1).Fill(100)
+	a2 := tensor.CreateEmptyTensor[int32](1).Fill(99)
 	for i := 0; i < b.N; i++ {
 		a1.Mul(a2, nil)
 	}

@@ -33,13 +33,17 @@ func makeTensor[T types.TensorType](dataPtr *[]T, shape types.Shape) *Tensor[T] 
 }
 
 // inits a tensor with data
-func InitTensor[T types.TensorType](value []T, shape types.Shape) *Tensor[T] {
+func CreateTensor[T types.TensorType](value []T, shape types.Shape) *Tensor[T] {
 	return makeTensor(&value, shape)
 }
 
 // inits an empty tensor with specific shape
-func InitEmptyTensor[T types.TensorType](shape ...types.Dim) *Tensor[T] {
+func CreateEmptyTensor[T types.TensorType](shape ...types.Dim) *Tensor[T] {
 	return makeTensor[T](nil, shape)
+}
+
+func Scalar[T types.TensorType](value T) *Tensor[T] {
+	return makeTensor(&[]T{value}, types.Shape{1})
 }
 
 // Creates a tensor without copying the data
@@ -61,13 +65,13 @@ func AsType[OLDT types.TensorType, NEWT types.TensorType](tensor *Tensor[OLDT]) 
 	for i, val := range tensor.data {
 		data[i] = NEWT(val)
 	}
-	return InitTensor(data, tensor.shape)
+	return CreateTensor(data, tensor.shape)
 }
 
 func (tensor *Tensor[T]) Copy() *Tensor[T] {
 	newData := make([]T, len(tensor.data))
 	copy(newData, tensor.data)
-	newTensor := InitTensor(newData, tensor.shape)
+	newTensor := CreateTensor(newData, tensor.shape)
 	newTensor.strides = tensor.strides
 	newTensor.dim_order = tensor.dim_order
 	newTensor.flags = tensor.flags
@@ -108,7 +112,7 @@ func Range[T types.TensorType](limits ...int) *Tensor[T] {
 		step = limits[2]
 	}
 	length := ((end - start) + step - 1) / step
-	tensor := InitEmptyTensor[T](types.Dim(length))
+	tensor := CreateEmptyTensor[T](types.Dim(length))
 	for i := 0; i < length; i++ {
 		tensor.data[i] = T(start)
 		start += step

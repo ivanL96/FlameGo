@@ -37,7 +37,7 @@ func BenchmarkTranspose(b *testing.B) {
 
 func BenchmarkBroadcast(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		a := tensor.InitEmptyTensor[int32](3, 2)
+		a := tensor.CreateEmptyTensor[int32](3, 2)
 		a.Broadcast(3, 1, 1)
 	}
 }
