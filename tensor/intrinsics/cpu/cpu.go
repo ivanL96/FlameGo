@@ -5,25 +5,31 @@ package cpu
 import (
 	"gograd/tensor/intrinsics/amd64"
 	"gograd/tensor/intrinsics/noasm"
+
+	"github.com/klauspost/cpuid/v2"
 )
 
-// var impl = Default
-
-// func init() {
-// 	if cpuid.CPU.Supports(cpuid.AVX512F, cpuid.AVX512DQ) {
-// 		impl = AVX512
-// 	} else if cpuid.CPU.Supports(cpuid.AVX) {
-// 		impl = AVX
-// 	}
-// }
+// auto-detection of various cpu instructions
+// is nothing is supported falls back to pure go implementation
 
 type implementation int
 
 const (
 	Default implementation = iota
 	AVX
-	// AVX512
+	AVX512
 )
+
+// finds possible accelerations instructions
+func DetectImpl() implementation {
+	var impl implementation = 0
+	if cpuid.CPU.Supports(cpuid.AVX512F, cpuid.AVX512DQ) {
+		impl = AVX512
+	} else if cpuid.CPU.Supports(cpuid.AVX) {
+		impl = AVX
+	}
+	return impl
+}
 
 func (i implementation) String() string {
 	switch i {
