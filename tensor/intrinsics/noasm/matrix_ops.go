@@ -1,4 +1,4 @@
-package ops
+package noasm
 
 import (
 	"gograd/tensor/types"
@@ -36,6 +36,9 @@ func SubMatx[T types.TensorType](a, b, out []T) []T {
 	return out_
 }
 
-// func MulAggregareMatx[T types.TensorType](a, b, c []T) []T {
-
-// }
+func Dot[T types.TensorType](a, b []T, c T) T {
+	for i := 0; i < len(a); i++ {
+		c += a[i] * b[i]
+	}
+	return c
+}
