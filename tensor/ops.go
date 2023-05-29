@@ -2,9 +2,12 @@ package tensor
 
 import (
 	"fmt"
+	"gograd/tensor/intrinsics/cpu"
 	ops "gograd/tensor/ops"
 	types "gograd/tensor/types"
 )
+
+var impl cpu.Implementation = cpu.DetectImpl()
 
 type BinaryScalarOp[T types.TensorType] func(T, T) T
 type UnaryScalarOp[T types.TensorType] func(T) T
@@ -163,15 +166,24 @@ func (tensor *Tensor[T]) MatMul(other *Tensor[T]) *Tensor[T] {
 	outTensor := CreateEmptyTensor[T](adim0, bdim1)
 
 	tensor = tensor.AsContinuous(nil)
-	other = other.Transpose().AsContinuous(nil)
+	a_data := tensor.data
+	b_data := other.data
+	out_data := outTensor.data
+	switch impl {
+	case cpu.AVX:
+		other = other.Transpose().AsContinuous(nil) // needs to be in column-major format for better AVX support
 
-	a_data, b_data := types.Any(tensor.data).([]float32), types.Any(other.data).([]float32)
-	out_data := types.Any(outTensor.data).([]float32)
-	// if adim0 == bdim1 { // squared
-	// 	ops.MatMulSquareNaiveImpl(a.data, b.data, a.shape, a.strides, outTensor.data)
-	ops.MatMulNaiveImpl_AVX(a_data, b_data, tensor.shape, other.shape,
-		tensor.strides, other.strides,
-		out_data, outTensor.strides)
+		a_data := types.Any(tensor.data).([]float32)
+		b_data := types.Any(other.data).([]float32)
+		out_data := types.Any(outTensor.data).([]float32)
+		ops.MatMulNaiveImpl_AVX(a_data, b_data, tensor.shape, other.shape,
+			tensor.strides, other.strides,
+			out_data, outTensor.strides)
+	default:
+		ops.MatMulNaiveImpl(a_data, b_data, tensor.shape, other.shape,
+			tensor.strides, other.strides,
+			out_data, outTensor.strides)
+	}
 	outTensor.data = types.Any(out_data).([]T)
 	return outTensor
 }

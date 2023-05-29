@@ -12,17 +12,17 @@ import (
 // auto-detection of various cpu instructions
 // is nothing is supported falls back to pure go implementation
 
-type implementation int
+type Implementation int
 
 const (
-	Default implementation = iota
+	Default Implementation = iota
 	AVX
 	AVX512
 )
 
 // finds possible accelerations instructions
-func DetectImpl() implementation {
-	var impl implementation = 0
+func DetectImpl() Implementation {
+	var impl Implementation = 0
 	if cpuid.CPU.Supports(cpuid.AVX512F, cpuid.AVX512DQ) {
 		impl = AVX512
 	} else if cpuid.CPU.Supports(cpuid.AVX) {
@@ -31,7 +31,7 @@ func DetectImpl() implementation {
 	return impl
 }
 
-func (i implementation) String() string {
+func (i Implementation) String() string {
 	switch i {
 	case AVX:
 		return "avx"
@@ -42,7 +42,7 @@ func (i implementation) String() string {
 	}
 }
 
-func (i implementation) Dot(a, b []float32) float32 {
+func (i Implementation) Dot(a, b []float32) float32 {
 	switch i {
 	case AVX:
 		return amd64.Dot_mm256(a, b)
