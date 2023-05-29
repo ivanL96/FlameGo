@@ -1,7 +1,7 @@
 package main
 
 import (
-	"fmt"
+	_ "fmt"
 	"gograd/tensor"
 	"gograd/tensor/types"
 	"testing"
@@ -76,12 +76,12 @@ func BenchmarkMatMulUnite(b *testing.B) {
 // numpy matmul:
 // 4.184.719.133 ~ 4.910.045.600 ns
 func BenchmarkMatMul(b *testing.B) {
-	var size types.Dim = 10
+	var size types.Dim = 1000
 	a1 := tensor.Range[float32](int(size*size)).Reshape(size, size)
 	b1 := tensor.Range[float32](int(size*size)).Reshape(size, size)
 	for i := 0; i < b.N; i++ {
 		a1.MatMul(b1)
 	}
-	c1 := a1.MatMul(b1)
-	fmt.Println(tensor.AsType[float32, int32](c1).Hash())
+	// c1 := a1.MatMul(b1)
+	// fmt.Println(tensor.AsType[float32, int32](c1).Hash())
 }

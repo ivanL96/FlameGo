@@ -58,18 +58,24 @@ func MatMulNaiveImpl_AVX(
 	out_strides []int,
 ) {
 	a_dim0 := int(a_shape[0])
-	a_dim1 := int(a_shape[1])
-	b_dim1 := int(b_shape[1])
+	// a_dim1 := int(a_shape[1])
+	// b_dim1 := int(b_shape[1])
 	out_stride0 := out_strides[0]
 	a_stride0 := a_strides[0]
 	b_stride0 := b_strides[0]
 	for i := 0; i < a_dim0; i++ {
 		a_stride0_i := a_stride0 * i
 		out_stride0_i := out_stride0 * i
-		for j := 0; j < b_dim1; j++ {
-			out_val := cpu.Default.Dot(a_data[a_stride0_i:a_stride0_i+a_dim1], b_data[b_stride0*j:b_stride0*(j+1)])
-			out_idx := out_stride0_i + j
-			out_data[out_idx] = out_val
+		for j := 0; j < a_dim0; j++ {
+			// out_val += a_data[a_stride0_i+k] * b_data[b_stride0*k+j]
+			// fmt.Println(a_data[a_stride0_i:a_stride0_i+a_dim1], b_data[b_stride0*j:b_stride0*(j+1)])
+			// fmt.Println("a", a_stride0_i, a_stride0*(i+1))
+			// fmt.Println("b", b_stride0*j, b_stride0*(j+1))
+			out_val := cpu.AVX.Dot(
+				a_data[a_stride0_i:a_stride0*(i+1)],
+				b_data[b_stride0*j:b_stride0*(j+1)],
+			)
+			out_data[out_stride0_i+j] = out_val
 		}
 	}
 }

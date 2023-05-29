@@ -150,25 +150,27 @@ func (tensor *Tensor[T]) Sigmoid(out *Tensor[T]) *Tensor[T] {
 	return unaryElementwiseRoutine(tensor, ops.SigmoidAtomic[T], out)
 }
 
-func (tensor *Tensor[T]) MatMul(other_tensor *Tensor[T]) *Tensor[T] {
-	if len(tensor.shape) != 2 || len(other_tensor.shape) != 2 {
+func (tensor *Tensor[T]) MatMul(other *Tensor[T]) *Tensor[T] {
+	if len(tensor.shape) != 2 || len(other.shape) != 2 {
 		panic("Tensors must be two-dim.")
 	}
-	if tensor.shape[1] != other_tensor.shape[0] {
+	if tensor.shape[1] != other.shape[0] {
 		panic(fmt.Sprintf(
-			"Tensors inner shapes are different. %v != %v", tensor.shape[1], other_tensor.shape[0],
+			"Tensors inner shapes are different. %v != %v", tensor.shape[1], other.shape[0],
 		))
 	}
-	a := tensor.AsContinuous(nil)
-	b := other_tensor.Transpose().AsContinuous(nil)
-	adim0, bdim1 := a.shape[0], b.shape[1]
+	adim0, bdim1 := tensor.shape[0], other.shape[1]
 	outTensor := CreateEmptyTensor[T](adim0, bdim1)
-	a_data, b_data := types.Any(a.data).([]float32), types.Any(b.data).([]float32)
+
+	tensor = tensor.AsContinuous(nil)
+	other = other.Transpose().AsContinuous(nil)
+
+	a_data, b_data := types.Any(tensor.data).([]float32), types.Any(other.data).([]float32)
 	out_data := types.Any(outTensor.data).([]float32)
 	// if adim0 == bdim1 { // squared
 	// 	ops.MatMulSquareNaiveImpl(a.data, b.data, a.shape, a.strides, outTensor.data)
-	ops.MatMulNaiveImpl_AVX(a_data, b_data, a.shape, b.shape,
-		a.strides, b.strides,
+	ops.MatMulNaiveImpl_AVX(a_data, b_data, tensor.shape, other.shape,
+		tensor.strides, other.strides,
 		out_data, outTensor.strides)
 	outTensor.data = types.Any(out_data).([]T)
 	return outTensor
