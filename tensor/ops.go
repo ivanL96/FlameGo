@@ -2,12 +2,9 @@ package tensor
 
 import (
 	"fmt"
-	"gograd/tensor/intrinsics/cpu"
 	ops "gograd/tensor/ops"
 	types "gograd/tensor/types"
 )
-
-var impl cpu.Implementation = cpu.DetectImpl()
 
 type BinaryScalarOp[T types.TensorType] func(T, T) T
 type UnaryScalarOp[T types.TensorType] func(T) T
@@ -169,8 +166,7 @@ func (tensor *Tensor[T]) MatMul(other *Tensor[T]) *Tensor[T] {
 	a_data := tensor.data
 	b_data := other.data
 	out_data := outTensor.data
-	switch impl {
-	case cpu.AVX:
+	if tensor.hasFlag(UseAVXFlag) {
 		other = other.Transpose().AsContinuous(nil) // needs to be in column-major format for better AVX support
 
 		a_data := types.Any(tensor.data).([]float32)
@@ -179,7 +175,8 @@ func (tensor *Tensor[T]) MatMul(other *Tensor[T]) *Tensor[T] {
 		ops.MatMulNaiveImpl_AVX(a_data, b_data, tensor.shape, other.shape,
 			tensor.strides, other.strides,
 			out_data, outTensor.strides)
-	default:
+	} else {
+		other = other.AsContinuous(nil)
 		ops.MatMulNaiveImpl(a_data, b_data, tensor.shape, other.shape,
 			tensor.strides, other.strides,
 			out_data, outTensor.strides)

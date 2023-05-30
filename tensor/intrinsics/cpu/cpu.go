@@ -31,12 +31,24 @@ func DetectImpl() Implementation {
 	return impl
 }
 
+func IsImplAvailable(impl Implementation) bool {
+	if impl == AVX512 && !cpuid.CPU.Supports(cpuid.AVX512F, cpuid.AVX512DQ) {
+		return false
+		// panic(fmt.Sprintf("Implementation %v is not supported", impl.String()))
+	} else if impl == AVX && !cpuid.CPU.Supports(cpuid.AVX) {
+		return false
+	} else if impl != Default {
+		return false
+	}
+	return true
+}
+
 func (i Implementation) String() string {
 	switch i {
 	case AVX:
 		return "avx"
-	// case AVX512:
-	// 	return "avx512"
+	case AVX512:
+		return "avx512"
 	default:
 		return "default"
 	}

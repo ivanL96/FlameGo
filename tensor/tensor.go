@@ -2,11 +2,15 @@ package tensor
 
 import (
 	"fmt"
+	"gograd/tensor/intrinsics/cpu"
 	"gograd/tensor/iter"
 	types "gograd/tensor/types"
 )
 
 // set of primitive common tensor methods
+//tensor initialization-----------------------------------------------------
+
+var auto_impl cpu.Implementation = cpu.DetectImpl()
 
 func makeTensor[T types.TensorType](dataPtr *[]T, shape types.Shape) *Tensor[T] {
 	var shapeProd types.Dim = 1
@@ -24,12 +28,17 @@ func makeTensor[T types.TensorType](dataPtr *[]T, shape types.Shape) *Tensor[T] 
 	if len(shape) == 0 || int(shapeProd) != len(data) {
 		panic(fmt.Sprintf("makeTensor: Value length %v cannot have shape %v", len(data), shape))
 	}
-	return &Tensor[T]{
+	tensor := &Tensor[T]{
 		shape:     append(types.Shape(nil), shape...),
 		strides:   getStrides(shape),
 		data:      data,
 		dim_order: initDimOrder(shape),
 	}
+
+	if auto_impl == cpu.AVX {
+		tensor.UseAVX()
+	}
+	return tensor
 }
 
 // inits a tensor with data
@@ -55,6 +64,15 @@ func AsTensor[T types.TensorType](data []T, shape types.Shape) *Tensor[T] {
 		shape:     shape,
 	}
 	return t
+}
+
+//-----------------------------------------------------
+
+func (tensor *Tensor[T]) UseAVX() {
+	if cpu.IsImplAvailable(cpu.AVX) {
+		panic("AVX is not available.")
+	}
+	tensor.setFlag(UseAVXFlag)
 }
 
 func AsType[OLDT types.TensorType, NEWT types.TensorType](tensor *Tensor[OLDT]) *Tensor[NEWT] {
@@ -154,6 +172,7 @@ func (tensor *Tensor[T]) SetData(value []T) *Tensor[T] {
 	return tensor
 }
 
+// set scalar to specific index
 func (tensor *Tensor[T]) Set(indexes []int, value T) {
 	tensor.clearFlag(SameValuesFlag)
 	flatIndex := tensor.getFlatIndex(indexes...)
@@ -161,5 +180,5 @@ func (tensor *Tensor[T]) Set(indexes []int, value T) {
 }
 
 func (tensor *Tensor[T]) CreateIterator() *iter.TensorIterator[T] {
-	return iter.CreateIterator[T](tensor.data, tensor.shape)
+	return iter.CreateIterator(tensor.data, tensor.shape)
 }
