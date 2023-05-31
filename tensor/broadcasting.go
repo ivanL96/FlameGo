@@ -40,7 +40,7 @@ func BroadcastShapes(shape_a, shape_b types.Shape) types.Shape {
 		ones_size := len(shape_a) - len(shape_b)
 		shape_b = addLeftPadding(shape_b, ones_size, 1)
 	}
-	// # Start from the trailing dimensions
+	// start from the trailing dimensions
 	result_shape := make(types.Shape, len(shape_a))
 	for i := len(shape_a) - 1; i >= 0; i-- {
 		dim1 := shape_a[i]
@@ -65,9 +65,9 @@ func BroadcastShapes(shape_a, shape_b types.Shape) types.Shape {
 	return result_shape
 }
 
-// TODO test with transpose
+// tries to broadcast the shape and replicate the data accordingly
 func (tensor *Tensor[T]) Broadcast(shape ...types.Dim) *Tensor[T] {
-	// tries to broadcast the shape and replicate the data accordingly
+	// TODO test with transpose
 	if Equal_1D_slices(tensor.shape, shape) {
 		return tensor
 	}

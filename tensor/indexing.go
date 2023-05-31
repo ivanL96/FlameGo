@@ -72,10 +72,6 @@ func (tensor *Tensor[T]) Index(indices ...int) *Tensor[T] {
 		return CreateTensor([]T{tensor.data[flatIndex]}, types.Shape{1})
 	}
 	innerShape := tensor.shape[n_indices:]
-	var innerShapeProd types.Dim = 1
-	for _, dim := range innerShape {
-		innerShapeProd *= dim
-	}
 
 	// continuous data
 	// if data layout is continuous we can just take a slice start:end from data
@@ -104,10 +100,14 @@ func (tensor *Tensor[T]) Index(indices ...int) *Tensor[T] {
 	}
 
 	// prealloc output
+	var innerShapeProd types.Dim = 1
+	for _, dim := range innerShape {
+		innerShapeProd *= dim
+	}
 	subData := make([]T, innerShapeProd)
 	innermostStride := tensor.strides[len(tensor.strides)-1]
 	row := int(innerShape[len(innerShape)-1]) // innermost axis
-	//number of dims around the 'row'. Cannot be zero
+	// number of dims around the 'row'. Cannot be zero
 	numDims := len(innerStrides) - 2
 	for i := numDims; i >= 0; i-- {
 		stride := innerStrides[i]
