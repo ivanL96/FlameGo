@@ -65,6 +65,7 @@ func BroadcastShapes(shape_a, shape_b types.Shape) types.Shape {
 	return result_shape
 }
 
+// TODO test with transpose
 func (tensor *Tensor[T]) Broadcast(shape ...types.Dim) *Tensor[T] {
 	// tries to broadcast the shape and replicate the data accordingly
 	if Equal_1D_slices(tensor.shape, shape) {

@@ -73,20 +73,16 @@ func BaseBinElementwiseOp[T types.TensorType](
 		var broadcasted_tensor_a *Tensor[T] = nil
 		var broadcasted_tensor_b *Tensor[T] = nil
 		for i, brc_dim := range broadcasted_shape {
-			if i < len(tensor_a.Shape()) {
-				dim_a := tensor_a.Shape()[i]
-				if dim_a < brc_dim && broadcasted_tensor_a == nil {
-					// need to broadcast tensor_a
-					// TODO minor. how to avoid additional Broadcast()
-					broadcasted_tensor_a = tensor_a.Broadcast(broadcasted_shape...)
-				}
+			if broadcasted_tensor_a != nil && broadcasted_tensor_b != nil {
+				continue
 			}
-			if i < len(tensor_b.Shape()) {
-				dim_b := tensor_b.Shape()[i]
-				if dim_b < brc_dim && broadcasted_tensor_b == nil {
-					// need to broadcast tensor_b
-					broadcasted_tensor_b = tensor_b.Broadcast(broadcasted_shape...)
-				}
+			if i < len(tensor_a.shape) && tensor_a.shape[i] < brc_dim && broadcasted_tensor_a == nil {
+				// need to broadcast tensor_a
+				broadcasted_tensor_a = tensor_a.Broadcast(broadcasted_shape...)
+			}
+			if i < len(tensor_b.shape) && tensor_b.shape[i] < brc_dim && broadcasted_tensor_b == nil {
+				// need to broadcast tensor_b
+				broadcasted_tensor_b = tensor_b.Broadcast(broadcasted_shape...)
 			}
 		}
 		outTensor = PrepareOutTensor(out, broadcasted_shape)
@@ -101,7 +97,7 @@ func BaseBinElementwiseOp[T types.TensorType](
 			dataIndex := iter.Index()
 			idx := iter.Next()
 			outTensor.data[dataIndex] = binOp(
-				broadcasted_tensor_a.Get(idx...), broadcasted_tensor_b.Get(idx...))
+				broadcasted_tensor_a.Get_fast(idx...), broadcasted_tensor_b.Get_fast(idx...))
 		}
 	}
 	outTensor.clearFlag(SameValuesFlag)

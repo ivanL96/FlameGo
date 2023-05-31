@@ -77,6 +77,7 @@ func BenchmarkMatMulUnite(b *testing.B) {
 // 4.184.719.133 ~ 4.910.045.600 ns
 func BenchmarkMatMul(b *testing.B) {
 	var size types.Dim = 1000
+	// c := tensor.Scalar(float32(size))
 	a1 := tensor.Range[float32](int(size*size)).Reshape(size, size)
 	b1 := tensor.Range[float32](int(size*size)).Reshape(size, size)
 	for i := 0; i < b.N; i++ {

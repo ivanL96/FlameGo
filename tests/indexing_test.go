@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"gograd/tensor"
 	types "gograd/tensor/types"
 	"testing"
@@ -62,9 +63,9 @@ func TestTransposeAndIndex(t *testing.T) {
 }
 
 func TestTransposeAndIndexFast(t *testing.T) {
-	a := tensor.Range[int32](8).Reshape(4, 2)
-	// a.ToString()
-	out := a.Transpose().Get_fast(1, 1)
+	a := tensor.Range[int32](8).Reshape(4, 2).Transpose()
+	fmt.Println(a.ToString())
+	out := a.Get_fast(1, 1)
 	// a.ToString()
 	assert(t, out == 3)
 }

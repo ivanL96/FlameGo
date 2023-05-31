@@ -35,10 +35,13 @@ func BenchmarkTranspose(b *testing.B) {
 	}
 }
 
+// BenchmarkBroadcast-8      718834              1857 ns/op             504 B/op         16 allocs/op
+// BenchmarkBroadcast-8     1000000              1485 ns/op             504 B/op         16 allocs/op
+// BenchmarkBroadcast-8      704990              1667 ns/op             504 B/op         16 allocs/op
 func BenchmarkBroadcast(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		a := tensor.CreateEmptyTensor[int32](3, 2)
-		a.Broadcast(3, 1, 1)
+		a := tensor.Range[int32](6).Reshape(3, 2, 1)
+		a.Broadcast(3, 4, 1, 1, 3)
 	}
 }
 

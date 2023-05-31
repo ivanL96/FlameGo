@@ -66,7 +66,7 @@ func MatMulNaiveImpl_AVX(
 		a_stride0_i_end := a_stride0 * (i + 1)
 		out_stride0_i := out_stride0 * i
 		for j := 0; j < a_dim0; j++ {
-			out_val := cpu.Default.Dot(
+			out_val := cpu.AVX.Dot(
 				a_data[a_stride0_i:a_stride0_i_end],
 				b_data[b_stride0*j:b_stride0*(j+1)],
 			)
