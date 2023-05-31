@@ -34,9 +34,9 @@ func get_flat_idx_fast(strides []int, indices ...int) int {
 	idxlen := len(indices)
 	switch idxlen {
 	case 1:
-		flatIndex = indices[0]
+		flatIndex = strides[0] * indices[0]
 	case 2:
-		flatIndex = strides[0]*indices[0] + indices[1]
+		flatIndex = strides[0]*indices[0] + strides[1]*indices[1]
 	default:
 		for i, ind := range indices {
 			flatIndex += strides[i] * ind
