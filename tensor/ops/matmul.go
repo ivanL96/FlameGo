@@ -75,6 +75,14 @@ func MatMulNaiveImpl_AVX(
 	}
 }
 
+func MatMul_AVX_VectorsToScalar(
+	a_data,
+	b_data,
+	out_data []float32,
+) {
+	out_data[0] = cpu.AVX.Dot(a_data, b_data)
+}
+
 // matMul for square matrices with the same shape: (N,N)
 func MatMulSquareNaiveImpl[T types.TensorType](
 	a_data,

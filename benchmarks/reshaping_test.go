@@ -22,9 +22,9 @@ func BenchmarkIndex(b *testing.B) {
 // 661308	      2020 ns/op	    1020 B/op	       8 allocs/op
 // no diff using Flags
 func BenchmarkTransposeIndex(b *testing.B) {
-	a := tensor.Range[int32](100*100*100).Reshape(100, 100, 100).Transpose()
+	a := tensor.Range[int32](1000*100*1000).Reshape(1000, 100, 1000).Transpose()
 	for i := 0; i < b.N; i++ {
-		a.Index(88, 88)
+		a.Index(888, 88)
 	}
 }
 
@@ -35,9 +35,10 @@ func BenchmarkTranspose(b *testing.B) {
 	}
 }
 
-// BenchmarkBroadcast-8      718834              1857 ns/op             504 B/op         16 allocs/op
-// BenchmarkBroadcast-8     1000000              1485 ns/op             504 B/op         16 allocs/op
-// BenchmarkBroadcast-8      704990              1667 ns/op             504 B/op         16 allocs/op
+// 3,2,1 => 3,4,1,1,3
+// BenchmarkBroadcast-8      257005              4052 ns/op            1440 B/op         19 allocs/op
+// BenchmarkBroadcast-8      405019              4463 ns/op            1440 B/op         19 allocs/op
+// BenchmarkBroadcast-8      498444              4505 ns/op            1440 B/op         19 allocs/op
 func BenchmarkBroadcast(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		a := tensor.Range[int32](6).Reshape(3, 2, 1)

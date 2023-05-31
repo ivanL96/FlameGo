@@ -120,7 +120,10 @@ func unaryElementwiseRoutine[T types.TensorType](
 	return outTensor
 }
 
+//
 // binary ops
+//
+
 func (tensor *Tensor[T]) Add(other_tensor, out *Tensor[T]) *Tensor[T] {
 	return BaseBinElementwiseOp(tensor, other_tensor, ops.Add[T], out)
 }
@@ -146,6 +149,10 @@ func (tensor *Tensor[T]) Sigmoid(out *Tensor[T]) *Tensor[T] {
 	return unaryElementwiseRoutine(tensor, ops.SigmoidAtomic[T], out)
 }
 
+//
+// matrix operations
+//
+
 func (tensor *Tensor[T]) MatMul(other *Tensor[T]) *Tensor[T] {
 	if len(tensor.shape) != 2 || len(other.shape) != 2 {
 		panic("Tensors must be two-dim.")
@@ -158,19 +165,29 @@ func (tensor *Tensor[T]) MatMul(other *Tensor[T]) *Tensor[T] {
 	adim0, bdim1 := tensor.shape[0], other.shape[1]
 	outTensor := CreateEmptyTensor[T](adim0, bdim1)
 
+	isVec2Scalar := adim0 == 1 && bdim1 == 1
+
 	tensor = tensor.AsContinuous(nil)
+
 	a_data := tensor.data
 	b_data := other.data
 	out_data := outTensor.data
+
 	if tensor.hasFlag(UseAVXFlag) {
 		other = other.Transpose().AsContinuous(nil) // needs to be in column-major format for better AVX support
 
 		a_data := types.Any(tensor.data).([]float32)
 		b_data := types.Any(other.data).([]float32)
 		out_data := types.Any(outTensor.data).([]float32)
-		ops.MatMulNaiveImpl_AVX(a_data, b_data, tensor.shape, other.shape,
-			tensor.strides, other.strides,
-			out_data, outTensor.strides)
+
+		if isVec2Scalar {
+			ops.MatMul_AVX_VectorsToScalar(a_data, b_data, out_data)
+		} else {
+			// gen impl
+			ops.MatMulNaiveImpl_AVX(a_data, b_data, tensor.shape, other.shape,
+				tensor.strides, other.strides,
+				out_data, outTensor.strides)
+		}
 	} else {
 		other = other.AsContinuous(nil)
 		ops.MatMulNaiveImpl(a_data, b_data, tensor.shape, other.shape,
@@ -181,7 +198,6 @@ func (tensor *Tensor[T]) MatMul(other *Tensor[T]) *Tensor[T] {
 	return outTensor
 }
 
-// matmul ops
 func SplitTensor[T types.TensorType](
 	tensor, outA, outB, outC, outD *Tensor[T],
 ) (a, b, c, d *Tensor[T]) {
