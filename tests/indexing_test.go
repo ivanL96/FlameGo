@@ -60,3 +60,11 @@ func TestTransposeAndIndex(t *testing.T) {
 	assertEqualSlices(t, e.Data(), []int32{3})
 	assertEqualSlices(t, e.Shape(), types.Shape{1, 1, 1})
 }
+
+func TestTransposeAndIndexFast(t *testing.T) {
+	a := tensor.Range[int32](8).Reshape(4, 2)
+	// a.ToString()
+	out := a.Transpose().Get_fast(1, 1)
+	// a.ToString()
+	assert(t, out == 3)
+}

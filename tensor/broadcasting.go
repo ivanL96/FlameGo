@@ -109,6 +109,7 @@ func (tensor *Tensor[T]) Broadcast(shape ...types.Dim) *Tensor[T] {
 	sub_index := make([]int, len(tensor.shape))
 	repeat := 1
 	is_innermost_broadcast := true
+	last_repeat := 1
 	for i := len(shape_diff) - 1; i >= 0; i-- {
 		if shape_diff[i] != 1 {
 			// if shape_diff[i] == 0 that means that broadsacting
@@ -123,6 +124,7 @@ func (tensor *Tensor[T]) Broadcast(shape ...types.Dim) *Tensor[T] {
 		}
 		// fmt.Println("repeat", repeat)
 
+		// TODO test for other shapes
 		if is_innermost_broadcast {
 			is_innermost_broadcast = false
 			for i, val := range tensor.data {
@@ -130,21 +132,34 @@ func (tensor *Tensor[T]) Broadcast(shape ...types.Dim) *Tensor[T] {
 					outTensor.data[i*repeat+j] = val
 				}
 			}
+			last_repeat = repeat * len(tensor.data)
+			repeat = 1
 			continue
 		}
 
-		var sub *Tensor[T] = tensor
-		_sub_index := sub_index[:i]
+		if last_repeat == 1 {
+			var sub *Tensor[T] = tensor
+			_sub_index := sub_index[:i]
 
-		if i > 0 {
-			sub = tensor.Index(_sub_index...)
-		}
-		for j := 0; j < repeat; j++ { // repeat
-			start := j * len(sub.data)
-			end := len(sub.data) * (j + 1)
-			copy(outTensor.data[start:end], sub.data)
+			if i > 0 {
+				sub = tensor.Index(_sub_index...)
+			}
+			// fmt.Println("sub what is it ", sub.ToString())
+			for j := 0; j < repeat; j++ { // repeat
+				start := j * len(sub.data)
+				end := len(sub.data) * (j + 1)
+				copy(outTensor.data[start:end], sub.data)
+			}
+		} else {
+			sub_data := outTensor.data[:last_repeat]
+			for j := 1; j < repeat; j++ { // repeat
+				start := j * len(sub_data)
+				end := len(sub_data) * (j + 1)
+				copy(outTensor.data[start:end], sub_data)
+			}
 		}
 
+		last_repeat = repeat
 		repeat = 1
 	}
 	outTensor.clearFlag(SameValuesFlag)

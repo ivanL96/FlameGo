@@ -59,6 +59,7 @@ func TestMul(t *testing.T) {
 
 func TestMatMul1(t *testing.T) {
 	a := tensor.Range[float32](9).Reshape(3, 3)
+	// a.ResetFlags()
 	b := tensor.Range[float32](9).Reshape(3, 3)
 	c := a.MatMul(b)
 	assertEqualSlices(t, c.Data(), []float32{15, 18, 21, 42, 54, 66, 69, 90, 111})
