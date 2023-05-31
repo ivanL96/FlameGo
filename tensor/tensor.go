@@ -75,6 +75,10 @@ func (tensor *Tensor[T]) UseAVX() {
 	tensor.setFlag(UseAVXFlag)
 }
 
+func (tensor *Tensor[T]) UseDefault() {
+	tensor.clearFlag(UseAVXFlag)
+}
+
 func AsType[OLDT types.TensorType, NEWT types.TensorType](tensor *Tensor[OLDT]) *Tensor[NEWT] {
 	// naive impl with copying the data & tensor
 	// example:

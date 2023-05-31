@@ -132,10 +132,9 @@ func (tensor *Tensor[T]) Broadcast(shape ...types.Dim) *Tensor[T] {
 			// so we take a sub tensor using Index() from original tensor and repeat it.
 			// sub: [1,2,3], repeat 2 => [1,2,3,1,2,3]
 			var sub *Tensor[T] = tensor
-			_sub_index := sub_index[:i]
 
 			if i > 0 {
-				sub = tensor.Index(_sub_index...)
+				sub = tensor.Index(sub_index[:i]...)
 			}
 			// fmt.Println("sub what is it ", sub.ToString())
 			for j := 0; j < repeat; j++ { // repeat
