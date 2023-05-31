@@ -104,7 +104,7 @@ func BaseBinElementwiseOp[T types.TensorType](
 				broadcasted_tensor_a.Get(idx...), broadcasted_tensor_b.Get(idx...))
 		}
 	}
-	outTensor.ResetFlags()
+	outTensor.clearFlag(SameValuesFlag)
 	return outTensor
 }
 

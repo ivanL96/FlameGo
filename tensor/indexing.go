@@ -31,8 +31,16 @@ func (tensor *Tensor[T]) Get_fast(indices ...int) T {
 
 func get_flat_idx_fast(strides []int, indices ...int) int {
 	flatIndex := 0
-	for i, ind := range indices {
-		flatIndex += strides[i] * ind
+	idxlen := len(indices)
+	switch idxlen {
+	case 1:
+		flatIndex = indices[0]
+	case 2:
+		flatIndex = strides[0]*indices[0] + indices[1]
+	default:
+		for i, ind := range indices {
+			flatIndex += strides[i] * ind
+		}
 	}
 	return flatIndex
 }
