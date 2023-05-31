@@ -52,7 +52,7 @@ func (tensor *Tensor[T]) Index(indices ...int) *Tensor[T] {
 	n_indices := len(indices)
 	n_dims := len(tensor.shape)
 	if n_indices == 0 {
-		panic("At leat one index is required in View")
+		panic("At leat one index is required in Index()")
 	}
 	if n_indices > n_dims {
 		panic("Too many indices")

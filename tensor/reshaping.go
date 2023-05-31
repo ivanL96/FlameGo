@@ -7,103 +7,6 @@ import (
 
 // set of operations for shaping routines
 
-func AreBroadcastable(shape_a, shape_b types.Shape) bool {
-	if (IsScalarLike(shape_a) && IsScalarLike(shape_b)) ||
-		Equal_1D_slices(shape_a, shape_b) {
-		return true
-	}
-	// If one shape has more dimensions than the other, prepend 1s to the shape of the smaller array
-	if len(shape_a) < len(shape_b) {
-		ones_size := len(shape_b) - len(shape_a)
-		shape_a = addLeftPadding(shape_a, ones_size, 1)
-	} else if len(shape_b) < len(shape_a) {
-		ones_size := len(shape_a) - len(shape_b)
-		shape_b = addLeftPadding(shape_b, ones_size, 1)
-	}
-	// Start from the trailing dimensions and work forward
-	for i := len(shape_a) - 1; i >= 0; i-- {
-		dim1 := shape_a[i]
-		dim2 := shape_b[i]
-		if dim1 != dim2 && dim1 != 1 && dim2 != 1 {
-			return false
-		}
-	}
-	return true
-}
-
-func BroadcastShapes(shape_a, shape_b types.Shape) (types.Shape, int) {
-	if IsScalarLike(shape_a) && IsScalarLike(shape_b) || Equal_1D_slices(shape_a, shape_b) {
-		return shape_a, -1
-	}
-	if len(shape_a) < len(shape_b) {
-		ones_size := len(shape_b) - len(shape_a)
-		shape_a = addLeftPadding(shape_a, ones_size, 1)
-	} else if len(shape_b) < len(shape_a) {
-		ones_size := len(shape_a) - len(shape_b)
-		shape_b = addLeftPadding(shape_b, ones_size, 1)
-	}
-	// # Start from the trailing dimensions
-	result_shape := make(types.Shape, len(shape_a))
-	nDimBroadcasted := 0
-	for i := len(shape_a) - 1; i >= 0; i-- {
-		dim1 := shape_a[i]
-		dim2 := shape_b[i]
-		if dim1 != dim2 && dim1 != 1 && dim2 != 1 {
-			panic(
-				fmt.Sprintf(
-					"Shapes %v and %v are not broadcastable: Dim1 '%v' not equal Dim2 '%v'", shape_a, shape_b, dim1, dim2,
-				),
-			)
-		}
-		if dim1 == dim2 {
-			result_shape[i] = dim1
-		} else if dim2 != 1 {
-			nDimBroadcasted = i
-			result_shape[i] = dim2
-		} else if dim1 != 1 {
-			nDimBroadcasted = i
-			result_shape[i] = dim1
-		} else {
-			panic("Something went wrong during broadcasting")
-		}
-	}
-	return result_shape, nDimBroadcasted
-}
-
-func (tensor *Tensor[T]) Broadcast(shape ...types.Dim) *Tensor[T] {
-	// tries to broadcast the shape and replicate the data accordingly
-	if Equal_1D_slices(tensor.shape, shape) {
-		return tensor
-	}
-
-	broadcastedShape, nDimBroadcasted := BroadcastShapes(tensor.shape, shape)
-	var shapeProd types.Dim = 1 // new number of elements
-	for _, dim := range broadcastedShape {
-		shapeProd *= dim
-	}
-	outTensor := CreateEmptyTensor[T](broadcastedShape...)
-	if tensor.hasFlag(SameValuesFlag) {
-		outTensor.setFlag(SameValuesFlag)
-		outTensor.Fill(tensor.data[0])
-		return outTensor
-	}
-
-	// repeat data to fill broadcasted dims
-	ntimes := int(shapeProd) / len(tensor.data)
-	iter := tensor.CreateIterator()
-	for iter.Iterate() {
-		idx := iter.Next()
-		value := tensor.Get_fast(idx...)
-		outIdx := append([]int(nil), idx...)
-		for i := 0; i < ntimes; i++ {
-			outTensor.data[get_flat_idx_fast(outTensor.strides, outIdx...)] = value
-			outIdx[nDimBroadcasted]++
-		}
-	}
-	outTensor.clearFlag(SameValuesFlag)
-	return outTensor
-}
-
 func (tensor *Tensor[T]) Flatten(out *Tensor[T]) *Tensor[T] {
 	outTensor := PrepareOutTensor(out, tensor.shape)
 	outTensor.shape = types.Shape{types.Dim(len(tensor.data))}
@@ -131,7 +34,7 @@ func (tensor *Tensor[T]) Reshape(newShape ...types.Dim) *Tensor[T] {
 		panic("Shape cannot have 0 dim size.")
 	}
 	if len(tensor.data) != int(new_shape_prod) {
-		panic(fmt.Sprintf("Cannot reshape to %v", newShape))
+		panic(fmt.Sprintf("Cannot reshape tensor with size %v to shape %v", len(tensor.data), newShape))
 	}
 	tensor.shape = newShape
 	tensor.strides = getStrides(newShape)
