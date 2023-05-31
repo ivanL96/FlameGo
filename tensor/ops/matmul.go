@@ -9,11 +9,11 @@ import (
 // Naive implementation of matrix multiplication with time complexity n^3
 // input A and B, both n by n matrices
 // initialize C to be an n by n matrix of all zeros
-// for i from 1 to n:
 //
-//	for j from 1 to n:
-//	    for k from 1 to n:
-//	        C[i][j] = C[i][j] + A[i][k]*B[k][j]
+//	 for i from 1 to n:
+//		 for j from 1 to n:
+//		    for k from 1 to n:
+//		        C[i][j] = C[i][j] + A[i][k]*B[k][j]
 //
 // output C (as A*B)
 func MatMulNaiveImpl[T types.TensorType](
@@ -58,8 +58,6 @@ func MatMulNaiveImpl_AVX(
 	out_strides []int,
 ) {
 	a_dim0 := int(a_shape[0])
-	// a_dim1 := int(a_shape[1])
-	// b_dim1 := int(b_shape[1])
 	out_stride0 := out_strides[0]
 	a_stride0 := a_strides[0]
 	b_stride0 := b_strides[0]
@@ -68,11 +66,7 @@ func MatMulNaiveImpl_AVX(
 		a_stride0_i_end := a_stride0 * (i + 1)
 		out_stride0_i := out_stride0 * i
 		for j := 0; j < a_dim0; j++ {
-			// out_val += a_data[a_stride0_i+k] * b_data[b_stride0*k+j]
-			// fmt.Println(a_data[a_stride0_i:a_stride0_i+a_dim1], b_data[b_stride0*j:b_stride0*(j+1)])
-			// fmt.Println("a", a_stride0_i, a_stride0*(i+1))
-			// fmt.Println("b", b_stride0*j, b_stride0*(j+1))
-			out_val := cpu.AVX.Dot(
+			out_val := cpu.Default.Dot(
 				a_data[a_stride0_i:a_stride0_i_end],
 				b_data[b_stride0*j:b_stride0*(j+1)],
 			)
@@ -110,6 +104,7 @@ func MatMulSquareNaiveImpl[T types.TensorType](
 }
 
 // Strassen's matmul implementation with sub-cubic time complexity
+// insanely slow compared to Naive impl
 func MatMulStrassen[T types.TensorType](a_data, b_data []T, a_shape types.Shape) []T {
 	if a_shape[0] == 1 {
 		return []T{a_data[0] * b_data[0]}

@@ -67,7 +67,7 @@ func BaseBinElementwiseOp[T types.TensorType](
 	} else {
 		// (A, B ...) & (N, M, ...)
 		// apply operation for non scalar broadcastable tensors
-		broadcasted_shape, _ := BroadcastShapes(tensor_a.Shape(), tensor_b.Shape())
+		broadcasted_shape := BroadcastShapes(tensor_a.Shape(), tensor_b.Shape())
 
 		// determine which tensor (at least 1) should be broadcasted
 		var broadcasted_tensor_a *Tensor[T] = nil

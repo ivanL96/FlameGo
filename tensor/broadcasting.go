@@ -29,9 +29,9 @@ func AreBroadcastable(shape_a, shape_b types.Shape) bool {
 	return true
 }
 
-func BroadcastShapes(shape_a, shape_b types.Shape) (types.Shape, []int) {
+func BroadcastShapes(shape_a, shape_b types.Shape) types.Shape {
 	if IsScalarLike(shape_a) && IsScalarLike(shape_b) || Equal_1D_slices(shape_a, shape_b) {
-		return shape_a, make([]int, 0)
+		return shape_a
 	}
 	if len(shape_a) < len(shape_b) {
 		ones_size := len(shape_b) - len(shape_a)
@@ -42,7 +42,6 @@ func BroadcastShapes(shape_a, shape_b types.Shape) (types.Shape, []int) {
 	}
 	// # Start from the trailing dimensions
 	result_shape := make(types.Shape, len(shape_a))
-	broadcasted_dims := make([]int, len(shape_a))
 	for i := len(shape_a) - 1; i >= 0; i-- {
 		dim1 := shape_a[i]
 		dim2 := shape_b[i]
@@ -56,18 +55,14 @@ func BroadcastShapes(shape_a, shape_b types.Shape) (types.Shape, []int) {
 		if dim1 == dim2 {
 			result_shape[i] = dim1
 		} else if dim2 != 1 {
-			// fmt.Printf("is broadcasted %v\n", i)
-			broadcasted_dims[i] = 1
 			result_shape[i] = dim2
 		} else if dim1 != 1 {
-			// fmt.Printf("is broadcasted %v\n", i)
-			broadcasted_dims[i] = 1
 			result_shape[i] = dim1
 		} else {
 			panic("Something went wrong during broadcasting")
 		}
 	}
-	return result_shape, broadcasted_dims
+	return result_shape
 }
 
 func (tensor *Tensor[T]) Broadcast(shape ...types.Dim) *Tensor[T] {
@@ -76,12 +71,7 @@ func (tensor *Tensor[T]) Broadcast(shape ...types.Dim) *Tensor[T] {
 		return tensor
 	}
 
-	broadcastedShape, _ := BroadcastShapes(tensor.shape, shape)
-
-	var shapeProd types.Dim = 1 // new number of elements
-	for _, dim := range broadcastedShape {
-		shapeProd *= dim
-	}
+	broadcastedShape := BroadcastShapes(tensor.shape, shape)
 
 	outTensor := CreateEmptyTensor[T](broadcastedShape...)
 	if tensor.hasFlag(SameValuesFlag) {
@@ -138,6 +128,9 @@ func (tensor *Tensor[T]) Broadcast(shape ...types.Dim) *Tensor[T] {
 		}
 
 		if last_repeat == 1 {
+			// if last_repeat == 1 this is the first time we need to broadcast,
+			// so we take a sub tensor using Index() from original tensor and repeat it.
+			// sub: [1,2,3], repeat 2 => [1,2,3,1,2,3]
 			var sub *Tensor[T] = tensor
 			_sub_index := sub_index[:i]
 
@@ -151,6 +144,8 @@ func (tensor *Tensor[T]) Broadcast(shape ...types.Dim) *Tensor[T] {
 				copy(outTensor.data[start:end], sub.data)
 			}
 		} else {
+			// if broadcasting already happened in inner dimensions,
+			// that means outTensor contains repeated data, we just repeat is again with the current factor
 			sub_data := outTensor.data[:last_repeat]
 			for j := 1; j < repeat; j++ { // repeat
 				start := j * len(sub_data)
