@@ -7,10 +7,10 @@ import (
 	types "gograd/tensor/types"
 )
 
+var auto_impl cpu.Implementation = cpu.DetectImpl()
+
 // set of primitive common tensor methods
 //tensor initialization-----------------------------------------------------
-
-var auto_impl cpu.Implementation = cpu.DetectImpl()
 
 func makeTensor[T types.TensorType](dataPtr *[]T, shape types.Shape) *Tensor[T] {
 	var shapeProd types.Dim = 1
@@ -183,6 +183,6 @@ func (tensor *Tensor[T]) Set(indexes []int, value T) {
 	tensor.data[flatIndex] = value
 }
 
-func (tensor *Tensor[T]) CreateIterator() *iter.TensorIterator[T] {
-	return iter.CreateIterator(tensor.data, tensor.shape)
+func (tensor *Tensor[T]) CreateIterator() *iter.TensorIterator {
+	return iter.CreateIterator(len(tensor.data), tensor.shape)
 }

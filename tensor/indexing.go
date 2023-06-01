@@ -8,41 +8,43 @@ import (
 func (tensor *Tensor[T]) getFlatIndex(indices ...int) int {
 	flatIndex := 0
 	for i, ind := range indices {
+		dim := int(tensor.shape[i])
 		// resolve negative indexes
 		if ind < 0 {
-			ind = int(tensor.shape[i]) + ind
-			if ind < 0 {
+			norm_ind := dim + ind
+			if norm_ind < 0 {
 				panic(fmt.Sprintf("Index %v is out of bounds", ind))
 			}
+			ind = norm_ind
 		}
 		// bound check
-		if ind >= int(tensor.shape[i]) {
-			panic(fmt.Sprintf("Index %v is out of bounds for dim %v", ind, tensor.shape[i]))
+		if ind >= dim {
+			panic(fmt.Sprintf("Index %v is out of bounds for dim %v", ind, dim))
 		}
 		flatIndex += tensor.strides[i] * ind
 	}
 	return flatIndex
 }
 
-// faster Get() without bounds checking. Does not support negative indexing
-func (tensor *Tensor[T]) Get_fast(indices ...int) T {
-	return tensor.data[get_flat_idx_fast(tensor.strides, indices...)]
-}
-
 func get_flat_idx_fast(strides []int, indices ...int) int {
-	flatIndex := 0
 	idxlen := len(indices)
 	switch idxlen {
 	case 1:
-		flatIndex = strides[0] * indices[0]
+		return strides[0] * indices[0]
 	case 2:
-		flatIndex = strides[0]*indices[0] + strides[1]*indices[1]
+		return strides[0]*indices[0] + strides[1]*indices[1]
 	default:
+		flatIndex := 0
 		for i, ind := range indices {
 			flatIndex += strides[i] * ind
 		}
+		return flatIndex
 	}
-	return flatIndex
+}
+
+// faster Get() without bounds checking. Does not support negative indexing
+func (tensor *Tensor[T]) Get_fast(indices ...int) T {
+	return tensor.data[get_flat_idx_fast(tensor.strides, indices...)]
 }
 
 func (tensor *Tensor[T]) Get(indices ...int) T {
@@ -69,7 +71,7 @@ func (tensor *Tensor[T]) Index(indices ...int) *Tensor[T] {
 	// index of the first elem in the sub tensor
 	flatIndex := tensor.getFlatIndex(indices...)
 	if n_indices == n_dims {
-		return CreateTensor([]T{tensor.data[flatIndex]}, types.Shape{1})
+		return Scalar[T](tensor.data[flatIndex])
 	}
 	innerShape := tensor.shape[n_indices:]
 
