@@ -54,14 +54,21 @@ func initDimOrder(shape types.Shape) []uint16 {
 
 // if dim order is not shuffled
 func isDimOrderInit(dimOrder []uint16) bool {
-	var min uint16 = 0
-	for _, dim := range dimOrder {
-		if dim > min {
-			return false
+	switch len(dimOrder) {
+	case 1:
+		return true
+	case 2:
+		return dimOrder[0] == 0
+	default:
+		var min uint16 = 0
+		for _, dim := range dimOrder {
+			if dim > min {
+				return false
+			}
+			min += 1
 		}
-		min += 1
+		return true
 	}
-	return true
 }
 
 func isIntKind(tensorDType reflect.Type) bool {
@@ -81,7 +88,7 @@ func PrepareOutTensor[T types.TensorType](out *Tensor[T], shape types.Shape) *Te
 	// check if 'out' tensor has shape less than required.
 	// however having bigger shape is OK since the 'out' tensor can serve as a buffer for different outputs
 	if len(out.shape) != len(shape) {
-		panic("Output tensor has less dims than required")
+		panic(fmt.Sprintf("Output tensor has different number of dims. Required %v, but got %v", len(shape), len(out.shape)))
 	}
 	for i, dim := range shape {
 		if dim > out.shape[i] {
