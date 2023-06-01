@@ -2,6 +2,7 @@ package tensor
 
 import (
 	"fmt"
+	"gograd/tensor/iter"
 	ops "gograd/tensor/ops"
 	types "gograd/tensor/types"
 )
@@ -152,6 +153,42 @@ func (tensor *Tensor[T]) Sigmoid(out *Tensor[T]) *Tensor[T] {
 //
 // matrix operations
 //
+
+func (tensor *Tensor[T]) Dot(other *Tensor[T]) *Tensor[T] {
+	if len(tensor.shape) != len(other.shape) {
+		panic("Tensors must have equal number of dims.")
+	}
+	outer_dims_a := tensor.shape[:len(tensor.shape)-2]
+	outer_dims_b := other.shape[:len(tensor.shape)-2]
+	if !Equal_1D_slices(outer_dims_a, outer_dims_b) {
+		panic("Tensors must have equal outer dims. ")
+	}
+	var outer_shape_prod types.Dim = 1
+	for _, dim := range outer_dims_a {
+		outer_shape_prod *= dim
+	}
+
+	tensors_stack := make([]*Tensor[T], int(outer_shape_prod))
+	shape_iter := iter.CreateIterator(int(outer_shape_prod), outer_dims_a)
+	for shape_iter.Iterate() {
+		i := shape_iter.Index()
+		idx := shape_iter.Next()
+		mat_a := tensor.Index(idx...)
+		mat_b := other.Index(idx...)
+		out := mat_a.MatMul(mat_b)
+		tensors_stack[i] = out
+	}
+
+	out := Unite(tensors_stack...)
+
+	out_shape := make(types.Shape, len(tensor.shape))
+	copy(out_shape[:len(outer_dims_a)], outer_dims_a)
+	out_shape[len(out_shape)-2] = tensor.shape[len(tensor.shape)-2]
+	out_shape[len(out_shape)-1] = other.shape[len(other.shape)-1]
+
+	out = out.Reshape(out_shape...)
+	return out
+}
 
 func (tensor *Tensor[T]) MatMul(other *Tensor[T]) *Tensor[T] {
 	if len(tensor.shape) != 2 || len(other.shape) != 2 {
