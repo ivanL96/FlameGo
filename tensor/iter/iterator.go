@@ -6,7 +6,7 @@ import "gograd/tensor/types"
 // example:
 // iter := tensor.CreateIterator()
 // for iter.Iterate(){
-// 	flat_index := iter.Index() // to get iterator index
+// 	flat_index := iter.Index() // to get iterator index. Note: the index is incremented after the Next() is invoked
 // 	idx := iter.Next()  // Required to update the iterator state.
 //  //Returns the index to access internal data layout. Copy before changing its values!
 // 	tensor.Index(idx...) // can be used here
