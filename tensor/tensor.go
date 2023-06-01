@@ -155,8 +155,19 @@ func (tensor *Tensor[T]) Fill(value T) *Tensor[T] {
 	return tensor
 }
 
-// TODO finish Eye(). Must be stride aware
-// func (tensor *Tensor[T]) Eye() *Tensor[T]
+// creates an array (2d tensor) with ones on the diagonal and zeros elsewhere
+func Eye[T types.TensorType](x, y types.Dim) *Tensor[T] {
+	eye := CreateEmptyTensor[T](types.Shape{x, y}...)
+	for i := 0; i < int(x); i++ {
+		for j := 0; j < int(y); j++ {
+			if i == j {
+				fidx := get_flat_idx_fast(eye.strides, i, j)
+				eye.data[fidx] = 1
+			}
+		}
+	}
+	return eye
+}
 
 // sets new value of the same shape
 func (tensor *Tensor[T]) SetData(value []T) *Tensor[T] {
