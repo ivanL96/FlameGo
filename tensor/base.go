@@ -7,7 +7,7 @@ import (
 
 // fieldalignment -fix gograd/tensor
 type Tensor[T types.TensorType] struct {
-	data      []T
+	data_buff []T
 	shape     types.Shape
 	strides   []int
 	dim_order []uint16
@@ -31,11 +31,15 @@ func (tensor *Tensor[T]) Order() []uint16 {
 // accessing internal data struct will automatically disable all optimization flags for this Tensor.
 func (tensor *Tensor[T]) Data() []T {
 	tensor.ResetFlags()
-	return tensor.data
+	return tensor.data_buff
+}
+
+func (tensor *Tensor[T]) data() []T {
+	return tensor.data_buff
 }
 
 func (tensor *Tensor[T]) DType() reflect.Type {
-	return getTypeArray(tensor.data)
+	return getTypeArray(tensor.data())
 }
 
 // tensor helper flags

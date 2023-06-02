@@ -77,7 +77,7 @@ func (tensor *Tensor[T]) Broadcast(shape ...types.Dim) *Tensor[T] {
 	outTensor := CreateEmptyTensor[T](broadcastedShape...)
 	if tensor.hasFlag(SameValuesFlag) {
 		outTensor.setFlag(SameValuesFlag)
-		outTensor.Fill(tensor.data[0])
+		outTensor.Fill(tensor.data()[0])
 		return outTensor
 	}
 
@@ -118,12 +118,12 @@ func (tensor *Tensor[T]) Broadcast(shape ...types.Dim) *Tensor[T] {
 		// TODO test for other shapes
 		if is_innermost_broadcast {
 			is_innermost_broadcast = false
-			for i, val := range tensor.data {
+			for i, val := range tensor.data() {
 				for j := 0; j < repeat; j++ {
-					outTensor.data[i*repeat+j] = val
+					outTensor.data()[i*repeat+j] = val
 				}
 			}
-			last_repeat = repeat * len(tensor.data)
+			last_repeat = repeat * len(tensor.data())
 			repeat = 1
 			continue
 		}
@@ -139,18 +139,18 @@ func (tensor *Tensor[T]) Broadcast(shape ...types.Dim) *Tensor[T] {
 			}
 			// fmt.Println("sub what is it ", sub.ToString())
 			for j := 0; j < repeat; j++ { // repeat
-				start := j * len(sub.data)
-				end := len(sub.data) * (j + 1)
-				copy(outTensor.data[start:end], sub.data)
+				start := j * len(sub.data())
+				end := len(sub.data()) * (j + 1)
+				copy(outTensor.data()[start:end], sub.data())
 			}
 		} else {
 			// if broadcasting already happened in inner dimensions,
 			// that means outTensor contains repeated data, we just repeat is again with the current factor
-			sub_data := outTensor.data[:last_repeat]
+			sub_data := outTensor.data()[:last_repeat]
 			for j := 1; j < repeat; j++ { // repeat
 				start := j * len(sub_data)
 				end := len(sub_data) * (j + 1)
-				copy(outTensor.data[start:end], sub_data)
+				copy(outTensor.data()[start:end], sub_data)
 			}
 		}
 

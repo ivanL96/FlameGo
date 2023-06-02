@@ -5,6 +5,23 @@ import (
 	types "gograd/tensor/types"
 )
 
+// func (tensor *Tensor[T]) unflatIndex(flatIdx int) []int {
+// TODO finish
+// 	ndims := len(tensor.strides)
+// 	unflatIdx := make([]int, ndims)
+// 	if flatIdx == 0 {
+// 		return unflatIdx
+// 	}
+// 	i := 0
+// 	for true {
+// 		stride := tensor.strides[i]
+// 		if stride < flatIdx {
+// 			flatIdx -= stride
+// 			unflatIdx[i]++
+// 		}
+// 	}
+// }
+
 func (tensor *Tensor[T]) getFlatIndex(indices ...int) int {
 	flatIndex := 0
 	for i, ind := range indices {
@@ -44,7 +61,7 @@ func get_flat_idx_fast(strides []int, indices ...int) int {
 
 // faster Get() without bounds checking. Does not support negative indexing
 func (tensor *Tensor[T]) Get_fast(indices ...int) T {
-	return tensor.data[get_flat_idx_fast(tensor.strides, indices...)]
+	return tensor.data()[get_flat_idx_fast(tensor.strides, indices...)]
 }
 
 func (tensor *Tensor[T]) Get(indices ...int) T {
@@ -53,12 +70,11 @@ func (tensor *Tensor[T]) Get(indices ...int) T {
 			"Incorrect number of indices. Must be %v got %v", len(tensor.shape), len(indices)))
 	}
 	flatIndex := tensor.getFlatIndex(indices...)
-	return tensor.data[flatIndex]
+	return tensor.data()[flatIndex]
 }
 
 // returns sub data for given indices.
 func (tensor *Tensor[T]) Index(indices ...int) *Tensor[T] {
-	// TODO advanced indexing
 	n_indices := len(indices)
 	n_dims := len(tensor.shape)
 	if n_indices == 0 {
@@ -71,7 +87,7 @@ func (tensor *Tensor[T]) Index(indices ...int) *Tensor[T] {
 	// index of the first elem in the sub tensor
 	flatIndex := tensor.getFlatIndex(indices...)
 	if n_indices == n_dims {
-		return Scalar[T](tensor.data[flatIndex])
+		return Scalar[T](tensor.data()[flatIndex])
 	}
 	innerShape := tensor.shape[n_indices:]
 
@@ -79,16 +95,16 @@ func (tensor *Tensor[T]) Index(indices ...int) *Tensor[T] {
 	// if data layout is continuous we can just take a slice start:end from data
 	if isDimOrderInit(tensor.dim_order) {
 		endFlatIndex := flatIndex + tensor.strides[n_indices-1]
-		subData := tensor.data[flatIndex:endFlatIndex]
-		// return CreateTensor(subData, innerShape)
+		subData := tensor.data()[flatIndex:endFlatIndex]
+		return CreateTensor(subData, innerShape)
 		// TODO finish this. Tensor creation here should be without shape validation.
 		// because data can be larger on purpose (buffer)
-		return &Tensor[T]{
-			data:      subData,
-			shape:     innerShape,
-			dim_order: initDimOrder(innerShape),
-			strides:   getStrides(innerShape),
-		}
+		// return &Tensor[T]{
+		// 	data:      subData,
+		// 	shape:     innerShape,
+		// 	dim_order: initDimOrder(innerShape),
+		// 	strides:   getStrides(innerShape),
+		// }
 	}
 
 	// not continuous data. i.e. transposed tensor
@@ -107,6 +123,7 @@ func (tensor *Tensor[T]) Index(indices ...int) *Tensor[T] {
 		innerShapeProd *= dim
 	}
 	subData := make([]T, innerShapeProd)
+	origData := tensor.data()
 	innermostStride := tensor.strides[len(tensor.strides)-1]
 	row := int(innerShape[len(innerShape)-1]) // innermost axis
 	// number of dims around the 'row'. Cannot be zero
@@ -114,11 +131,11 @@ func (tensor *Tensor[T]) Index(indices ...int) *Tensor[T] {
 	for i := numDims; i >= 0; i-- {
 		stride := innerStrides[i]
 		subDataIdx := 0
-		for s := 0; s < int(innerShape[i]); s++ {
-			for j := 0; j < row; j++ {
+		for j := 0; j < int(innerShape[i]); j++ {
+			for k := 0; k < row; k++ {
 				// from innermost to outermost
-				deepIndex := flatIndex + innermostStride*j + stride*s
-				subData[subDataIdx] = tensor.data[deepIndex]
+				deepIndex := flatIndex + innermostStride*k + stride*j
+				subData[subDataIdx] = origData[deepIndex]
 				subDataIdx++
 			}
 		}
@@ -126,14 +143,70 @@ func (tensor *Tensor[T]) Index(indices ...int) *Tensor[T] {
 	return CreateTensor(subData, subShape)
 }
 
-// TODO GetAxis not finished
-func (tensor *Tensor[T]) GetAxis(axis uint, shift uint) *Tensor[T] {
-	stride := tensor.strides[axis]
-	index := int(shift)
-	for i := 0; i < int(tensor.shape[axis]); i++ {
-		fmt.Println(tensor.data[index])
-		index += stride
+// IdxRange is used to create a slice along specific axis.
+// Setting start & end is needed to apply slicing boundaries.
+
+type IdxRange struct {
+	start int
+	end   int
+}
+
+// Idx() is an utility function is used for taking a specific index
+func I(val int) *IdxRange {
+	return &IdxRange{val, val}
+}
+
+// Axis() is used for taking entire axis-wide slice
+func Axis() *IdxRange {
+	return &IdxRange{0, -1}
+}
+
+// Advanced indexing allows to specify index ranges.
+//
+// Example: with given tensor:
+//
+//	[[1,2,3],
+//	[4,5,6]]
+//
+// should return
+// tensor.IndexAdv(Axis(), I(0)) ==> [1,4]
+func (tensor *Tensor[T]) IndexAdv(indices ...*IdxRange) *Tensor[T] {
+	// TODO advanced indexing
+	if len(indices) == 0 {
+		panic("At least one index is required")
 	}
+	if len(indices) > len(tensor.shape) {
+		panic("Too many indices")
+	}
+
+	are_constants := true
+	are_axis_wide := true
+	for i := 0; i < len(indices); i++ {
+		index_range := indices[i]
+		if index_range.start == 0 && index_range.end == -1 {
+			// axis
+			are_constants = false
+		} else if index_range.end != index_range.start {
+			// sub axis
+			are_constants = false
+		} else if index_range.start == index_range.end {
+			// constant
+			are_axis_wide = false
+		}
+	}
+	fmt.Println(are_constants, are_axis_wide)
+
+	if are_constants {
+		idxs := make([]int, len(indices))
+		for i, idx_range := range indices {
+			idxs[i] = idx_range.start
+		}
+		return tensor.Index(idxs...)
+	}
+	if are_axis_wide {
+		return tensor.Copy()
+	}
+	// tensor.Index(index_range.end)
 	return tensor
 }
 
@@ -153,7 +226,7 @@ func (tensor *Tensor[T]) AsContinuous(out *Tensor[T]) *Tensor[T] {
 		dataIndex := iter.Index()
 		valueIndexes := iter.Next()
 		val := tensor.Get_fast(valueIndexes...)
-		outTensor.data[dataIndex] = val
+		outTensor.data()[dataIndex] = val
 	}
 	return outTensor
 }

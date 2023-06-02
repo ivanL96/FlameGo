@@ -24,5 +24,5 @@ func sdbmHash[T types.TensorType](data []T) uint64 {
 }
 
 func (tensor *Tensor[T]) Hash() uint64 {
-	return djb2(tensor.data)
+	return djb2(tensor.data())
 }

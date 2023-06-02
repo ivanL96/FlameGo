@@ -21,7 +21,7 @@ func BaseBinElementwiseOp[T types.TensorType](
 	if IsScalarLike(tensor_a.shape) && IsScalarLike(tensor_b.shape) {
 		outTensor = PrepareOutTensor(out, tensor_a.shape)
 		// most trivial case (1,) & (1,)
-		outTensor.data[0] = binOp(tensor_a.data[0], tensor_b.data[0])
+		outTensor.data()[0] = binOp(tensor_a.data()[0], tensor_b.data()[0])
 		return outTensor
 	}
 
@@ -31,38 +31,41 @@ func BaseBinElementwiseOp[T types.TensorType](
 			fmt.Sprintf("Shapes: %x, %x are not broadcastable", tensor_a.shape, tensor_b.shape),
 		)
 	}
-	if len(tensor_a.data) == len(tensor_b.data) {
+	if len(tensor_a.data()) == len(tensor_b.data()) {
 		// same broadcastable shapes (N,M) & (N,M)
 		outTensor = PrepareOutTensor(out, tensor_a.shape)
 
 		// if two tensors are filled with same values. For example [2,2,2] and [3,3,3]
 		if Equal_1D_slices(outTensor.shape, tensor_a.shape) &&
 			tensor_a.hasFlag(SameValuesFlag) && tensor_b.hasFlag(SameValuesFlag) {
-			outTensor.Fill(binOp(tensor_a.data[0], tensor_b.data[0]))
+			outTensor.Fill(binOp(tensor_a.data()[0], tensor_b.data()[0]))
 			return outTensor
 		}
 
+		out_data := outTensor.data()
 		iter := tensor_a.CreateIterator()
 		for iter.Iterate() {
 			idx := iter.Next()
 			outIdx := get_flat_idx_fast(outTensor.strides, idx...)
-			outTensor.data[outIdx] = binOp(tensor_a.Get_fast(idx...), tensor_b.Get_fast(idx...))
+			out_data[outIdx] = binOp(tensor_a.Get_fast(idx...), tensor_b.Get_fast(idx...))
 		}
-	} else if len(tensor_b.data) == 1 {
+	} else if len(tensor_b.data()) == 1 {
 		// tensor_b is scalar
 		// (N, M, ...) & (1,)
 		outTensor = PrepareOutTensor(out, tensor_a.shape)
-		value := tensor_b.data[0]
-		for i, val := range tensor_a.data {
-			outTensor.data[i] = binOp(val, value)
+		out_data := outTensor.data()
+		value := tensor_b.data()[0]
+		for i, val := range tensor_a.data() {
+			out_data[i] = binOp(val, value)
 		}
-	} else if len(tensor_a.data) == 1 {
+	} else if len(tensor_a.data()) == 1 {
 		// tensor_a is scalar
 		// (1,) & (N, M, ...)
 		outTensor = PrepareOutTensor(out, tensor_b.shape)
-		value := tensor_a.data[0]
-		for i, val := range tensor_b.data {
-			outTensor.data[i] = binOp(val, value)
+		out_data := outTensor.data()
+		value := tensor_a.data()[0]
+		for i, val := range tensor_b.data() {
+			out_data[i] = binOp(val, value)
 		}
 	} else {
 		// (A, B ...) & (N, M, ...)
@@ -86,6 +89,7 @@ func BaseBinElementwiseOp[T types.TensorType](
 			}
 		}
 		outTensor = PrepareOutTensor(out, broadcasted_shape)
+		out_data := outTensor.data()
 		if broadcasted_tensor_a == nil {
 			broadcasted_tensor_a = tensor_a
 		}
@@ -96,7 +100,7 @@ func BaseBinElementwiseOp[T types.TensorType](
 		for iter.Iterate() {
 			dataIndex := iter.Index()
 			idx := iter.Next()
-			outTensor.data[dataIndex] = binOp(
+			out_data[dataIndex] = binOp(
 				broadcasted_tensor_a.Get_fast(idx...), broadcasted_tensor_b.Get_fast(idx...))
 		}
 	}
@@ -111,11 +115,11 @@ func unaryElementwiseRoutine[T types.TensorType](
 ) *Tensor[T] {
 	outTensor := PrepareOutTensor(out, tensor.Shape())
 	if IsScalarLike(tensor.Shape()) {
-		outTensor.data[0] = unaryOp(tensor.data[0])
+		outTensor.data()[0] = unaryOp(tensor.data()[0])
 		return outTensor
 	}
-	for i, val := range tensor.data {
-		outTensor.data[i] = unaryOp(val)
+	for i, val := range tensor.data() {
+		outTensor.data()[i] = unaryOp(val)
 	}
 	return outTensor
 }
@@ -210,16 +214,16 @@ func (tensor *Tensor[T]) MatMul(other *Tensor[T]) *Tensor[T] {
 
 	tensor = tensor.AsContinuous(nil)
 
-	a_data := tensor.data
-	b_data := other.data
-	out_data := outTensor.data
+	a_data := tensor.data()
+	b_data := other.data()
+	out_data := outTensor.data()
 
 	if tensor.hasFlag(UseAVXFlag) {
 		other = other.Transpose().AsContinuous(nil) // needs to be in column-major format for better AVX support
 
-		a_data := types.Any(tensor.data).([]float32)
-		b_data := types.Any(other.data).([]float32)
-		out_data := types.Any(outTensor.data).([]float32)
+		a_data := types.Any(tensor.data()).([]float32)
+		b_data := types.Any(other.data()).([]float32)
+		out_data := types.Any(outTensor.data()).([]float32)
 
 		if isVec2Scalar {
 			ops.MatMul_AVX_VectorsToScalar(a_data, b_data, out_data)
@@ -235,7 +239,7 @@ func (tensor *Tensor[T]) MatMul(other *Tensor[T]) *Tensor[T] {
 			tensor.strides, other.strides,
 			out_data, outTensor.strides)
 	}
-	outTensor.data = types.Any(out_data).([]T)
+	outTensor.data_buff = types.Any(outTensor.data()).([]T)
 	return outTensor
 }
 
@@ -255,12 +259,12 @@ func SplitTensor[T types.TensorType](
 	b = PrepareOutTensor(outB, types.Shape{rowleft, rowright})
 	c = PrepareOutTensor(outC, types.Shape{rowright, rowleft})
 	d = PrepareOutTensor(outD, types.Shape{rowright, rowright})
-	ops.SplitTensorImpl(tensor.data, nrows, a.data, b.data, c.data, d.data)
+	ops.SplitTensorImpl(tensor.data(), nrows, a.data(), b.data(), c.data(), d.data())
 	return
 }
 
 func UniteTensors[T types.TensorType](a, b, c, d, out *Tensor[T]) *Tensor[T] {
 	out_tensor := PrepareOutTensor(out, types.Shape{a.shape[0] * 2, a.shape[0] * 2})
-	ops.UniteTensors(int(a.shape[0]), a.strides[0], a.data, b.data, c.data, d.data, out_tensor.data)
+	ops.UniteTensors(int(a.shape[0]), a.strides[0], a.data(), b.data(), c.data(), d.data(), out_tensor.data())
 	return out_tensor
 }

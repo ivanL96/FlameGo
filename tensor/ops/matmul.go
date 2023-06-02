@@ -14,8 +14,6 @@ import (
 //		 for j from 1 to n:
 //		    for k from 1 to n:
 //		        C[i][j] = C[i][j] + A[i][k]*B[k][j]
-//
-// output C (as A*B)
 func MatMulNaiveImpl[T types.TensorType](
 	a_data,
 	b_data []T,

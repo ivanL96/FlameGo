@@ -12,7 +12,7 @@ func (tensor *Tensor[T]) Flatten(out *Tensor[T]) *Tensor[T] {
 		return tensor
 	}
 	outTensor := PrepareOutTensor(out, tensor.shape)
-	outTensor.shape = types.Shape{types.Dim(len(tensor.data))}
+	outTensor.shape = types.Shape{types.Dim(len(tensor.data()))}
 	outTensor.strides = []int{1}
 	return outTensor
 }
@@ -36,8 +36,8 @@ func (tensor *Tensor[T]) Reshape(newShape ...types.Dim) *Tensor[T] {
 	if new_shape_prod == 0 {
 		panic("Shape cannot have 0 dim size.")
 	}
-	if len(tensor.data) != int(new_shape_prod) {
-		panic(fmt.Sprintf("Cannot reshape tensor with size %v to shape %v", len(tensor.data), newShape))
+	if len(tensor.data()) != int(new_shape_prod) {
+		panic(fmt.Sprintf("Cannot reshape tensor with size %v to shape %v", len(tensor.data()), newShape))
 	}
 	tensor.shape = newShape
 	tensor.strides = getStrides(newShape)
@@ -57,7 +57,7 @@ func (tensor *Tensor[T]) Transpose(axes ...uint) *Tensor[T] {
 		}
 	}
 
-	outTensor := CreateTensor(tensor.data, tensor.shape)
+	outTensor := CreateTensor(tensor.data(), tensor.shape)
 
 	for i, axis := range axes {
 		outTensor.shape[i] = tensor.shape[axis]
@@ -92,8 +92,8 @@ func Unite[T types.TensorType](tensors ...*Tensor[T]) *Tensor[T] {
 	united := CreateEmptyTensor[T](united_shape...)
 	for i := 0; i < len(tensors); i++ {
 		tensor := tensors[i]
-		size := len(tensor.data)
-		copy(united.data[size*i:size*(i+1)], tensor.data)
+		size := len(tensor.data())
+		copy(united.data()[size*i:size*(i+1)], tensor.data())
 	}
 	return united
 }

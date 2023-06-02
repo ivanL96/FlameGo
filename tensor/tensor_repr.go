@@ -82,11 +82,11 @@ func stringRepr[T types.TensorType](sb *strings.Builder, tensor *Tensor[T], ps *
 		lastDim := tensor.shape[0]
 		if lastDim > 30 {
 			// shrink row
-			joinData(sb, tensor.data[:5])
+			joinData(sb, tensor.data()[:5])
 			sb.WriteString("...")
-			joinData(sb, tensor.data[len(tensor.data)-5:])
+			joinData(sb, tensor.data()[len(tensor.data())-5:])
 		} else {
-			joinData(sb, tensor.data[:lastDim])
+			joinData(sb, tensor.data()[:lastDim])
 		}
 		sb.WriteRune(']')
 		ps.whitespaceOffset -= 1
@@ -135,7 +135,7 @@ func (tensor *Tensor[T]) ToString() string {
 		"Tensor(%v, shape=%v, dtype=%v, order=%v, strides=%v)",
 		strData,
 		tensor.shape,
-		getTypeArray(tensor.data).Kind().String(),
+		getTypeArray(tensor.data()).Kind().String(),
 		tensor.dim_order,
 		tensor.strides,
 	)

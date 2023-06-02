@@ -2,7 +2,6 @@ package ops
 
 import "gograd/tensor/types"
 
-// ~30x faster compared to v1
 func SplitTensorImpl[T types.TensorType](
 	tensor_data []T,
 	nrows int,
@@ -44,7 +43,7 @@ func SplitTensorImpl[T types.TensorType](
 }
 
 // unites subtensors splitted by SplitTensor
-// assumed all tensors are square and have same shapes
+// assumed all tensors are squares and have the same shapes
 func UniteTensors[T types.TensorType](
 	sub_dim,
 	sub_stride int,

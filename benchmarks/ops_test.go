@@ -64,16 +64,16 @@ func BenchmarkSigmoid(b *testing.B) {
 // }
 
 // func (x *X) Data() []int {
-// 	return x.data
+// 	return x.data()
 // }
 
 // func BenchmarkProp(b *testing.B) {
 // 	x := X{data: []int{0, 1, 2, 3, 4, 5, 6, 7, 8, 9}}
 // 	c := make([]int, 10)
 // 	for i := 0; i < b.N; i++ {
-// 		c = x.data
+// 		c = x.data()
 // 	}
-// 	x.data = c
+// 	x.data() = c
 // }
 
 // func BenchmarkPropFunc(b *testing.B) {
@@ -83,5 +83,5 @@ func BenchmarkSigmoid(b *testing.B) {
 // 	for i := 0; i < b.N; i++ {
 // 		c = x.Data()
 // 	}
-// 	x.data = c
+// 	x.data() = c
 // }

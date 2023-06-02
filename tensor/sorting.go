@@ -45,11 +45,11 @@ func qsPartition[T types.TensorType](arr []T, low int, high int) int {
 }
 
 func (tensor *Tensor[T]) Sort() *Tensor[T] {
-	data := tensor.data
+	data := tensor.data()
 	if len(data) <= 1 {
 		return tensor
 	}
 	outTensor := tensor.Copy()
-	quickSort(outTensor.data, 0, len(tensor.data)-1)
+	quickSort(outTensor.data(), 0, len(tensor.data())-1)
 	return outTensor
 }

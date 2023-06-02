@@ -31,7 +31,7 @@ func makeTensor[T types.TensorType](dataPtr *[]T, shape types.Shape) *Tensor[T] 
 	tensor := &Tensor[T]{
 		shape:     append(types.Shape(nil), shape...),
 		strides:   getStrides(shape),
-		data:      data,
+		data_buff: data,
 		dim_order: initDimOrder(shape),
 	}
 
@@ -59,7 +59,7 @@ func Scalar[T types.TensorType](value T) *Tensor[T] {
 func AsTensor[T types.TensorType](data []T, shape types.Shape) *Tensor[T] {
 	t := &Tensor[T]{
 		strides:   getStrides(shape),
-		data:      data,
+		data_buff: data,
 		dim_order: initDimOrder(shape),
 		shape:     shape,
 	}
@@ -83,16 +83,16 @@ func AsType[OLDT types.TensorType, NEWT types.TensorType](tensor *Tensor[OLDT]) 
 	// naive impl with copying the data & tensor
 	// example:
 	// AsType(int32, float64)(tensor) ==> float64 tensor
-	data := make([]NEWT, len(tensor.data))
-	for i, val := range tensor.data {
+	data := make([]NEWT, len(tensor.data()))
+	for i, val := range tensor.data() {
 		data[i] = NEWT(val)
 	}
 	return CreateTensor(data, tensor.shape)
 }
 
 func (tensor *Tensor[T]) Copy() *Tensor[T] {
-	newData := make([]T, len(tensor.data))
-	copy(newData, tensor.data)
+	newData := make([]T, len(tensor.data()))
+	copy(newData, tensor.data())
 	newTensor := CreateTensor(newData, tensor.shape)
 	newTensor.strides = tensor.strides
 	newTensor.dim_order = tensor.dim_order
@@ -136,7 +136,7 @@ func Range[T types.TensorType](limits ...int) *Tensor[T] {
 	length := ((end - start) + step - 1) / step
 	tensor := CreateEmptyTensor[T](types.Dim(length))
 	for i := 0; i < length; i++ {
-		tensor.data[i] = T(start)
+		tensor.data()[i] = T(start)
 		start += step
 	}
 	return tensor
@@ -145,11 +145,12 @@ func Range[T types.TensorType](limits ...int) *Tensor[T] {
 // Fills tensor with same value
 func (tensor *Tensor[T]) Fill(value T) *Tensor[T] {
 	tensor.setFlag(SameValuesFlag)
-	if len(tensor.data) >= 12 {
-		fill_data_unroll4(&tensor.data, value)
+	data := tensor.data()
+	if len(data) >= 12 {
+		fill_data_unroll4(&data, value)
 	} else {
-		for i := range tensor.data {
-			tensor.data[i] = value
+		for i := range data {
+			data[i] = value
 		}
 	}
 	return tensor
@@ -162,7 +163,7 @@ func Eye[T types.TensorType](x, y types.Dim) *Tensor[T] {
 		for j := 0; j < int(y); j++ {
 			if i == j {
 				fidx := get_flat_idx_fast(eye.strides, i, j)
-				eye.data[fidx] = 1
+				eye.data()[fidx] = 1
 			}
 		}
 	}
@@ -182,7 +183,8 @@ func (tensor *Tensor[T]) SetData(value []T) *Tensor[T] {
 			tensor.shape, length),
 		)
 	}
-	tensor.data = value
+	// TODO avoid data_buff
+	tensor.data_buff = value
 	tensor.clearFlag(SameValuesFlag)
 	return tensor
 }
@@ -191,9 +193,9 @@ func (tensor *Tensor[T]) SetData(value []T) *Tensor[T] {
 func (tensor *Tensor[T]) Set(indexes []int, value T) {
 	tensor.clearFlag(SameValuesFlag)
 	flatIndex := tensor.getFlatIndex(indexes...)
-	tensor.data[flatIndex] = value
+	tensor.data()[flatIndex] = value
 }
 
 func (tensor *Tensor[T]) CreateIterator() *iter.TensorIterator {
-	return iter.CreateIterator(len(tensor.data), tensor.shape)
+	return iter.CreateIterator(len(tensor.data()), tensor.shape)
 }

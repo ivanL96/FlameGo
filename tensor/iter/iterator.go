@@ -2,12 +2,17 @@ package iter
 
 import "gograd/tensor/types"
 
-// iterates a tensor and for each step returns an N-dim index
-// example:
-// iter := tensor.CreateIterator()
-// for iter.Iterate(){
-// 	flat_index := iter.Index() // to get iterator index. Note: the index is incremented after the Next() is invoked
-// 	idx := iter.Next()  // Required to update the iterator state.
+// iterates a tensor and for each step returns an N-dim index.
+//
+// Example:
+//
+// it := tensor.CreateIterator() // or
+//
+// it = iter.CreateIterator(len(tensor.data()), tensor.shape)
+//
+// for it.Iterate(){
+// 	flat_index := it.Index() // to get iterator index. Note: the index is incremented after the Next() is invoked
+// 	idx := it.Next()  // Required to update the iterator state.
 //  //Returns the index to access internal data layout. Copy before changing its values!
 // 	tensor.Index(idx...) // can be used here
 // }
