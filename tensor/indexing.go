@@ -146,23 +146,23 @@ func (tensor *Tensor[T]) Index(indices ...int) *Tensor[T] {
 // IdxRange is used to create a slice along specific axis.
 // Setting start & end is needed to apply slicing boundaries.
 
-type IdxRange struct {
+type idxRange struct {
 	start int
 	end   int
 }
 
 // Idx() is an utility function is used for taking a specific index
-func I(val int) *IdxRange {
-	return &IdxRange{val, val}
+func I(val int) *idxRange {
+	return &idxRange{val, val}
 }
 
 // Axis() is used for taking entire axis-wide slice
-func Axis() *IdxRange {
-	return &IdxRange{0, -1}
+func Axis() *idxRange {
+	return &idxRange{0, -1}
 }
 
-func ISlc(start, end uint) *IdxRange {
-	return &IdxRange{int(start), int(end)}
+func ISlc(start, end uint) *idxRange {
+	return &idxRange{int(start), int(end)}
 }
 
 // Advanced indexing allows to specify index ranges.
@@ -174,7 +174,7 @@ func ISlc(start, end uint) *IdxRange {
 //
 // should return
 // tensor.IndexAdv(Axis(), I(0)) ==> [1,4]
-func (tensor *Tensor[T]) IndexAdv(indices ...*IdxRange) *Tensor[T] {
+func (tensor *Tensor[T]) IndexAdv(indices ...*idxRange) *Tensor[T] {
 	// TODO advanced indexing
 	if len(indices) == 0 {
 		panic("At least one index is required")

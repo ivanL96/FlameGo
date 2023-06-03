@@ -8,7 +8,7 @@ import (
 // this is set of scalar operations used in generic tensor/ops.go
 
 // binary
-func Add[T types.TensorType](a, b T) T {
+func AddAtomic[T types.TensorType](a, b T) T {
 	return a + b
 }
 

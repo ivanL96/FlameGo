@@ -55,10 +55,14 @@ func (i Implementation) String() string {
 	}
 }
 
-func (i Implementation) Dot(a, b []float32) float32 {
+func Dot(i Implementation, a, b []float32) float32 {
 	switch i {
 	case AVX:
-		return amd64.Dot_mm256(a, b)
+		// afl := types.Any(a).([]float32)
+		// bfl := types.Any(a).([]float32)
+		ret := amd64.Dot_mm256(a, b)
+		// return types.Any(ret).(T)
+		return ret
 	// case AVX512:
 	// 	var ret float32
 	// 	_mm512_dot(unsafe.Pointer(&a[0]), unsafe.Pointer(&b[0]), unsafe.Pointer(uintptr(len(a))), unsafe.Pointer(&ret))
@@ -69,13 +73,31 @@ func (i Implementation) Dot(a, b []float32) float32 {
 	}
 }
 
-func (i Implementation) Mul(a, b, c []float32) []float32 {
+func Mul[T types.TensorType](i Implementation, a, b, c []T) {
 	switch i {
 	case AVX:
-		amd64.Mul_mm256(a, b, c)
-		return c
+		afl := types.Any(a).([]float32)
+		bfl := types.Any(b).([]float32)
+		cfl := types.Any(c).([]float32)
+		amd64.Mul_mm256(afl, bfl, cfl)
 	default:
 		noasm.MulMatx(a, b, c)
-		return types.Any(c).([]float32)
 	}
+}
+
+func Div[T types.TensorType](i Implementation, a, b, c []T) {
+	noasm.DivMatx(a, b, c)
+}
+
+func Add[T types.TensorType](i Implementation, a, b, c []T) {
+	// switch i {
+	// case AVX:
+	// 	amd64.Mul_mm256(a, b, c)
+	// default:
+	noasm.AddMatx(a, b, c)
+	// }
+}
+
+func Sub[T types.TensorType](i Implementation, a, b, c []T) {
+	noasm.SubMatx(a, b, c)
 }

@@ -1,13 +1,10 @@
 package tensor
 
 import (
-	"flamego/tensor/intrinsics/cpu"
 	"flamego/tensor/iter"
 	types "flamego/tensor/types"
 	"fmt"
 )
-
-var auto_impl cpu.Implementation = cpu.DetectImpl()
 
 // set of primitive common tensor methods
 //tensor initialization-----------------------------------------------------
@@ -35,9 +32,6 @@ func makeTensor[T types.TensorType](dataPtr *[]T, shape types.Shape) *Tensor[T] 
 		dim_order: initDimOrder(shape),
 	}
 
-	if auto_impl == cpu.AVX {
-		tensor.UseAVX()
-	}
 	return tensor
 }
 
@@ -67,17 +61,6 @@ func AsTensor[T types.TensorType](data []T, shape types.Shape) *Tensor[T] {
 }
 
 //-----------------------------------------------------
-
-func (tensor *Tensor[T]) UseAVX() {
-	if cpu.IsImplAvailable(cpu.AVX) {
-		panic("AVX is not available.")
-	}
-	tensor.SetFlag(UseAVXFlag)
-}
-
-func (tensor *Tensor[T]) UseDefault() {
-	tensor.ClearFlag(UseAVXFlag)
-}
 
 func AsType[OLDT types.TensorType, NEWT types.TensorType](tensor *Tensor[OLDT]) *Tensor[NEWT] {
 	// naive impl with copying the data & tensor

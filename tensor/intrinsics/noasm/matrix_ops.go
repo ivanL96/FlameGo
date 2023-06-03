@@ -13,28 +13,18 @@ func makeOutMat[T types.TensorType](out []T, size int) []T {
 	return out
 }
 
-func AddMatx[T types.TensorType](a, b, out []T) []T {
+func AddMatx[T types.TensorType](a, b, out []T) {
 	out_ := makeOutMat(out, len(a))
 	for i, val := range a {
 		out_[i] = val + b[i]
 	}
-	return out_
 }
 
-func MulMatx[T types.TensorType](a, b, out []T) []T {
-	out_ := makeOutMat(out, len(a))
-	for i, val := range a {
-		out_[i] = val * b[i]
-	}
-	return out_
-}
-
-func SubMatx[T types.TensorType](a, b, out []T) []T {
+func SubMatx[T types.TensorType](a, b, out []T) {
 	out_ := makeOutMat(out, len(a))
 	for i, val := range a {
 		out_[i] = val - b[i]
 	}
-	return out_
 }
 
 func Dot[T types.TensorType](a, b []T, c T) T {
@@ -42,4 +32,18 @@ func Dot[T types.TensorType](a, b []T, c T) T {
 		c += a[i] * b[i]
 	}
 	return c
+}
+
+func MulMatx[T types.TensorType](a, b, out []T) {
+	out_ := makeOutMat(out, len(a))
+	for i, val := range a {
+		out_[i] = val * b[i]
+	}
+}
+
+func DivMatx[T types.TensorType](a, b, out []T) {
+	out_ := makeOutMat(out, len(a))
+	for i, val := range a {
+		out_[i] = val / b[i]
+	}
 }

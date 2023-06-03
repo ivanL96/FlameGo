@@ -45,7 +45,6 @@ func (tensor *Tensor[T]) DType() reflect.Type {
 // tensor helper flags
 const (
 	SameValuesFlag uint8 = 1 << iota
-	UseAVXFlag
 )
 
 func (tensor *Tensor[T]) SetFlag(flag uint8) {

@@ -2,7 +2,7 @@ package amd64
 
 import "unsafe"
 
-// implemented in /intrinsics/amd64/dot_avx256.s
+// implemented in /intrinsics/amd64/
 //go:noescape
 func _mm256_dot(a, b, n, ret unsafe.Pointer)
 

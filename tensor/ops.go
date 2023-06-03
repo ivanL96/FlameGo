@@ -1,23 +1,36 @@
 package tensor
 
 import (
+	"flamego/tensor/intrinsics/cpu"
 	"flamego/tensor/iter"
 	ops "flamego/tensor/ops"
 	types "flamego/tensor/types"
 	"fmt"
 )
 
+var auto_impl cpu.Implementation = cpu.DetectImpl()
+
 type BinaryScalarOp[T types.TensorType] func(T, T) T
 type UnaryScalarOp[T types.TensorType] func(T) T
+
+type BinaryOp[T types.TensorType] struct {
+	scalar BinaryScalarOp[T]
+	vector func(cpu.Implementation, []T, []T, []T)
+}
 
 // general use Binary operator
 func BaseBinElementwiseOp[T types.TensorType](
 	tensor_a,
 	tensor_b *Tensor[T],
-	binOp BinaryScalarOp[T],
+	op *BinaryOp[T],
 	out *Tensor[T],
 ) *Tensor[T] {
 	var outTensor *Tensor[T]
+	binOp, binVec := op.scalar, op.vector
+	if binOp == nil {
+		panic("At least .scalar function must be set")
+	}
+
 	if IsScalarLike(tensor_a.shape) && IsScalarLike(tensor_b.shape) {
 		outTensor = PrepareOutTensor(out, tensor_a.shape)
 		// most trivial case (1,) & (1,)
@@ -34,6 +47,7 @@ func BaseBinElementwiseOp[T types.TensorType](
 	if len(tensor_a.data()) == len(tensor_b.data()) {
 		// same broadcastable shapes (N,M) & (N,M)
 		outTensor = PrepareOutTensor(out, tensor_a.shape)
+		out_data := outTensor.data()
 
 		// if two tensors are filled with same values. For example [2,2,2] and [3,3,3]
 		if Equal_1D_slices(outTensor.shape, tensor_a.shape) &&
@@ -42,12 +56,16 @@ func BaseBinElementwiseOp[T types.TensorType](
 			return outTensor
 		}
 
-		out_data := outTensor.data()
-		iter := tensor_a.CreateIterator()
-		for iter.Iterate() {
-			idx := iter.Next()
-			outIdx := get_flat_idx_fast(outTensor.strides, idx...)
-			out_data[outIdx] = binOp(tensor_a.Get_fast(idx...), tensor_b.Get_fast(idx...))
+		are_continuous := isDimOrderInit(tensor_a.dim_order) && isDimOrderInit(tensor_b.dim_order)
+		if are_continuous && binVec != nil { // vec or avx
+			binVec(auto_impl, tensor_a.data(), tensor_b.data(), out_data)
+		} else if are_continuous && binVec == nil || !are_continuous {
+			iter := tensor_a.CreateIterator()
+			for iter.Iterate() {
+				idx := iter.Next()
+				outIdx := get_flat_idx_fast(outTensor.strides, idx...)
+				out_data[outIdx] = binOp(tensor_a.Get_fast(idx...), tensor_b.Get_fast(idx...))
+			}
 		}
 	} else if len(tensor_b.data()) == 1 {
 		// tensor_b is scalar
@@ -129,19 +147,35 @@ func unaryElementwiseRoutine[T types.TensorType](
 //
 
 func (tensor *Tensor[T]) Add(other_tensor, out *Tensor[T]) *Tensor[T] {
-	return BaseBinElementwiseOp(tensor, other_tensor, ops.Add[T], out)
+	add := BinaryOp[T]{
+		scalar: ops.AddAtomic[T],
+		vector: cpu.Add[T],
+	}
+	return BaseBinElementwiseOp(tensor, other_tensor, &add, out)
 }
 
 func (tensor *Tensor[T]) Sub(other_tensor, out *Tensor[T]) *Tensor[T] {
-	return BaseBinElementwiseOp(tensor, other_tensor, ops.SubAtomic[T], out)
+	sub := BinaryOp[T]{
+		scalar: ops.SubAtomic[T],
+		vector: cpu.Sub[T],
+	}
+	return BaseBinElementwiseOp(tensor, other_tensor, &sub, out)
 }
 
 func (tensor *Tensor[T]) Mul(other_tensor, out *Tensor[T]) *Tensor[T] {
-	return BaseBinElementwiseOp(tensor, other_tensor, ops.MulAtomic[T], out)
+	mul := BinaryOp[T]{
+		scalar: ops.MulAtomic[T],
+		vector: cpu.Mul[T],
+	}
+	return BaseBinElementwiseOp(tensor, other_tensor, &mul, out)
 }
 
 func (tensor *Tensor[T]) Div(other_tensor, out *Tensor[T]) *Tensor[T] {
-	return BaseBinElementwiseOp(tensor, other_tensor, ops.DivAtomic[T], out)
+	div := BinaryOp[T]{
+		scalar: ops.DivAtomic[T],
+		vector: cpu.Div[T],
+	}
+	return BaseBinElementwiseOp(tensor, other_tensor, &div, out)
 }
 
 // unary
@@ -210,35 +244,28 @@ func (tensor *Tensor[T]) MatMul(other *Tensor[T]) *Tensor[T] {
 	adim0, bdim1 := tensor.shape[0], other.shape[1]
 	outTensor := CreateEmptyTensor[T](adim0, bdim1)
 
-	isVec2Scalar := adim0 == 1 && bdim1 == 1
+	// isVec2Scalar := adim0 == 1 && bdim1 == 1
 
 	tensor = tensor.AsContinuous(nil)
+
+	other = other.Transpose().AsContinuous(nil) // needs to be in column-major format for the AVX support
 
 	a_data := tensor.data()
 	b_data := other.data()
 	out_data := outTensor.data()
+	// 	ops.MatMul_AVX_VectorsToScalar(a_data, b_data, out_data)
+	// gen impl
+	a_data_ := types.Any(a_data).([]float32)
+	b_data_ := types.Any(b_data).([]float32)
+	out_data_ := types.Any(out_data).([]float32)
+	ops.MatMulNaiveImpl_GEN(
+		auto_impl, a_data_, b_data_, tensor.shape, other.shape,
+		tensor.strides, other.strides, out_data_, outTensor.strides)
 
-	if tensor.HasFlag(UseAVXFlag) {
-		other = other.Transpose().AsContinuous(nil) // needs to be in column-major format for better AVX support
-
-		a_data := types.Any(tensor.data()).([]float32)
-		b_data := types.Any(other.data()).([]float32)
-		out_data := types.Any(outTensor.data()).([]float32)
-
-		if isVec2Scalar {
-			ops.MatMul_AVX_VectorsToScalar(a_data, b_data, out_data)
-		} else {
-			// gen impl
-			ops.MatMulNaiveImpl_AVX(a_data, b_data, tensor.shape, other.shape,
-				tensor.strides, other.strides,
-				out_data, outTensor.strides)
-		}
-	} else {
-		other = other.AsContinuous(nil)
-		ops.MatMulNaiveImpl(a_data, b_data, tensor.shape, other.shape,
-			tensor.strides, other.strides,
-			out_data, outTensor.strides)
-	}
+	// 	ops.MatMulNaiveImpl(a_data, b_data, tensor.shape, other.shape,
+	// 		tensor.strides, other.strides,
+	// 		out_data, outTensor.strides)
+	// }
 	outTensor.data_buff = types.Any(outTensor.data()).([]T)
 	return outTensor
 }
