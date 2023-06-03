@@ -317,3 +317,5 @@ func main() {
 		os.Exit(1)
 	}
 }
+
+//  go run ../gograd/goat src/avx256.c -O3 -mavx
