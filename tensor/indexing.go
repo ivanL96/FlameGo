@@ -161,6 +161,10 @@ func Axis() *IdxRange {
 	return &IdxRange{0, -1}
 }
 
+func ISlc(start, end uint) *IdxRange {
+	return &IdxRange{int(start), int(end)}
+}
+
 // Advanced indexing allows to specify index ranges.
 //
 // Example: with given tensor:
