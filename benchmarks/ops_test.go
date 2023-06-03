@@ -16,11 +16,16 @@ func BenchmarkAdd(b *testing.B) {
 }
 
 // init/range data
-// 26	  42.891.900 ns/op	 4.314.271 B/op	       7 allocs/op
+// BenchmarkBigAdd-8			26	  		42.891.900 ns/op		4.314.271 B/op	       7 allocs/op
 // Get_fast/range data
-// 44     23.705.093 ns/op   4.188.202 B/op          7 allocs/op
+// BenchmarkBigAdd-8  			44     		23.705.093 ns/op   		4.188.202 B/op          7 allocs/op
 // out Tensor prepared/Get_fast/range data
-// 50     23.525.360 ns/op   160.285 B/op          1 allocs/op
+// BenchmarkBigAdd-8 			50     		23.525.360 ns/op	 	  160.285 B/op          1 allocs/op
+// AVX
+// BenchmarkBigAdd-8            456          2.198.060 ns/op           26.358 B/op          0 allocs/op
+// BenchmarkBigAdd-8            328          3.064.911 ns/op           36.644 B/op          0 allocs/op
+// BenchmarkBigAdd-8            489          2.165.072 ns/op           24.579 B/op          0 allocs/op
+
 // same values tests
 // Fill() unrolled 4
 // 654    1.885.201 ns/op    4.018.343 B/op          6 allocs/op
@@ -53,6 +58,17 @@ func BenchmarkBigMul(b *testing.B) {
 	scalar := tensor.Scalar[float32](1000)
 	a1 := tensor.Range[float32](1000000).Reshape(1000, 1000).Div(scalar, nil)
 	a2 := tensor.Range[float32](1000000).Reshape(1000, 1000).Div(scalar, nil)
+	out := tensor.CreateEmptyTensor[float32](1000, 1000)
+	for i := 0; i < b.N; i++ {
+		a1.Mul(a2, out)
+	}
+	fmt.Println(out.Get(999, 999))
+}
+
+func BenchmarkBigMulToConst(b *testing.B) {
+	scalar := tensor.Scalar[float32](1000)
+	a1 := tensor.Range[float32](1000000).Reshape(1000, 1000).Div(scalar, nil)
+	a2 := scalar
 	out := tensor.CreateEmptyTensor[float32](1000, 1000)
 	for i := 0; i < b.N; i++ {
 		a1.Mul(a2, out)

@@ -10,12 +10,14 @@ import (
 
 var auto_impl cpu.Implementation = cpu.DetectImpl()
 
-type BinaryScalarOp[T types.TensorType] func(T, T) T
 type UnaryScalarOp[T types.TensorType] func(T) T
 
 type BinaryOp[T types.TensorType] struct {
-	scalar BinaryScalarOp[T]
-	vector func(cpu.Implementation, []T, []T, []T)
+	// required prop, contains function with scalar bin operation
+	scalar func(T, T) T
+	// vector is optional prop used to accelerate applying operation to vectors
+	vector           func(cpu.Implementation, []T, []T, []T)
+	vector_to_scalar func(cpu.Implementation, []T, T, []T)
 }
 
 // general use Binary operator
@@ -26,7 +28,7 @@ func BaseBinElementwiseOp[T types.TensorType](
 	out *Tensor[T],
 ) *Tensor[T] {
 	var outTensor *Tensor[T]
-	binOp, binVec := op.scalar, op.vector
+	binOp, binVec, binVec2Scalar := op.scalar, op.vector, op.vector_to_scalar
 	if binOp == nil {
 		panic("At least .scalar function must be set")
 	}
@@ -37,6 +39,8 @@ func BaseBinElementwiseOp[T types.TensorType](
 		outTensor.data()[0] = binOp(tensor_a.data()[0], tensor_b.data()[0])
 		return outTensor
 	}
+
+	are_continuous := isDimOrderInit(tensor_a.dim_order) && isDimOrderInit(tensor_b.dim_order)
 
 	// tensors should have equal shapes or at least one of them should be scalar-like
 	if !AreBroadcastable(tensor_a.shape, tensor_b.shape) {
@@ -56,10 +60,9 @@ func BaseBinElementwiseOp[T types.TensorType](
 			return outTensor
 		}
 
-		are_continuous := isDimOrderInit(tensor_a.dim_order) && isDimOrderInit(tensor_b.dim_order)
 		if are_continuous && binVec != nil { // vec or avx
 			binVec(auto_impl, tensor_a.data(), tensor_b.data(), out_data)
-		} else if are_continuous && binVec == nil || !are_continuous {
+		} else if binVec == nil || !are_continuous {
 			iter := tensor_a.CreateIterator()
 			for iter.Iterate() {
 				idx := iter.Next()
@@ -73,8 +76,12 @@ func BaseBinElementwiseOp[T types.TensorType](
 		outTensor = PrepareOutTensor(out, tensor_a.shape)
 		out_data := outTensor.data()
 		value := tensor_b.data()[0]
-		for i, val := range tensor_a.data() {
-			out_data[i] = binOp(val, value)
+		if binVec2Scalar == nil {
+			for i, val := range tensor_a.data() {
+				out_data[i] = binOp(val, value)
+			}
+		} else {
+			binVec2Scalar(auto_impl, tensor_a.data(), value, out_data)
 		}
 	} else if len(tensor_a.data()) == 1 {
 		// tensor_a is scalar
@@ -164,8 +171,9 @@ func (tensor *Tensor[T]) Sub(other_tensor, out *Tensor[T]) *Tensor[T] {
 
 func (tensor *Tensor[T]) Mul(other_tensor, out *Tensor[T]) *Tensor[T] {
 	mul := BinaryOp[T]{
-		scalar: ops.MulAtomic[T],
-		vector: cpu.Mul[T],
+		scalar:           ops.MulAtomic[T],
+		vector:           cpu.Mul[T],
+		vector_to_scalar: cpu.MulToConst[T],
 	}
 	return BaseBinElementwiseOp(tensor, other_tensor, &mul, out)
 }
@@ -247,8 +255,8 @@ func (tensor *Tensor[T]) MatMul(other *Tensor[T]) *Tensor[T] {
 	// isVec2Scalar := adim0 == 1 && bdim1 == 1
 
 	tensor = tensor.AsContinuous(nil)
-
-	other = other.Transpose().AsContinuous(nil) // needs to be in column-major format for the AVX support
+	// needs to be in column-major format for the AVX support
+	other = other.Transpose().AsContinuous(nil)
 
 	a_data := tensor.data()
 	b_data := other.data()

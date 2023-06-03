@@ -41,6 +41,13 @@ func MulMatx[T types.TensorType](a, b, out []T) {
 	}
 }
 
+func MulMatxToConst[T types.TensorType](a []T, b T, out []T) {
+	out_ := makeOutMat(out, len(a))
+	for i, val := range a {
+		out_[i] = val * b
+	}
+}
+
 func DivMatx[T types.TensorType](a, b, out []T) {
 	out_ := makeOutMat(out, len(a))
 	for i, val := range a {

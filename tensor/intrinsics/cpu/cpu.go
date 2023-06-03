@@ -85,6 +85,18 @@ func Mul[T types.TensorType](i Implementation, a, b, c []T) {
 	}
 }
 
+func MulToConst[T types.TensorType](i Implementation, a []T, b T, c []T) {
+	switch i {
+	case AVX:
+		afl := types.Any(a).([]float32)
+		bfl := types.Any(b).(float32)
+		cfl := types.Any(c).([]float32)
+		amd64.Mul_to_const_mm256(afl, bfl, cfl)
+	default:
+		noasm.MulMatxToConst(a, b, c)
+	}
+}
+
 func Div[T types.TensorType](i Implementation, a, b, c []T) {
 	noasm.DivMatx(a, b, c)
 }
