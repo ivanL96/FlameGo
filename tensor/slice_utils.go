@@ -6,14 +6,6 @@ import (
 	"unsafe"
 )
 
-func create_slice[T any](n int, value T) []T {
-	slice := make([]T, n)
-	for i := range slice {
-		slice[i] = value
-	}
-	return slice
-}
-
 func reverse_slice_inplace[T any](slice []T) {
 	for i := len(slice)/2 - 1; i >= 0; i-- {
 		opp := len(slice) - 1 - i
@@ -56,11 +48,19 @@ func convert_slice_type[OLD_T, NEW_T types.TensorType](slice []OLD_T) []NEW_T {
 
 func repeatSlice[T types.TensorType](data []T, ntimes uint) []T {
 	length := len(data) * int(ntimes)
-	replicatedData := make([]T, 0, int(length))
+	replicated := make([]T, int(length))
 	for i := 0; i < int(ntimes); i++ {
-		replicatedData = append(replicatedData, data...)
+		copy(replicated[i*len(data):(i+1)*len(data)], data)
 	}
-	return replicatedData
+	return replicated
+}
+
+func enumerate(n uint) []int {
+	slice := make([]int, n)
+	for i := 0; i < len(slice); i++ {
+		slice[i] = i
+	}
+	return slice
 }
 
 // adds pad value at the beginning of the slice.
