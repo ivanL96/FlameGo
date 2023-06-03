@@ -1,9 +1,8 @@
 package main
 
 import (
+	"flamego/tensor"
 	"fmt"
-	"gograd/tensor"
-	"gograd/tensor/types"
 )
 
 func main() {

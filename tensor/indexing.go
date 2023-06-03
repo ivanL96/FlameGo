@@ -1,8 +1,8 @@
 package tensor
 
 import (
+	types "flamego/tensor/types"
 	"fmt"
-	types "gograd/tensor/types"
 )
 
 // func (tensor *Tensor[T]) unflatIndex(flatIdx int) []int {
@@ -182,7 +182,6 @@ func (tensor *Tensor[T]) IndexAdv(indices ...*IdxRange) *Tensor[T] {
 	if len(indices) > len(tensor.shape) {
 		panic("Too many indices")
 	}
-
 	are_constants := true
 	are_axis_wide := true
 	for i := 0; i < len(indices); i++ {
@@ -198,7 +197,6 @@ func (tensor *Tensor[T]) IndexAdv(indices ...*IdxRange) *Tensor[T] {
 			are_axis_wide = false
 		}
 	}
-	fmt.Println(are_constants, are_axis_wide)
 
 	if are_constants {
 		idxs := make([]int, len(indices))
