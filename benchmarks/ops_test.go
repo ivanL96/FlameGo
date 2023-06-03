@@ -36,12 +36,15 @@ func BenchmarkBigAdd(b *testing.B) {
 	fmt.Println(out.Get(999, 999))
 }
 
-func BenchmarkMul(b *testing.B) {
-	a1 := tensor.CreateEmptyTensor[int32](100, 100).Fill(100)
-	a2 := tensor.CreateEmptyTensor[int32](100, 100).Fill(99)
+func BenchmarkBigMul(b *testing.B) {
+	scalar := tensor.Scalar[int32](1000)
+	a1 := tensor.Range[int32](1000000).Reshape(1000, 1000).Div(scalar, nil)
+	a2 := tensor.Range[int32](1000000).Reshape(1000, 1000).Div(scalar, nil)
+	out := tensor.CreateEmptyTensor[int32](1000, 1000)
 	for i := 0; i < b.N; i++ {
-		a1.Mul(a2, nil)
+		a1.Mul(a2, out)
 	}
+	fmt.Println(out.Get(999, 999))
 }
 
 func BenchmarkMulScalar(b *testing.B) {

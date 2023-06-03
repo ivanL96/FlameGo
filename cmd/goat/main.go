@@ -318,4 +318,5 @@ func main() {
 	}
 }
 
-//  go run ../flamego/goat src/avx256.c -O3 -mavx
+// cd cmd/goat
+// go run . ../../tensor/intrinsics/src/mul_avx2.c -O3 -mavx

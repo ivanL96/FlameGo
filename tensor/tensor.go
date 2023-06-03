@@ -100,8 +100,9 @@ func (tensor *Tensor[T]) Copy() *Tensor[T] {
 	return newTensor
 }
 
+// Compares shapes and data:
+// iterates over two tensors and compares elementwise
 func (tensor *Tensor[T]) IsEqual(otherTensor *Tensor[T]) bool {
-	// iterates over two tensors and compares elementwise
 	if !Equal_1D_slices(tensor.shape, otherTensor.shape) {
 		return false
 	}

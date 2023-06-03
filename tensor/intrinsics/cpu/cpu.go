@@ -5,6 +5,7 @@ package cpu
 import (
 	"flamego/tensor/intrinsics/amd64"
 	"flamego/tensor/intrinsics/noasm"
+	"flamego/tensor/types"
 
 	"github.com/klauspost/cpuid/v2"
 )
@@ -65,5 +66,16 @@ func (i Implementation) Dot(a, b []float32) float32 {
 	default:
 		var c float32
 		return noasm.Dot(a, b, c)
+	}
+}
+
+func (i Implementation) Mul(a, b, c []float32) []float32 {
+	switch i {
+	case AVX:
+		amd64.Mul_mm256(a, b, c)
+		return c
+	default:
+		noasm.MulMatx(a, b, c)
+		return types.Any(c).([]float32)
 	}
 }
