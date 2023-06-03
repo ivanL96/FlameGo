@@ -1,9 +1,9 @@
 package main
 
 import (
+	"flamego/tensor"
+	"flamego/tensor/types"
 	_ "fmt"
-	"gograd/tensor"
-	"gograd/tensor/types"
 	"testing"
 )
 

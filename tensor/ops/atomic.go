@@ -1,7 +1,7 @@
 package ops
 
 import (
-	"gograd/tensor/types"
+	"flamego/tensor/types"
 	"math"
 )
 

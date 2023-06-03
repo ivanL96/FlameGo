@@ -1,11 +1,11 @@
 package tensor
 
 import (
-	types "gograd/tensor/types"
+	types "flamego/tensor/types"
 	"reflect"
 )
 
-// fieldalignment -fix gograd/tensor
+// fieldalignment -fix flamego/tensor
 type Tensor[T types.TensorType] struct {
 	data_buff []T
 	shape     types.Shape

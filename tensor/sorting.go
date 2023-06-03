@@ -1,6 +1,6 @@
 package tensor
 
-import types "gograd/tensor/types"
+import types "flamego/tensor/types"
 
 func bubbleSort[T types.TensorType](slice []T) {
 	n := len(slice)

@@ -318,4 +318,4 @@ func main() {
 	}
 }
 
-//  go run ../gograd/goat src/avx256.c -O3 -mavx
+//  go run ../flamego/goat src/avx256.c -O3 -mavx

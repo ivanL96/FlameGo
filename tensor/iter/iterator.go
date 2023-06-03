@@ -1,6 +1,6 @@
 package iter
 
-import "gograd/tensor/types"
+import "flamego/tensor/types"
 
 // iterates a tensor and for each step returns an N-dim index.
 //

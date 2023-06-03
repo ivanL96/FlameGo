@@ -1,9 +1,9 @@
 package main
 
 import (
+	"flamego/tensor"
+	types "flamego/tensor/types"
 	"fmt"
-	"gograd/tensor"
-	types "gograd/tensor/types"
 	"testing"
 
 	"golang.org/x/exp/constraints"

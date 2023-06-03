@@ -3,8 +3,8 @@
 package cpu
 
 import (
-	"gograd/tensor/intrinsics/amd64"
-	"gograd/tensor/intrinsics/noasm"
+	"flamego/tensor/intrinsics/amd64"
+	"flamego/tensor/intrinsics/noasm"
 
 	"github.com/klauspost/cpuid/v2"
 )

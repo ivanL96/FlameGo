@@ -1,9 +1,9 @@
 package ops
 
 import (
-	"gograd/tensor/intrinsics/cpu"
-	"gograd/tensor/intrinsics/noasm"
-	"gograd/tensor/types"
+	"flamego/tensor/intrinsics/cpu"
+	"flamego/tensor/intrinsics/noasm"
+	"flamego/tensor/types"
 )
 
 // Naive implementation of matrix multiplication with time complexity n^3

@@ -1,7 +1,7 @@
 package noasm
 
 import (
-	"gograd/tensor/types"
+	"flamego/tensor/types"
 )
 
 // noasm vector operations for two-dim matrices

@@ -1,4 +1,4 @@
-module gograd
+module flamego
 
 go 1.20
 

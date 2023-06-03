@@ -1,9 +1,9 @@
 package main
 
 import (
+	"flamego/tensor"
+	types "flamego/tensor/types"
 	"fmt"
-	"gograd/tensor"
-	types "gograd/tensor/types"
 	"reflect"
 	"testing"
 )
@@ -64,7 +64,7 @@ func TestRange(t *testing.T) {
 	assertEqualSlices(t, a.Shape(), b.Shape())
 }
 
-// test -timeout 30s -run ^TestFill$ gograd/tests
+// test -timeout 30s -run ^TestFill$ flamego/tests
 func TestFill(t *testing.T) {
 	a := tensor.CreateEmptyTensor[int32](12)
 	b := a.Copy()

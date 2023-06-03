@@ -1,6 +1,6 @@
 package tensor
 
-import "gograd/tensor/types"
+import "flamego/tensor/types"
 
 // https://golangprojectstructure.com/hash-functions-go-code/
 

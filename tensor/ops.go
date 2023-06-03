@@ -1,10 +1,10 @@
 package tensor
 
 import (
+	"flamego/tensor/iter"
+	ops "flamego/tensor/ops"
+	types "flamego/tensor/types"
 	"fmt"
-	"gograd/tensor/iter"
-	ops "gograd/tensor/ops"
-	types "gograd/tensor/types"
 )
 
 type BinaryScalarOp[T types.TensorType] func(T, T) T
