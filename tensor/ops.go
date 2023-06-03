@@ -37,7 +37,7 @@ func BaseBinElementwiseOp[T types.TensorType](
 
 		// if two tensors are filled with same values. For example [2,2,2] and [3,3,3]
 		if Equal_1D_slices(outTensor.shape, tensor_a.shape) &&
-			tensor_a.hasFlag(SameValuesFlag) && tensor_b.hasFlag(SameValuesFlag) {
+			tensor_a.HasFlag(SameValuesFlag) && tensor_b.HasFlag(SameValuesFlag) {
 			outTensor.Fill(binOp(tensor_a.data()[0], tensor_b.data()[0]))
 			return outTensor
 		}
@@ -104,7 +104,7 @@ func BaseBinElementwiseOp[T types.TensorType](
 				broadcasted_tensor_a.Get_fast(idx...), broadcasted_tensor_b.Get_fast(idx...))
 		}
 	}
-	outTensor.clearFlag(SameValuesFlag)
+	outTensor.ClearFlag(SameValuesFlag)
 	return outTensor
 }
 
@@ -218,7 +218,7 @@ func (tensor *Tensor[T]) MatMul(other *Tensor[T]) *Tensor[T] {
 	b_data := other.data()
 	out_data := outTensor.data()
 
-	if tensor.hasFlag(UseAVXFlag) {
+	if tensor.HasFlag(UseAVXFlag) {
 		other = other.Transpose().AsContinuous(nil) // needs to be in column-major format for better AVX support
 
 		a_data := types.Any(tensor.data()).([]float32)

@@ -48,16 +48,16 @@ const (
 	UseAVXFlag
 )
 
-func (tensor *Tensor[T]) setFlag(flag uint8) {
+func (tensor *Tensor[T]) SetFlag(flag uint8) {
 	tensor.flags |= flag
 }
-func (tensor *Tensor[T]) clearFlag(flag uint8) {
+func (tensor *Tensor[T]) ClearFlag(flag uint8) {
 	tensor.flags &^= flag
 }
-func (tensor *Tensor[T]) toggleFlag(flag uint8) {
+func (tensor *Tensor[T]) ToggleFlag(flag uint8) {
 	tensor.flags ^= flag
 }
-func (tensor *Tensor[T]) hasFlag(flag uint8) bool {
+func (tensor *Tensor[T]) HasFlag(flag uint8) bool {
 	return tensor.flags&flag != 0
 }
 func (tensor *Tensor[T]) ResetFlags() {

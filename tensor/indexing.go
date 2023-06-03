@@ -218,7 +218,7 @@ func (tensor *Tensor[T]) AsContinuous(out *Tensor[T]) *Tensor[T] {
 	if isDimOrderInit(tensor.dim_order) {
 		return tensor
 	}
-	if tensor.hasFlag(SameValuesFlag) {
+	if tensor.HasFlag(SameValuesFlag) {
 		return tensor
 	}
 

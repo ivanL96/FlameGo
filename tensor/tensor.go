@@ -72,11 +72,11 @@ func (tensor *Tensor[T]) UseAVX() {
 	if cpu.IsImplAvailable(cpu.AVX) {
 		panic("AVX is not available.")
 	}
-	tensor.setFlag(UseAVXFlag)
+	tensor.SetFlag(UseAVXFlag)
 }
 
 func (tensor *Tensor[T]) UseDefault() {
-	tensor.clearFlag(UseAVXFlag)
+	tensor.ClearFlag(UseAVXFlag)
 }
 
 func AsType[OLDT types.TensorType, NEWT types.TensorType](tensor *Tensor[OLDT]) *Tensor[NEWT] {
@@ -144,7 +144,7 @@ func Range[T types.TensorType](limits ...int) *Tensor[T] {
 
 // Fills tensor with same value
 func (tensor *Tensor[T]) Fill(value T) *Tensor[T] {
-	tensor.setFlag(SameValuesFlag)
+	tensor.SetFlag(SameValuesFlag)
 	data := tensor.data()
 	if len(data) >= 12 {
 		fill_data_unroll4(&data, value)
@@ -185,13 +185,13 @@ func (tensor *Tensor[T]) SetData(value []T) *Tensor[T] {
 	}
 	// TODO avoid data_buff
 	tensor.data_buff = value
-	tensor.clearFlag(SameValuesFlag)
+	tensor.ClearFlag(SameValuesFlag)
 	return tensor
 }
 
 // set scalar to specific index
 func (tensor *Tensor[T]) Set(indexes []int, value T) {
-	tensor.clearFlag(SameValuesFlag)
+	tensor.ClearFlag(SameValuesFlag)
 	flatIndex := tensor.getFlatIndex(indexes...)
 	tensor.data()[flatIndex] = value
 }

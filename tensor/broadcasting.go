@@ -75,19 +75,20 @@ func (tensor *Tensor[T]) Broadcast(shape ...types.Dim) *Tensor[T] {
 	broadcastedShape := BroadcastShapes(tensor.shape, shape)
 
 	outTensor := CreateEmptyTensor[T](broadcastedShape...)
-	if tensor.hasFlag(SameValuesFlag) {
-		outTensor.setFlag(SameValuesFlag)
+	if tensor.HasFlag(SameValuesFlag) {
+		outTensor.SetFlag(SameValuesFlag)
 		outTensor.Fill(tensor.data()[0])
 		return outTensor
 	}
 
 	// shape diff
 	// compares shapes and sets 1 if the dim is changed
+	tensor_dims := len(tensor.shape)
 	shape_diff := make([]int, len(broadcastedShape))
 	for i := 0; i < len(broadcastedShape); i++ {
 		j := len(broadcastedShape) - i - 1
-		if len(tensor.shape)-i > 0 {
-			if broadcastedShape[j] != tensor.shape[len(tensor.shape)-i-1] {
+		if tensor_dims-i > 0 {
+			if broadcastedShape[j] != tensor.shape[tensor_dims-i-1] {
 				shape_diff[j] = 1
 			}
 		} else {
@@ -97,10 +98,9 @@ func (tensor *Tensor[T]) Broadcast(shape ...types.Dim) *Tensor[T] {
 	// fmt.Println("shape_diff", shape_diff)
 
 	// repeat data to fill broadcasted dims
-	sub_index := make([]int, len(tensor.shape))
-	repeat := 1
+	sub_index := make([]int, tensor_dims)
+	repeat, last_repeat := 1, 1
 	is_innermost_broadcast := true
-	last_repeat := 1
 	for i := len(shape_diff) - 1; i >= 0; i-- {
 		if shape_diff[i] != 1 {
 			// if shape_diff[i] == 0 that means that broadsacting
@@ -157,6 +157,6 @@ func (tensor *Tensor[T]) Broadcast(shape ...types.Dim) *Tensor[T] {
 		last_repeat = repeat
 		repeat = 1
 	}
-	outTensor.clearFlag(SameValuesFlag)
+	outTensor.ClearFlag(SameValuesFlag)
 	return outTensor
 }
