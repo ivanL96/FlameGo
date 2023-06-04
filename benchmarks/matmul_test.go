@@ -59,7 +59,7 @@ func BenchmarkMatMulUnite(b *testing.B) {
 
 // O(N^3) impl
 // matmul for 1000x1000
-// BenchmarkMatMul-8   	       1		  69.653.349.600 ns/op	      12.020.000 B/op	      31 allocs/op
+// BenchmarkMatMul-8   	          1		  69.653.349.600 ns/op	      12.020.000 B/op	      31 allocs/op
 // fast get
 // BenchmarkMatMul-8              1       33.566.461.400 ns/op        12.018.176 B/op         24 allocs/op
 // calculate index inplace
@@ -87,11 +87,9 @@ func BenchmarkMatMul(b *testing.B) {
 	var size types.Dim = 1000
 	// a1 := tensor.Range[float32](int(size*size)).Reshape(size, size)
 	// b1 := tensor.Range[float32](int(size*size)).Reshape(size, size)
-	a1 := tensor.RandomFloat32Tensor(types.Shape{size, size}, 0)
-	b1 := tensor.RandomFloat32Tensor(types.Shape{size, size}, 0)
+	a1 := tensor.RandomFloat32Tensor(types.Shape{size, size}, -1)
+	b1 := tensor.RandomFloat32Tensor(types.Shape{size, size}, -1)
 	for i := 0; i < b.N; i++ {
 		a1.MatMul(b1)
 	}
-	// c1 := a1.MatMul(b1)
-	// fmt.Println(tensor.AsType[float32, int32](c1).Hash())
 }

@@ -50,3 +50,9 @@ func BenchmarkLoopUnroll(b *testing.B) {
 		sum_float64_go_unroll4(data)
 	}
 }
+
+func BenchmarkTensorCreate(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		tensor.CreateEmptyTensor[float64](100, 100, 10)
+	}
+}
