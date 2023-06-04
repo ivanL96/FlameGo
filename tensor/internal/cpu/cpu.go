@@ -58,11 +58,9 @@ func (i Implementation) String() string {
 func Dot(i Implementation, a, b []float32) float32 {
 	switch i {
 	case AVX:
-		// afl := types.Any(a).([]float32)
-		// bfl := types.Any(a).([]float32)
-		ret := amd64.Dot_mm256(a, b)
-		// return types.Any(ret).(T)
-		return ret
+		var c float32
+		amd64.Dot_mm256(a, b, &c)
+		return c
 	// case AVX512:
 	// 	var ret float32
 	// 	_mm512_dot(unsafe.Pointer(&a[0]), unsafe.Pointer(&b[0]), unsafe.Pointer(uintptr(len(a))), unsafe.Pointer(&ret))
@@ -73,26 +71,40 @@ func Dot(i Implementation, a, b []float32) float32 {
 	}
 }
 
+func input_b_scalar_to_float32[T types.TensorType](a []T, b T, out []T) ([]float32, float32, []float32) {
+	afl, ok_a := any(a).([]float32)
+	bfl, ok_b := any(b).(float32)
+	cfl, ok_c := any(out).([]float32)
+	if !ok_a || !ok_b || !ok_c {
+		return nil, 0, nil
+	}
+	return afl, bfl, cfl
+}
+
+func input_to_float32[T types.TensorType](a, b, out []T) ([]float32, []float32, []float32) {
+	afl, ok_a := any(a).([]float32)
+	bfl, ok_b := any(b).([]float32)
+	cfl, ok_c := any(out).([]float32)
+	if !ok_a || !ok_b || !ok_c {
+		return nil, nil, nil
+	}
+	return afl, bfl, cfl
+}
+
 func Mul[T types.TensorType](i Implementation, a, b, c []T) {
-	switch i {
-	case AVX:
-		afl := types.Any(a).([]float32)
-		bfl := types.Any(b).([]float32)
-		cfl := types.Any(c).([]float32)
+	afl, bfl, cfl := input_to_float32(a, b, c)
+	if i == AVX && afl != nil {
 		amd64.Mul_mm256(afl, bfl, cfl)
-	default:
+	} else {
 		noasm.MulMatx(a, b, c)
 	}
 }
 
 func MulToConst[T types.TensorType](i Implementation, a []T, b T, c []T) {
-	switch i {
-	case AVX:
-		afl := types.Any(a).([]float32)
-		bfl := types.Any(b).(float32)
-		cfl := types.Any(c).([]float32)
+	afl, bfl, cfl := input_b_scalar_to_float32(a, b, c)
+	if i == AVX && afl != nil {
 		amd64.Mul_to_const_mm256(afl, bfl, cfl)
-	default:
+	} else {
 		noasm.MulMatxToConst(a, b, c)
 	}
 }
