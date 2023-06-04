@@ -37,7 +37,7 @@ func reverse_var_list[T types.TensorType](slice []*Var[T]) {
 func (this *Var[T]) Backward() {
 	var_list := this.toposort()
 	reverse_var_list(var_list)
-	this.Grad = tensor.Scalar[T](1)
+	this.Grad = tensor.CreateEmptyTensor[T](this.Value.Shape()...).Fill(1)
 	for _, v := range var_list {
 		if v.backward_fn == nil {
 			continue
