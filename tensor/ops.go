@@ -189,6 +189,14 @@ func (tensor *Tensor[T]) Div(other_tensor *Tensor[T], out ...*Tensor[T]) *Tensor
 	return BaseBinElementwiseOp(tensor, other_tensor, &div, get_param(out...))
 }
 
+func (tensor *Tensor[T]) Pow(other_tensor *Tensor[T], out ...*Tensor[T]) *Tensor[T] {
+	pow := BinaryOp[T]{
+		scalar: ops.PowAtomic[T],
+		vector: cpu.Pow[T],
+	}
+	return BaseBinElementwiseOp(tensor, other_tensor, &pow, get_param(out...))
+}
+
 // unary
 func (tensor *Tensor[T]) Neg(out ...*Tensor[T]) *Tensor[T] {
 	return unaryElementwiseRoutine(tensor, ops.NegAtomic[T], get_param(out...))

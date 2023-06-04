@@ -22,6 +22,10 @@ func DivAtomic[T types.TensorType](a, b T) T {
 	return a / b
 }
 
+func PowAtomic[T types.TensorType](a, b T) T {
+	return any(math.Pow(float64(a), float64(b))).(T)
+}
+
 // unary
 func NegAtomic[T types.TensorType](a T) T {
 	return -a

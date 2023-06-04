@@ -113,3 +113,7 @@ func Add[T types.TensorType](i Implementation, a, b, c []T) {
 func Sub[T types.TensorType](i Implementation, a, b, c []T) {
 	noasm.SubMatx(a, b, c)
 }
+
+func Pow[T types.TensorType](i Implementation, a, b, c []T) {
+	noasm.PowMatx(a, b, c)
+}
