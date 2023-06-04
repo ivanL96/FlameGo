@@ -94,3 +94,10 @@ func fill_data_unroll4[T types.TensorType](buffer *[]T, value T) {
 		bb[3] = value
 	}
 }
+
+func get_param[T types.TensorType](params ...*Tensor[T]) *Tensor[T] {
+	if len(params) == 1 {
+		return params[0]
+	}
+	return nil
+}

@@ -28,9 +28,11 @@ func BaseBinElementwiseOp[T types.TensorType](
 	out *Tensor[T],
 ) *Tensor[T] {
 	var outTensor *Tensor[T]
+	// TODO if outTensor equals to a or b,  apply the *_to_const vectorized impl
+
 	binOp, binVec, binVec2Scalar := op.scalar, op.vector, op.vector_to_scalar
 	if binOp == nil {
-		panic("At least .scalar function must be set")
+		panic("At least op.scalar function must be set")
 	}
 
 	if IsScalarLike(tensor_a.shape) && IsScalarLike(tensor_b.shape) {

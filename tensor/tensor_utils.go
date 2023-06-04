@@ -20,8 +20,8 @@ func IsScalarLike(shape types.Shape) bool {
 	if len(shape) == 1 && shape[0] == 1 {
 		return true
 	}
-	for _, v := range shape {
-		if v > 1 {
+	for _, dim := range shape {
+		if dim > 1 {
 			return false
 		}
 	}
