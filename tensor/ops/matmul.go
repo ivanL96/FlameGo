@@ -3,6 +3,7 @@ package ops
 import (
 	"flamego/tensor/internal/cpu"
 	"flamego/tensor/types"
+	"sync"
 )
 
 // Naive implementation of matrix multiplication with time complexity n^3
@@ -44,7 +45,6 @@ func MatMulNaiveImpl[T types.TensorType](
 	}
 }
 
-// [T types.TensorType]
 func MatMulNaiveImpl_GEN(
 	impl cpu.Implementation,
 	a_data,
@@ -56,22 +56,30 @@ func MatMulNaiveImpl_GEN(
 	out_data []float32,
 	out_strides []int,
 ) {
+	var wg sync.WaitGroup
+
 	a_dim0 := int(a_shape[0])
 	out_stride0 := out_strides[0]
 	a_stride0 := a_strides[0]
 	b_stride0 := b_strides[0]
 	for i := 0; i < a_dim0; i++ {
-		a_stride0_i := a_stride0 * i
-		a_stride0_i_end := a_stride0 * (i + 1)
-		out_stride0_i := out_stride0 * i
-		for j := 0; j < a_dim0; j++ {
-			out_val := cpu.Dot(impl,
-				a_data[a_stride0_i:a_stride0_i_end],
-				b_data[b_stride0*j:b_stride0*(j+1)],
-			)
-			out_data[out_stride0_i+j] = out_val
-		}
+		wg.Add(1)
+		go func(i, a_dim0, out_stride0, a_stride0, b_stride0 int) {
+			defer wg.Done()
+
+			a_stride0_i := a_stride0 * i
+			a_stride0_i_end := a_stride0 * (i + 1)
+			out_stride0_i := out_stride0 * i
+			for j := 0; j < a_dim0; j++ {
+				out_val := cpu.Dot(impl,
+					a_data[a_stride0_i:a_stride0_i_end],
+					b_data[b_stride0*j:b_stride0*(j+1)],
+				)
+				out_data[out_stride0_i+j] = out_val
+			}
+		}(i, a_dim0, out_stride0, a_stride0, b_stride0)
 	}
+	wg.Wait()
 }
 
 // func MatMul_AVX_VectorsToScalar(

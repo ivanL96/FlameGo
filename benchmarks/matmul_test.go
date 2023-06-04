@@ -77,13 +77,18 @@ func BenchmarkMatMulUnite(b *testing.B) {
 // go asm with noescape
 // BenchmarkMatMul-8              2          550.787.600 ns/op        16.024.252 B/op         28 allocs/op
 // BenchmarkMatMul-8              3          488.138.033 ns/op        14.688.850 B/op         24 allocs/op
+// avx + goroutines
+// BenchmarkMatMul-8             10          132.793.770 ns/op        12.979.567 B/op       2021 allocs/op
+// BenchmarkMatMul-8             10          119.697.910 ns/op        12.979.960 B/op       2022 allocs/op
+// BenchmarkMatMul-8             10          106.914.500 ns/op        12.979.402 B/op       2021 allocs/op
 // numpy matmul ref:
 // 4.184.719.133 ~ 4.910.045.600 ns
 func BenchmarkMatMul(b *testing.B) {
 	var size types.Dim = 1000
-	// c := tensor.Scalar(float32(size))
-	a1 := tensor.Range[float32](int(size*size)).Reshape(size, size)
-	b1 := tensor.Range[float32](int(size*size)).Reshape(size, size)
+	// a1 := tensor.Range[float32](int(size*size)).Reshape(size, size)
+	// b1 := tensor.Range[float32](int(size*size)).Reshape(size, size)
+	a1 := tensor.RandomFloat32Tensor(types.Shape{size, size}, 0)
+	b1 := tensor.RandomFloat32Tensor(types.Shape{size, size}, 0)
 	for i := 0; i < b.N; i++ {
 		a1.MatMul(b1)
 	}
