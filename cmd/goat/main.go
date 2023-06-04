@@ -325,4 +325,4 @@ func main() {
 }
 
 // cd cmd/goat
-// go run . ../../tensor/intrinsics/src/mul_avx2.c -O3 -mavx
+// go run . ../../tensor/internal/intrinsics/src/mul_avx2.c -O3 -mavx

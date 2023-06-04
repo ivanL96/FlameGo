@@ -3,8 +3,8 @@
 package cpu
 
 import (
-	"flamego/tensor/intrinsics/amd64"
-	"flamego/tensor/intrinsics/noasm"
+	"flamego/tensor/internal/intrinsics/amd64"
+	"flamego/tensor/internal/noasm"
 	"flamego/tensor/types"
 
 	"github.com/klauspost/cpuid/v2"

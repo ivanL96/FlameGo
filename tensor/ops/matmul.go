@@ -1,7 +1,7 @@
 package ops
 
 import (
-	"flamego/tensor/intrinsics/cpu"
+	"flamego/tensor/internal/cpu"
 	"flamego/tensor/types"
 )
 
