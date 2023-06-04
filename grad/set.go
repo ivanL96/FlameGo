@@ -22,6 +22,7 @@ func CreateVarSet[T types.TensorType](vars ...*Var[T]) *VarSet[T] {
 	return set
 }
 
+// basics
 func (set *VarSet[T]) Add(value *Var[T]) {
 	set.lock.Lock()
 	defer set.lock.Unlock()

@@ -26,11 +26,44 @@ func (v *Var[T]) ToString() string {
 	return fmt.Sprintf("Var: %v", v.Value.ToString())
 }
 
-func (v *Var[T]) Mul(other *Var[T]) *Var[T] {
-	out := Variable(v.Value.Mul(other.Value), v, other)
-	v.backward_fn = func() {
-		v.Grad.Add(other.Value.Mul(out.Grad), v.Grad)     // v += other*out
-		other.Grad.Add(v.Value.Mul(out.Grad), other.Grad) // other += v*out
+// VARIABLE OPS
+
+func (this *Var[T]) Add(other *Var[T]) *Var[T] {
+	out := Variable(this.Value.Add(other.Value), this, other)
+	this.backward_fn = func() {
+		this.Grad.Add(out.Grad, this.Grad)   // this.g += out.g
+		other.Grad.Add(out.Grad, other.Grad) // other.g += out.g
+	}
+	return out
+}
+
+func (this *Var[T]) Sub(other *Var[T]) *Var[T] {
+	out := Variable(this.Value.Sub(other.Value), this, other)
+	this.backward_fn = func() {
+		this.Grad.Sub(out.Grad, this.Grad)   // this.g -= out.g
+		other.Grad.Sub(out.Grad, other.Grad) // other.g -= out.g
+	}
+	return out
+}
+
+func (this *Var[T]) Mul(other *Var[T]) *Var[T] {
+	out := Variable(this.Value.Mul(other.Value), this, other)
+	this.backward_fn = func() {
+		this.Grad.Add(other.Value.Mul(out.Grad), this.Grad)  // this.g += other.val * out.g
+		other.Grad.Add(this.Value.Mul(out.Grad), other.Grad) // other.g += this.val * out.g
+	}
+	return out
+}
+
+// this/other
+// => d(this): 1/other
+// => d(other): (-this) / (other**2)
+func (this *Var[T]) Div(other *Var[T]) *Var[T] {
+	out := Variable(this.Value.Div(other.Value), this, other)
+	// one := tensor.Scalar[T](1)
+	this.backward_fn = func() {
+		this.Grad.Add(out.Grad.Div(other.Value), this.Grad)                            // this.g += out.g / other.val
+		other.Grad.Add(this.Value.Neg().Div(other.Value.Mul(other.Value)), other.Grad) // other.g += -this.val * other.
 	}
 	return out
 }
