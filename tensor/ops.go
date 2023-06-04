@@ -86,6 +86,7 @@ func BaseBinElementwiseOp[T types.TensorType](
 			binVec2Scalar(auto_impl, tensor_a.data(), value, out_data)
 		}
 	} else if len(tensor_a.data()) == 1 {
+		// TODO add vectorization
 		// tensor_a is scalar
 		// (1,) & (N, M, ...)
 		outTensor = PrepareOutTensor(out, tensor_b.shape)
@@ -155,50 +156,50 @@ func unaryElementwiseRoutine[T types.TensorType](
 // binary ops
 //
 
-func (tensor *Tensor[T]) Add(other_tensor, out *Tensor[T]) *Tensor[T] {
+func (tensor *Tensor[T]) Add(other_tensor *Tensor[T], out ...*Tensor[T]) *Tensor[T] {
 	add := BinaryOp[T]{
 		scalar: ops.AddAtomic[T],
 		vector: cpu.Add[T],
 	}
-	return BaseBinElementwiseOp(tensor, other_tensor, &add, out)
+	return BaseBinElementwiseOp(tensor, other_tensor, &add, get_param(out...))
 }
 
-func (tensor *Tensor[T]) Sub(other_tensor, out *Tensor[T]) *Tensor[T] {
+func (tensor *Tensor[T]) Sub(other_tensor *Tensor[T], out ...*Tensor[T]) *Tensor[T] {
 	sub := BinaryOp[T]{
 		scalar: ops.SubAtomic[T],
 		vector: cpu.Sub[T],
 	}
-	return BaseBinElementwiseOp(tensor, other_tensor, &sub, out)
+	return BaseBinElementwiseOp(tensor, other_tensor, &sub, get_param(out...))
 }
 
-func (tensor *Tensor[T]) Mul(other_tensor, out *Tensor[T]) *Tensor[T] {
+func (tensor *Tensor[T]) Mul(other_tensor *Tensor[T], out ...*Tensor[T]) *Tensor[T] {
 	mul := BinaryOp[T]{
 		scalar:           ops.MulAtomic[T],
 		vector:           cpu.Mul[T],
 		vector_to_scalar: cpu.MulToConst[T],
 	}
-	return BaseBinElementwiseOp(tensor, other_tensor, &mul, out)
+	return BaseBinElementwiseOp(tensor, other_tensor, &mul, get_param(out...))
 }
 
-func (tensor *Tensor[T]) Div(other_tensor, out *Tensor[T]) *Tensor[T] {
+func (tensor *Tensor[T]) Div(other_tensor *Tensor[T], out ...*Tensor[T]) *Tensor[T] {
 	div := BinaryOp[T]{
 		scalar: ops.DivAtomic[T],
 		vector: cpu.Div[T],
 	}
-	return BaseBinElementwiseOp(tensor, other_tensor, &div, out)
+	return BaseBinElementwiseOp(tensor, other_tensor, &div, get_param(out...))
 }
 
 // unary
-func (tensor *Tensor[T]) Neg(out *Tensor[T]) *Tensor[T] {
-	return unaryElementwiseRoutine(tensor, ops.NegAtomic[T], out)
+func (tensor *Tensor[T]) Neg(out ...*Tensor[T]) *Tensor[T] {
+	return unaryElementwiseRoutine(tensor, ops.NegAtomic[T], get_param(out...))
 }
 
-func (tensor *Tensor[T]) Sigmoid(out *Tensor[T]) *Tensor[T] {
-	return unaryElementwiseRoutine(tensor, ops.SigmoidAtomic[T], out)
+func (tensor *Tensor[T]) Sigmoid(out ...*Tensor[T]) *Tensor[T] {
+	return unaryElementwiseRoutine(tensor, ops.SigmoidAtomic[T], get_param(out...))
 }
 
 //
-// matrix operations
+// MATRIX OPERATIONS
 //
 
 func (tensor *Tensor[T]) Dot(other *Tensor[T]) *Tensor[T] {
