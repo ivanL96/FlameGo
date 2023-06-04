@@ -88,7 +88,7 @@ func PrepareOutTensor[T types.TensorType](out *Tensor[T], shape types.Shape) *Te
 	// check if 'out' tensor has shape less than required.
 	// however having bigger shape is OK since the 'out' tensor can serve as a buffer for different outputs
 	if len(out.shape) != len(shape) {
-		panic(fmt.Sprintf("Output tensor has different number of dims. Required %v, but got %v", len(shape), len(out.shape)))
+		panic(fmt.Sprintf("Output tensor has different number of dims. Required %v, but got %v", shape, out.shape))
 	}
 	for i, dim := range shape {
 		if dim > out.shape[i] {

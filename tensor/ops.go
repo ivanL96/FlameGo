@@ -64,7 +64,7 @@ func BaseBinElementwiseOp[T types.TensorType](
 
 		if are_continuous && binVec != nil { // vec or avx
 			binVec(auto_impl, tensor_a.data(), tensor_b.data(), out_data)
-		} else if binVec == nil || !are_continuous {
+		} else if !are_continuous || binVec == nil {
 			iter := tensor_a.CreateIterator()
 			for iter.Iterate() {
 				idx := iter.Next()
@@ -86,14 +86,17 @@ func BaseBinElementwiseOp[T types.TensorType](
 			binVec2Scalar(auto_impl, tensor_a.data(), value, out_data)
 		}
 	} else if len(tensor_a.data()) == 1 {
-		// TODO add vectorization
 		// tensor_a is scalar
 		// (1,) & (N, M, ...)
 		outTensor = PrepareOutTensor(out, tensor_b.shape)
 		out_data := outTensor.data()
 		value := tensor_a.data()[0]
-		for i, val := range tensor_b.data() {
-			out_data[i] = binOp(val, value)
+		if binVec2Scalar == nil {
+			for i, val := range tensor_b.data() {
+				out_data[i] = binOp(val, value)
+			}
+		} else {
+			binVec2Scalar(auto_impl, tensor_b.data(), value, out_data)
 		}
 	} else {
 		// (A, B ...) & (N, M, ...)
@@ -124,12 +127,16 @@ func BaseBinElementwiseOp[T types.TensorType](
 		if broadcasted_tensor_b == nil {
 			broadcasted_tensor_b = tensor_b
 		}
-		iter := broadcasted_tensor_a.CreateIterator()
-		for iter.Iterate() {
-			dataIndex := iter.Index()
-			idx := iter.Next()
-			out_data[dataIndex] = binOp(
-				broadcasted_tensor_a.Get_fast(idx...), broadcasted_tensor_b.Get_fast(idx...))
+		if binVec != nil && are_continuous {
+			binVec(auto_impl, broadcasted_tensor_a.data(), broadcasted_tensor_b.data(), out_data)
+		} else if binVec == nil || !are_continuous {
+			iter := broadcasted_tensor_a.CreateIterator()
+			for iter.Iterate() {
+				dataIndex := iter.Index()
+				idx := iter.Next()
+				out_data[dataIndex] = binOp(
+					broadcasted_tensor_a.Get_fast(idx...), broadcasted_tensor_b.Get_fast(idx...))
+			}
 		}
 	}
 	outTensor.ClearFlag(SameValuesFlag)
