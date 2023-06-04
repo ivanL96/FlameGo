@@ -45,6 +45,10 @@ func CreateEmptyTensor[T types.TensorType](shape ...types.Dim) *Tensor[T] {
 	return makeTensor[T](nil, shape)
 }
 
+func Ones[T types.TensorType](shape ...types.Dim) *Tensor[T] {
+	return CreateEmptyTensor[T](shape...).Fill(1)
+}
+
 func Scalar[T types.TensorType](value T) *Tensor[T] {
 	return makeTensor(&[]T{value}, types.Shape{1})
 }
