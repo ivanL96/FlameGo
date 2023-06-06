@@ -4,6 +4,7 @@ import (
 	"flamego/tensor/iter"
 	types "flamego/tensor/types"
 	"fmt"
+	"math"
 )
 
 // set of primitive common tensor methods
@@ -89,17 +90,41 @@ func (tensor *Tensor[T]) Copy() *Tensor[T] {
 
 // Compares shapes and data:
 // iterates over two tensors and compares elementwise
-func (tensor *Tensor[T]) IsEqual(otherTensor *Tensor[T]) bool {
-	if !Equal_1D_slices(tensor.shape, otherTensor.shape) {
+func (tensor *Tensor[T]) IsEqual(other *Tensor[T]) bool {
+	if !Equal_1D_slices(tensor.shape, other.shape) {
 		return false
 	}
 
 	it := tensor.CreateIterator()
 	for it.Iterate() {
 		idx := it.Next()
-		if tensor.Get_fast(idx...) != otherTensor.Get_fast(idx...) {
+		if tensor.Get_fast(idx...) != other.Get_fast(idx...) {
 			return false
 		}
+	}
+	return true
+}
+
+func (tensor *Tensor[T]) IsAllClose(tensor_or_scalar *Tensor[T], tol float64) bool {
+	if IsScalarLike(tensor_or_scalar.Shape()) {
+		other_val := tensor_or_scalar.data()[0]
+		for _, val := range tensor.data() {
+			if math.Abs(float64(val-other_val)) > tol {
+				return false
+			}
+		}
+	} else if Equal_1D_slices(tensor_or_scalar.Shape(), tensor.Shape()) {
+		it := tensor.CreateIterator()
+		for it.Iterate() {
+			idx := it.Next()
+			a := tensor.Get_fast(idx...)
+			b := tensor_or_scalar.Get_fast(idx...)
+			if math.Abs(float64(a-b)) > tol {
+				return false
+			}
+		}
+	} else {
+		panic("Other argument must be either tensor with the same shape or scalar.")
 	}
 	return true
 }

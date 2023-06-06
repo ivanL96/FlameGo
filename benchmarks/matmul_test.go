@@ -60,7 +60,7 @@ func BenchmarkMatMulUnite(b *testing.B) {
 // O(N^3) impl
 // matmul for 1000x1000
 // BenchmarkMatMul-8   	          1		  69.653.349.600 ns/op	      12.020.000 B/op	      31 allocs/op
-// fast get
+// fast_get()
 // BenchmarkMatMul-8              1       33.566.461.400 ns/op        12.018.176 B/op         24 allocs/op
 // calculate index inplace
 // BenchmarkMatMul-8              1       17.409.256.100 ns/op        12.018.264 B/op         26 allocs/op
