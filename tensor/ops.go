@@ -16,8 +16,10 @@ type BinaryOp[T types.TensorType] struct {
 	// required prop, contains function with scalar bin operation
 	scalar func(T, T) T
 	// vector is optional prop used to accelerate applying operation to vectors
-	vector           func(cpu.Implementation, []T, []T, []T)
-	vector_to_scalar func(cpu.Implementation, []T, T, []T)
+	vector func(cpu.Implementation, []T, []T, []T)
+	// despite one of the args will be scalar, it's generally unknown which one is exactly.
+	// Therefore let the vector_to_scalar impl define the order of args.
+	vector_to_scalar func(cpu.Implementation, []T, []T, []T)
 }
 
 // general use Binary operator
@@ -77,26 +79,26 @@ func BaseBinElementwiseOp[T types.TensorType](
 		// (N, M, ...) & (1,)
 		outTensor = PrepareOutTensor(out, tensor_a.shape)
 		out_data := outTensor.data()
-		value := tensor_b.data()[0]
 		if binVec2Scalar == nil {
+			value := tensor_b.data()[0]
 			for i, val := range tensor_a.data() {
 				out_data[i] = binOp(val, value)
 			}
 		} else {
-			binVec2Scalar(auto_impl, tensor_a.data(), value, out_data)
+			binVec2Scalar(auto_impl, tensor_a.data(), tensor_b.data(), out_data)
 		}
 	} else if len(tensor_a.data()) == 1 {
 		// tensor_a is scalar
 		// (1,) & (N, M, ...)
 		outTensor = PrepareOutTensor(out, tensor_b.shape)
 		out_data := outTensor.data()
-		value := tensor_a.data()[0]
 		if binVec2Scalar == nil {
+			value := tensor_a.data()[0]
 			for i, val := range tensor_b.data() {
-				out_data[i] = binOp(val, value)
+				out_data[i] = binOp(value, val)
 			}
 		} else {
-			binVec2Scalar(auto_impl, tensor_b.data(), value, out_data)
+			binVec2Scalar(auto_impl, tensor_b.data(), tensor_a.data(), out_data)
 		}
 	} else {
 		// (A, B ...) & (N, M, ...)
