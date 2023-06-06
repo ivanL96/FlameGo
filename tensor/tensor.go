@@ -51,7 +51,12 @@ func Ones[T types.TensorType](shape ...types.Dim) *Tensor[T] {
 }
 
 func Scalar[T types.TensorType](value T) *Tensor[T] {
-	return makeTensor(&[]T{value}, types.Shape{1})
+	return &Tensor[T]{
+		shape:     types.Shape{1},
+		strides:   []int{1},
+		data_buff: []T{value},
+		dim_order: []uint16{0},
+	}
 }
 
 // Creates a tensor without copying the data
