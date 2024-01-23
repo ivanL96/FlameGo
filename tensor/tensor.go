@@ -89,7 +89,6 @@ func (tensor *Tensor[T]) Copy() *Tensor[T] {
 	newTensor := CreateTensor(newData, tensor.shape)
 	newTensor.strides = tensor.strides
 	newTensor.dim_order = tensor.dim_order
-	newTensor.flags = tensor.flags
 	return newTensor
 }
 
@@ -162,7 +161,6 @@ func Range[T types.TensorType](limits ...int) *Tensor[T] {
 
 // Fills tensor with same value
 func (tensor *Tensor[T]) Fill(value T) *Tensor[T] {
-	tensor.SetFlag(SameValuesFlag)
 	data := tensor.data()
 	if len(data) >= 12 {
 		fill_data_unroll4(&data, value)
@@ -203,13 +201,11 @@ func (tensor *Tensor[T]) SetData(value []T) *Tensor[T] {
 	}
 	// TODO avoid data_buff
 	tensor.data_buff = value
-	tensor.ClearFlag(SameValuesFlag)
 	return tensor
 }
 
 // set scalar to specific index
 func (tensor *Tensor[T]) Set(indexes []int, value T) {
-	tensor.ClearFlag(SameValuesFlag)
 	flatIndex := tensor.getFlatIndex(indexes...)
 	tensor.data()[flatIndex] = value
 }

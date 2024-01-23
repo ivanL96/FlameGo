@@ -75,11 +75,6 @@ func (tensor *Tensor[T]) Broadcast(shape ...types.Dim) *Tensor[T] {
 	broadcastedShape := BroadcastShapes(tensor.shape, shape)
 
 	outTensor := CreateEmptyTensor[T](broadcastedShape...)
-	if tensor.HasFlag(SameValuesFlag) {
-		outTensor.SetFlag(SameValuesFlag)
-		outTensor.Fill(tensor.data()[0])
-		return outTensor
-	}
 
 	// shape diff
 	// compares shapes and sets 1 if the dim is changed
@@ -157,6 +152,5 @@ func (tensor *Tensor[T]) Broadcast(shape ...types.Dim) *Tensor[T] {
 		last_repeat = repeat
 		repeat = 1
 	}
-	outTensor.ClearFlag(SameValuesFlag)
 	return outTensor
 }

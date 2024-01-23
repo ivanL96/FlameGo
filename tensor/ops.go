@@ -57,13 +57,6 @@ func BaseBinElementwiseOp[T types.TensorType](
 		outTensor = PrepareOutTensor(out, tensor_a.shape)
 		out_data := outTensor.data()
 
-		// if two tensors are filled with same values. For example [2,2,2] and [3,3,3]
-		if Equal_1D_slices(outTensor.shape, tensor_a.shape) &&
-			tensor_a.HasFlag(SameValuesFlag) && tensor_b.HasFlag(SameValuesFlag) {
-			outTensor.Fill(binOp(tensor_a.data()[0], tensor_b.data()[0]))
-			return outTensor
-		}
-
 		if are_continuous && binVec != nil { // vec or avx
 			binVec(auto_impl, tensor_a.data(), tensor_b.data(), out_data)
 		} else if !are_continuous || binVec == nil {
@@ -141,7 +134,6 @@ func BaseBinElementwiseOp[T types.TensorType](
 			}
 		}
 	}
-	outTensor.ClearFlag(SameValuesFlag)
 	return outTensor
 }
 

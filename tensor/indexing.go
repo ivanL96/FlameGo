@@ -218,9 +218,6 @@ func (tensor *Tensor[T]) AsContinuous(out *Tensor[T]) *Tensor[T] {
 	if isDimOrderInit(tensor.dim_order) {
 		return tensor
 	}
-	if tensor.HasFlag(SameValuesFlag) {
-		return tensor
-	}
 
 	outTensor := PrepareOutTensor(out, tensor.shape)
 	iter := tensor.CreateIterator()

@@ -29,8 +29,6 @@ func BenchmarkAdd(b *testing.B) {
 // same values tests
 // Fill() unrolled 4
 // 654    1.885.201 ns/op    4.018.343 B/op          6 allocs/op
-// Fill() SAME VALUE FLAG
-// 445	   2.637.615 ns/op	 4.024.107 B/op	       6 allocs/op
 func BenchmarkBigAdd(b *testing.B) {
 	a1 := tensor.Range[int32](1000000).Reshape(1000, 1000) //.Fill(1)
 	a2 := tensor.Range[int32](1000000).Reshape(1000, 1000) //.Fill(1)
