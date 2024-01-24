@@ -1,6 +1,6 @@
 package ops
 
-import "flamego/tensor/types"
+import "gograd/tensor/types"
 
 func SplitTensorImpl[T types.TensorType](
 	tensor_data []T,

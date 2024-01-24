@@ -1,12 +1,12 @@
 package main
 
 import (
-	"flamego/tensor"
+	"gograd/tensor"
 	"testing"
 )
 
 // go test -bench . ./benchmarks -benchmem -v -count=5
-// go test -benchmem -run=^$ -bench ^BenchmarkIndex$ flamego/benchmarks
+// go test -benchmem -run=^$ -bench ^BenchmarkIndex$ gograd/benchmarks
 // 1879749	       618.7 ns/op	     178 B/op	       7 allocs/op -- as get()
 // 1429494	       951.3 ns/op	     578 B/op	       6 allocs/op -- subdata
 // 1444742	       856.9 ns/op	     594 B/op	       6 allocs/op -- fill

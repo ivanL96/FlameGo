@@ -1,8 +1,8 @@
 package tensor
 
 import (
-	types "flamego/tensor/types"
 	"fmt"
+	types "gograd/tensor/types"
 )
 
 func AreBroadcastable(shape_a, shape_b types.Shape) bool {

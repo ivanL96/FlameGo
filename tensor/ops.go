@@ -1,11 +1,11 @@
 package tensor
 
 import (
-	"flamego/tensor/internal/cpu"
-	"flamego/tensor/iter"
-	ops "flamego/tensor/ops"
-	types "flamego/tensor/types"
 	"fmt"
+	"gograd/tensor/internal/cpu"
+	"gograd/tensor/iter"
+	ops "gograd/tensor/ops"
+	types "gograd/tensor/types"
 )
 
 var auto_impl cpu.Implementation = cpu.DetectImpl()

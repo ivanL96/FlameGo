@@ -1,8 +1,8 @@
 package grad
 
 import (
-	"flamego/tensor"
-	"flamego/tensor/types"
+	"gograd/tensor"
+	"gograd/tensor/types"
 )
 
 func _toposort[T types.TensorType](topo_sorted *[]*Var[T], visited *VarSet[T], v *Var[T]) {

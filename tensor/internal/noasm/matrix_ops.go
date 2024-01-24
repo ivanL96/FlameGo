@@ -1,7 +1,7 @@
 package noasm
 
 import (
-	"flamego/tensor/types"
+	"gograd/tensor/types"
 	"math"
 )
 

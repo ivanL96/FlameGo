@@ -1,8 +1,8 @@
 package tensor
 
 import (
-	types "flamego/tensor/types"
 	"fmt"
+	types "gograd/tensor/types"
 )
 
 // set of operations for shaping routines

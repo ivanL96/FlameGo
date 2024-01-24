@@ -1,9 +1,9 @@
 package tensor
 
 import (
-	"flamego/tensor/iter"
-	types "flamego/tensor/types"
 	"fmt"
+	"gograd/tensor/iter"
+	types "gograd/tensor/types"
 	"math"
 )
 
@@ -50,6 +50,7 @@ func Ones[T types.TensorType](shape ...types.Dim) *Tensor[T] {
 	return CreateEmptyTensor[T](shape...).Fill(1)
 }
 
+// A tensor with Shape 1
 func Scalar[T types.TensorType](value T) *Tensor[T] {
 	return &Tensor[T]{
 		shape:     types.Shape{1},

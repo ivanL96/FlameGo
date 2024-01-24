@@ -1,8 +1,8 @@
 package main
 
 import (
-	"flamego/tensor"
-	"flamego/tensor/types"
+	"gograd/tensor"
+	"gograd/tensor/types"
 	"testing"
 	"unsafe"
 )

@@ -1,9 +1,9 @@
 package grad
 
 import (
-	"flamego/tensor"
-	"flamego/tensor/types"
 	"fmt"
+	"gograd/tensor"
+	"gograd/tensor/types"
 )
 
 type Var[T types.TensorType] struct {

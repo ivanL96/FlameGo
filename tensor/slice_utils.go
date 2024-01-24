@@ -1,7 +1,7 @@
 package tensor
 
 import (
-	types "flamego/tensor/types"
+	types "gograd/tensor/types"
 	"reflect"
 	"unsafe"
 )

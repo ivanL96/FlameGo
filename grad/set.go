@@ -1,7 +1,7 @@
 package grad
 
 import (
-	"flamego/tensor/types"
+	"gograd/tensor/types"
 	"sync"
 )
 

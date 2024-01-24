@@ -1,8 +1,8 @@
 package ops
 
 import (
-	"flamego/tensor/internal/cpu"
-	"flamego/tensor/types"
+	"gograd/tensor/internal/cpu"
+	"gograd/tensor/types"
 	"sync"
 )
 
