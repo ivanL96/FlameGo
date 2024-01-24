@@ -57,10 +57,9 @@ func DivMatx[T types.TensorType](a, b, out []T) {
 }
 
 func PowMatx[T types.TensorType](a, b, out []T) {
-	out_ := makeOutMat(out, len(a))
 	af := any(a).([]float64)
-	bf := any(a).([]float64)
-	outf := any(out_).([]float64)
+	bf := any(b).([]float64)
+	outf := any(makeOutMat(out, len(a))).([]float64)
 	for i, val := range af {
 		outf[i] = math.Pow(val, bf[i])
 	}
