@@ -25,6 +25,15 @@ func Variable[T types.TensorType](tensor_val *tensor.Tensor[T], children ...*Var
 	}
 }
 
+func Constant[T types.TensorType](tensor_val *tensor.Tensor[T], children ...*Var[T]) *Var[T] {
+	return &Var[T]{
+		Value:         tensor_val,
+		Grad:          tensor.Scalar[T](0),
+		Children:      CreateVarSet[T](children...),
+		Requires_grad: false,
+	}
+}
+
 func (v *Var[T]) ToString() string {
 	return fmt.Sprintf("Var: %v", v.Value.ToString())
 }
