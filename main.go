@@ -1,8 +1,9 @@
 package main
 
 import (
-	"flamego/tensor"
 	"fmt"
+	"gograd/grad"
+	"gograd/tensor"
 )
 
 func main() {
