@@ -34,3 +34,7 @@ func NegAtomic[T types.TensorType](a T) T {
 func SigmoidAtomic[T types.TensorType](a T) T {
 	return T(1. / (1. + math.Pow(math.E, float64(-a))))
 }
+
+func LnAtomic[T types.TensorType](a T) T {
+	return T(math.Log(float64(a)))
+}

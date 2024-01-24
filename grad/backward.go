@@ -5,25 +5,22 @@ import (
 	"gograd/tensor/types"
 )
 
-func _toposort[T types.TensorType](topo_sorted *[]*Var[T], visited *VarSet[T], v *Var[T]) {
+func _toposort[T types.TensorType](
+	topo_sorted *[]*Var[T],
+	visited *VarSet[T],
+	v *Var[T],
+) {
 	if visited.Contains(v) {
 		return
 	}
 	visited.Add(v)
-	for child := range v.Children.values {
+	for _, child := range v.Children {
 		_toposort(topo_sorted, visited, child)
 	}
 	*topo_sorted = append(*topo_sorted, v)
 }
 
-func (v *Var[T]) toposort() []*Var[T] {
-	topo_sorted := make([]*Var[T], 0, 8)
-	visited := CreateVarSet[T]()
-	_toposort(&topo_sorted, visited, v)
-	return topo_sorted
-}
-
-func reverse_var_list[T types.TensorType](slice []*Var[T]) {
+func reverse_vars_inplace[T types.TensorType](slice []*Var[T]) {
 	l := len(slice)
 	if l <= 1 {
 		return
@@ -35,14 +32,17 @@ func reverse_var_list[T types.TensorType](slice []*Var[T]) {
 }
 
 func (this *Var[T]) Backward() {
-	var_list := this.toposort()
-	reverse_var_list(var_list)
-	this.Grad = tensor.Ones[T](this.Value.Shape()...)
-	for _, v := range var_list {
-		if v.backward_fn == nil {
-			continue
+	// toposort
+	topo_sorted := make([]*Var[T], 0, 8)
+	visited := CreateVarSet[T]()
+	_toposort(&topo_sorted, visited, this)
+	reverse_vars_inplace(topo_sorted)
+
+	this.Grad = tensor.Ones[T](this.Value.Shape()...) // gradient w.r.t the current variable is ones tensor
+	for _, v := range topo_sorted {
+		if v.backward_fn != nil {
+			v.Grad = v.Grad.Add(v.backward_fn())
 		}
-		v.backward_fn()
 	}
 }
 

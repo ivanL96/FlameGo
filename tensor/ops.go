@@ -207,6 +207,10 @@ func (tensor *Tensor[T]) Sigmoid(out ...*Tensor[T]) *Tensor[T] {
 	return unaryElementwiseRoutine(tensor, ops.SigmoidAtomic[T], get_param(out...))
 }
 
+func (tensor *Tensor[T]) Ln(out ...*Tensor[T]) *Tensor[T] {
+	return unaryElementwiseRoutine(tensor, ops.LnAtomic[T], get_param(out...))
+}
+
 //
 // MATRIX OPERATIONS
 //
