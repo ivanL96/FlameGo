@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"gograd/grad"
 	"gograd/tensor"
+	"gograd/tensor/types"
 )
 
 func main() {
@@ -29,14 +30,15 @@ func main() {
 	// cc := aa.MatMul(bb)
 	// res := tensor.AsType[float32, int64](cc)
 	// fmt.Println(cc.ToString())
-	x := grad.Variable[float32](tensor.Ones[float32](3, 3).Fill(3))
-	x.Requires_grad = false
-	w := grad.Variable[float32](tensor.Ones[float32](3, 3).Fill(2))
-	b := grad.Variable[float32](tensor.Ones[float32](3, 3).Fill(5))
-	z := w.Mul(x) // 2*3+5
-	z.Backward()
-	fmt.Println("z.grad", z.Grad.ToString())
-	fmt.Println("w.grad", w.Grad.ToString())
-	fmt.Println("x.grad", x.Grad.ToString())
-	fmt.Println("b.grad", b.Grad.ToString())
+	a := grad.Variable[float32](tensor.CreateTensor[float32](
+		[]float32{4, 5, 6}, types.Shape{1, 3}))
+	// []float32{4, 5, 6}, types.Shape{3, 1}))
+	b := grad.Variable[float32](tensor.CreateTensor[float32](
+		[]float32{1, 2, 3}, types.Shape{3, 1}))
+	// b.Requires_grad = false
+	z := a.MatMul(b)
+	fmt.Println("z", z.ToString())
+	z.Backward(nil)
+	fmt.Println("dz/da", a.Grad.ToString())
+	fmt.Println("dz/db", b.Grad.ToString())
 }

@@ -265,6 +265,10 @@ func (tensor *Tensor[T]) MatMul(other *Tensor[T]) *Tensor[T] {
 			"Tensors inner shapes are different. %v != %v", tensor.shape[1], other.shape[0],
 		))
 	}
+	// if one of tensors is scalar, matmul converges to Mul()
+	if IsScalarLike(tensor.shape) || IsScalarLike(other.shape) {
+		return tensor.Mul(other)
+	}
 	adim0, bdim1 := tensor.shape[0], other.shape[1]
 	outTensor := CreateEmptyTensor[T](adim0, bdim1)
 
@@ -277,7 +281,6 @@ func (tensor *Tensor[T]) MatMul(other *Tensor[T]) *Tensor[T] {
 	a_data := tensor.data()
 	b_data := other.data()
 	out_data := outTensor.data()
-	// 	ops.MatMul_AVX_VectorsToScalar(a_data, b_data, out_data)
 	// gen impl
 	a_data_ := types.Any(a_data).([]float32)
 	b_data_ := types.Any(b_data).([]float32)

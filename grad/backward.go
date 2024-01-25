@@ -31,14 +31,21 @@ func reverse_vars_inplace[T types.TensorType](slice []*Var[T]) {
 	}
 }
 
-func (this *Var[T]) Backward() {
+// This method performs gradient computation for each Variable.
+// Parameter `gradient` is optional and must be set in cases where the result (`this`) Variable is not scalar.
+func (this *Var[T]) Backward(gradient *tensor.Tensor[T]) {
 	// toposort
 	topo_sorted := make([]*Var[T], 0, 8)
 	visited := CreateVarSet[T]()
 	_toposort(&topo_sorted, visited, this)
 	reverse_vars_inplace(topo_sorted)
 
-	this.Grad = tensor.Ones[T](this.Value.Shape()...) // gradient w.r.t the current variable is ones tensor
+	// gradient w.r.t the current variable is ones tensor
+	if gradient == nil {
+		this.Grad = tensor.Ones[T](this.Value.Shape()...)
+	} else {
+		this.Grad = gradient
+	}
 	for _, v := range topo_sorted {
 		if v.backward_fn != nil {
 			v.Grad = v.Grad.Add(v.backward_fn())

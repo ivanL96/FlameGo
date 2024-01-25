@@ -122,6 +122,24 @@ func (this *Var[T]) Div(other *Var[T]) *Var[T] {
 	return out
 }
 
+func (this *Var[T]) MatMul(other *Var[T]) *Var[T] {
+	out := Variable(this.Value.MatMul(other.Value), this, other)
+	if this.Requires_grad {
+		this.backward_fn = func() *tensor.Tensor[T] {
+			// out.g @ other.T
+			// fmt.Println(out.Grad, other.Value.Transpose())
+			return out.Grad.MatMul(other.Value.Transpose())
+		}
+	}
+	if other.Requires_grad {
+		other.backward_fn = func() *tensor.Tensor[T] {
+			// this.T @ out.g
+			return this.Value.Transpose().AsContinuous(nil).MatMul(out.Grad)
+		}
+	}
+	return out
+}
+
 func (this *Var[T]) Sigmoid() *Var[T] {
 	out := Variable(this.Value.Sigmoid(), this)
 	if this.Requires_grad {
