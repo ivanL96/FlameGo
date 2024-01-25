@@ -14,10 +14,10 @@ import time, sys
 
 import torch
 
-a = torch.tensor([[4, 5, 6]], dtype=torch.float32, requires_grad=True)
-b = torch.tensor([[1], [2], [3]], dtype=torch.float32, requires_grad=True)
+a = torch.tensor([[4]], dtype=torch.float32, requires_grad=True)
+b = torch.tensor([[5]], dtype=torch.float32, requires_grad=True)
 
-c = torch.matmul(a, b)
+c = a - b
 print(c)
 c.backward()
 

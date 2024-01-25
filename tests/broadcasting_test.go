@@ -57,7 +57,6 @@ func TestBroadcast4(t *testing.T) {
 //	a.Broadcast(3, 4, 1, 1, 3)
 func TestBroadcast5(t *testing.T) {
 	d := tensor.Range[int32](6).Reshape(3, 2, 1)
-	fmt.Println(d.ToString())
 	br_d := d.Broadcast(3, 4, 1, 1, 3)
 	data := []int32{
 		0, 0, 0, 1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4, 5, 5, 5, 0, 0, 0, 1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4, 5, 5, 5, 0,
@@ -69,5 +68,4 @@ func TestBroadcast5(t *testing.T) {
 	}
 	assertEqualSlices(t, br_d.Data(), data)
 	assertEqualSlices(t, br_d.Shape(), types.Shape{3, 4, 3, 2, 3})
-	fmt.Println(br_d.ToString())
 }

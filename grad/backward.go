@@ -53,6 +53,8 @@ func (this *Var[T]) Backward(gradient *tensor.Tensor[T]) {
 	}
 }
 
+const EPSILON = 0.00000000001
+
 func NumericDeriv(epsilon, value float64, op_func func(x float64) float64) float64 {
 	return (op_func(value+epsilon) - op_func(value)) / epsilon
 }
