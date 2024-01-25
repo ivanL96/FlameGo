@@ -23,7 +23,7 @@ func DivAtomic[T types.TensorType](a, b T) T {
 }
 
 func PowAtomic[T types.TensorType](a, b T) T {
-	return any(math.Pow(float64(a), float64(b))).(T)
+	return T(math.Pow(float64(a), float64(b)))
 }
 
 // unary
