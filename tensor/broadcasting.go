@@ -6,7 +6,7 @@ import (
 )
 
 func AreBroadcastable(shape_a, shape_b types.Shape) bool {
-	if (IsScalarLike(shape_a) && IsScalarLike(shape_b)) ||
+	if (shape_a.IsScalarLike() && shape_b.IsScalarLike()) ||
 		Equal_1D_slices(shape_a, shape_b) {
 		return true
 	}
@@ -30,7 +30,7 @@ func AreBroadcastable(shape_a, shape_b types.Shape) bool {
 }
 
 func BroadcastShapes(shape_a, shape_b types.Shape) types.Shape {
-	if IsScalarLike(shape_a) && IsScalarLike(shape_b) || Equal_1D_slices(shape_a, shape_b) {
+	if shape_a.IsScalarLike() && shape_b.IsScalarLike() || Equal_1D_slices(shape_a, shape_b) {
 		return shape_a
 	}
 	if len(shape_a) < len(shape_b) {

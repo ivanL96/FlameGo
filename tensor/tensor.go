@@ -28,9 +28,9 @@ func makeTensor[T types.TensorType](dataPtr *[]T, shape types.Shape) *Tensor[T] 
 	}
 	tensor := &Tensor[T]{
 		shape:     append(types.Shape(nil), shape...),
-		strides:   getStrides(shape),
+		strides:   shape.GetStrides(),
 		data_buff: data,
-		dim_order: initDimOrder(shape),
+		dim_order: shape.InitDimOrder(),
 	}
 
 	return tensor
@@ -63,9 +63,9 @@ func Scalar[T types.TensorType](value T) *Tensor[T] {
 // Creates a tensor without copying the data
 func AsTensor[T types.TensorType](data []T, shape types.Shape) *Tensor[T] {
 	t := &Tensor[T]{
-		strides:   getStrides(shape),
+		strides:   shape.GetStrides(),
 		data_buff: data,
-		dim_order: initDimOrder(shape),
+		dim_order: shape.InitDimOrder(),
 		shape:     shape,
 	}
 	return t
@@ -111,7 +111,7 @@ func (tensor *Tensor[T]) IsEqual(other *Tensor[T]) bool {
 }
 
 func (tensor *Tensor[T]) IsAllClose(tensor_or_scalar *Tensor[T], tol float64) bool {
-	if IsScalarLike(tensor_or_scalar.Shape()) {
+	if tensor_or_scalar.Shape().IsScalarLike() {
 		other_val := tensor_or_scalar.data()[0]
 		for _, val := range tensor.data() {
 			if math.Abs(float64(val-other_val)) > tol {

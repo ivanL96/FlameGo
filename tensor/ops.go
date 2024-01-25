@@ -37,8 +37,15 @@ func BaseBinElementwiseOp[T types.TensorType](
 		panic("At least op.scalar function must be set")
 	}
 
-	if IsScalarLike(tensor_a.shape) && IsScalarLike(tensor_b.shape) {
-		outTensor = PrepareOutTensor(out, tensor_a.shape)
+	if tensor_a.shape.IsScalarLike() && tensor_b.shape.IsScalarLike() {
+		// sometimes it's important to keep dims for scalar like tensors
+		var out_shape types.Shape
+		if len(tensor_a.shape) > len(tensor_b.shape) {
+			out_shape = tensor_a.shape
+		} else {
+			out_shape = tensor_b.shape
+		}
+		outTensor = PrepareOutTensor(out, out_shape)
 		// most trivial case (1,) & (1,)
 		outTensor.data()[0] = binOp(tensor_a.data()[0], tensor_b.data()[0])
 		return outTensor
@@ -143,7 +150,7 @@ func unaryElementwiseRoutine[T types.TensorType](
 	out *Tensor[T],
 ) *Tensor[T] {
 	outTensor := PrepareOutTensor(out, tensor.Shape())
-	if IsScalarLike(tensor.Shape()) {
+	if tensor.shape.IsScalarLike() {
 		outTensor.data()[0] = unaryOp(tensor.data()[0])
 		return outTensor
 	}
@@ -266,7 +273,7 @@ func (tensor *Tensor[T]) MatMul(other *Tensor[T]) *Tensor[T] {
 		))
 	}
 	// if one of tensors is scalar, matmul converges to Mul()
-	if IsScalarLike(tensor.shape) || IsScalarLike(other.shape) {
+	if tensor.shape.IsScalarLike() || other.shape.IsScalarLike() {
 		return tensor.Mul(other)
 	}
 	adim0, bdim1 := tensor.shape[0], other.shape[1]

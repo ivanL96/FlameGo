@@ -18,13 +18,13 @@ func (tensor *Tensor[T]) Flatten(out *Tensor[T]) *Tensor[T] {
 }
 
 func (tensor *Tensor[T]) Squeeze(out *Tensor[T]) *Tensor[T] {
-	if IsScalarLike(tensor.shape) {
+	if tensor.shape.IsScalarLike() {
 		return tensor
 	}
 	outTensor := PrepareOutTensor(out, tensor.shape)
-	outTensor.shape = squeeze_shape(tensor.shape)
-	outTensor.strides = getStrides(outTensor.shape)
-	outTensor.dim_order = initDimOrder(outTensor.shape)
+	outTensor.shape = tensor.shape.Squeeze()
+	outTensor.strides = outTensor.shape.GetStrides()
+	outTensor.dim_order = outTensor.shape.InitDimOrder()
 	return outTensor
 }
 
@@ -39,9 +39,10 @@ func (tensor *Tensor[T]) Reshape(newShape ...types.Dim) *Tensor[T] {
 	if len(tensor.data()) != int(new_shape_prod) {
 		panic(fmt.Sprintf("Cannot reshape tensor with size %v to shape %v", len(tensor.data()), newShape))
 	}
+	sh := types.Shape(newShape)
 	tensor.shape = newShape
-	tensor.strides = getStrides(newShape)
-	tensor.dim_order = initDimOrder(newShape)
+	tensor.strides = sh.GetStrides()
+	tensor.dim_order = sh.InitDimOrder()
 	return tensor
 }
 
