@@ -59,7 +59,7 @@ func (this *Var[T]) Sub(other *Var[T]) *Var[T] {
 	out := Variable(this.Value.Sub(other.Value), this, other)
 	if this.Requires_grad {
 		this.backward_fn = func() *tensor.Tensor[T] {
-			return out.Grad.Neg() // -out.g
+			return out.Grad // out.g
 		}
 	}
 	if other.Requires_grad {
