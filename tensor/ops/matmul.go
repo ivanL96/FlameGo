@@ -59,8 +59,10 @@ func MatMulNaiveImpl_GEN(
 	var wg sync.WaitGroup
 
 	a_dim0 := int(a_shape[0])
+	b_dim0 := int(b_shape[0])
 	out_stride0 := out_strides[0]
 	a_stride0 := a_strides[0]
+	b_stride0 := b_strides[0]
 	for i := 0; i < a_dim0; i++ {
 		wg.Add(1)
 		go func(i int) {
@@ -69,10 +71,9 @@ func MatMulNaiveImpl_GEN(
 			a_stride0_i := a_stride0 * i
 			a_stride0_i_end := a_stride0 * (i + 1)
 			out_stride0_i := out_stride0 * i
-
-			for j := 0; j < a_dim0; j++ {
+			for j := 0; j < b_dim0; j++ {
 				_a := a_data[a_stride0_i:a_stride0_i_end]
-				_b := b_data[a_stride0*j : a_stride0*(j+1)]
+				_b := b_data[b_stride0*j : b_stride0*(j+1)]
 				out_data[out_stride0_i+j] = cpu.Dot(impl, _a, _b)
 			}
 		}(i)

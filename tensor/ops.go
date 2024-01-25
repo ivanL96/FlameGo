@@ -289,10 +289,9 @@ func (tensor *Tensor[T]) MatMul(other *Tensor[T]) *Tensor[T] {
 		auto_impl, a_data_, b_data_, tensor.shape, other.shape,
 		tensor.strides, other.strides, out_data_, outTensor.strides)
 
-	// 	ops.MatMulNaiveImpl(a_data, b_data, tensor.shape, other.shape,
-	// 		tensor.strides, other.strides,
-	// 		out_data, outTensor.strides)
-	// }
+	// ops.MatMulNaiveImpl(a_data, b_data, tensor.shape, other.shape,
+	// 	tensor.strides, other.strides,
+	// 	out_data, outTensor.strides)
 	outTensor.data_buff = types.Any(outTensor.data()).([]T)
 	return outTensor
 }

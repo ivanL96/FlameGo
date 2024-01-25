@@ -90,3 +90,21 @@ func TestMatMul4Vec(t *testing.T) {
 	assertEqualSlices(t, c2.Data(), []float32{285})
 	assertEqualSlices(t, c2.Shape(), types.Shape{1, 1})
 }
+
+func TestMatMul5(t *testing.T) {
+	a2 := tensor.Range[float32](12).Reshape(3, 4)
+	b2 := tensor.Range[float32](8).Reshape(4, 2)
+	c2 := a2.MatMul(b2)
+	fmt.Println(c2.ToString())
+	assertEqualSlices(t, c2.Data(), []float32{28, 34, 76, 98, 124, 162})
+	assertEqualSlices(t, c2.Shape(), types.Shape{3, 2})
+}
+
+func TestMatMul6(t *testing.T) {
+	a2 := tensor.Range[float32](12).Reshape(3, 4)
+	b2 := tensor.Range[float32](4).Reshape(4, 1)
+	c2 := a2.MatMul(b2)
+	fmt.Println(c2.ToString())
+	assertEqualSlices(t, c2.Data(), []float32{14, 38, 62})
+	assertEqualSlices(t, c2.Shape(), types.Shape{3, 1})
+}
