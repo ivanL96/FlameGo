@@ -69,7 +69,11 @@ func UniteTensors[T types.TensorType](
 	}
 }
 
-func PaddingMat[T types.TensorType](data []T, shape types.Shape, pad_before, pad_after uint) ([]T, types.Shape) {
+func PaddingMat[T types.TensorType](
+	data []T,
+	shape types.Shape,
+	pad_before, pad_after uint,
+) ([]T, types.Shape) {
 	if len(shape) != 2 {
 		panic("Shape must be 2-dim")
 	}

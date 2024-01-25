@@ -83,12 +83,13 @@ func BenchmarkMatMulUnite(b *testing.B) {
 // BenchmarkMatMul-8             10          106.914.500 ns/op        12.979.402 B/op       2021 allocs/op
 // numpy matmul ref:
 // 4.184.719.133 ~ 4.910.045.600 ns
+// go test -benchmem -run=^$ -bench ^BenchmarkMatMul$ gograd/benchmarks -benchmem -v -count=5
 func BenchmarkMatMul(b *testing.B) {
 	var size types.Dim = 1000
 	// a1 := tensor.Range[float32](int(size*size)).Reshape(size, size)
 	// b1 := tensor.Range[float32](int(size*size)).Reshape(size, size)
-	a1 := tensor.RandomFloat32Tensor(types.Shape{size, size}, -1)
-	b1 := tensor.RandomFloat32Tensor(types.Shape{size, size}, -1)
+	a1 := tensor.RandomFloat32(types.Shape{size, size}, -1)
+	b1 := tensor.RandomFloat32(types.Shape{size, size}, -1)
 	for i := 0; i < b.N; i++ {
 		a1.MatMul(b1)
 	}

@@ -33,14 +33,14 @@ func createRandFloat64Slice(length int, seed int64) []float64 {
 	return slice
 }
 
-func RandomFloat64Tensor(shape types.Shape, seed int64) *Tensor[float64] {
+func RandomFloat64(shape types.Shape, seed int64) *Tensor[float64] {
 	randTensor := CreateEmptyTensor[float64](shape...)
 	value := createRandFloat64Slice(len(randTensor.data()), seed)
 	randTensor.SetData(value)
 	return randTensor
 }
 
-func RandomFloat32Tensor(shape types.Shape, seed int64) *Tensor[float32] {
+func RandomFloat32(shape types.Shape, seed int64) *Tensor[float32] {
 	randTensor := CreateEmptyTensor[float32](shape...)
 	value := createRandFloat32Slice(len(randTensor.data()), seed)
 	randTensor.SetData(value)
