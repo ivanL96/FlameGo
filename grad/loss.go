@@ -9,8 +9,8 @@ import (
 // 'y_true' is a cosnt by definition
 func (y_pred *Var[T]) MSE(y_true *Var[T]) *Var[T] {
 	squared := tensor.Scalar[T](2)
-	mean := y_true.Value.Sub(y_pred.Value).Pow(squared).Mean()
-	out := Variable(tensor.Scalar[T](T(mean)), y_pred)
+	mean := y_true.Value.Sub(y_pred.Value).Pow(squared).Mean(false)
+	out := Variable(mean, y_pred)
 	if y_pred.Requires_grad {
 		y_pred.backward_fn = func() *tensor.Tensor[T] {
 			n := tensor.Scalar[T](T(len(y_true.Value.Data())))
