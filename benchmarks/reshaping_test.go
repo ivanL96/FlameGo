@@ -25,7 +25,7 @@ func BenchmarkIndex(b *testing.B) {
 // BenchmarkTransposeIndex-8        1567056               784.9 ns/op           654 B/op          6 allocs/op
 // BenchmarkTransposeIndex-8        1685970               729.4 ns/op           618 B/op          6 allocs/op
 func BenchmarkTransposeIndex(b *testing.B) {
-	a := tensor.Range[int32](1000*100*1000).Reshape(1000, 100, 1000).Transpose()
+	a := tensor.Range[int32](1000*100*1000).Reshape(1000, 100, 1000).T()
 	for i := 0; i < b.N; i++ {
 		a.Index(888, 88)
 	}
@@ -34,7 +34,7 @@ func BenchmarkTransposeIndex(b *testing.B) {
 func BenchmarkTranspose(b *testing.B) {
 	a := tensor.Range[int32](1000).Reshape(10, 10, 10)
 	for i := 0; i < b.N; i++ {
-		a.Transpose()
+		a.T()
 	}
 }
 
@@ -59,7 +59,7 @@ func BenchmarkToString(b *testing.B) {
 func BenchmarkAsContinuous(b *testing.B) {
 	a := tensor.Range[int32](1000*1000).Reshape(1000, 1000)
 	for i := 0; i < b.N; i++ {
-		a = a.Transpose()
+		a = a.T()
 		a.AsContinuous(nil)
 	}
 }

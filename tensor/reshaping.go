@@ -46,7 +46,8 @@ func (tensor *Tensor[T]) Reshape(newShape ...types.Dim) *Tensor[T] {
 	return tensor
 }
 
-func (tensor *Tensor[T]) Transpose(axes ...uint) *Tensor[T] {
+// Transposes tensor to given axes. If no axes are set, default transposing applied
+func (tensor *Tensor[T]) T(axes ...uint) *Tensor[T] {
 	n_dims := len(tensor.shape)
 	if n_dims == 1 {
 		return tensor
@@ -75,6 +76,11 @@ func (tensor *Tensor[T]) Transpose(axes ...uint) *Tensor[T] {
 		outTensor.dim_order[i] = tensor.dim_order[axis]
 	}
 	return outTensor
+}
+
+// alias for .T(axes).AsContinuous(nil)
+func (tensor *Tensor[T]) TrC(axes ...uint) *Tensor[T] {
+	return tensor.T(axes...).AsContinuous(nil)
 }
 
 // stacks tensors together. All tensors should have the same shape
