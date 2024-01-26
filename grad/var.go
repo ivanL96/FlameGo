@@ -150,3 +150,15 @@ func (this *Var[T]) Sigmoid() *Var[T] {
 	}
 	return out
 }
+
+func (this *Var[T]) Mean() *Var[T] {
+	out := Variable(this.Value.Mean(false), this)
+	if this.Requires_grad {
+		this.backward_fn = func() *tensor.Tensor[T] {
+			ones := tensor.Ones[T](this.Value.Shape()...)
+			filler := ones.Fill(T(1. / float32(this.Value.Size())))
+			return out.Grad.Mul(filler)
+		}
+	}
+	return out
+}
