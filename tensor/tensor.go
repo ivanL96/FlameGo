@@ -100,7 +100,7 @@ func (tensor *Tensor[T]) Copy() *Tensor[T] {
 // Compares shapes and data:
 // iterates over two tensors and compares elementwise
 func (tensor *Tensor[T]) IsEqual(other *Tensor[T]) bool {
-	if !Equal_1D_slices(tensor.shape, other.shape) {
+	if !tensor.shape.Equals(other.shape) {
 		return false
 	}
 
@@ -122,7 +122,7 @@ func (tensor *Tensor[T]) IsAllClose(tensor_or_scalar *Tensor[T], tol float64) bo
 				return false
 			}
 		}
-	} else if Equal_1D_slices(tensor_or_scalar.Shape(), tensor.Shape()) {
+	} else if tensor_or_scalar.Shape().Equals(tensor.Shape()) {
 		it := tensor.CreateIterator()
 		for it.Iterate() {
 			idx := it.Next()

@@ -90,7 +90,7 @@ func Unite[T types.TensorType](tensors ...*Tensor[T]) *Tensor[T] {
 			prev_shape = tensor.shape
 			continue
 		}
-		if !Equal_1D_slices(tensor.shape, prev_shape) {
+		if !tensor.shape.Equals(prev_shape) {
 			panic("All shapes must be equal.")
 		}
 	}

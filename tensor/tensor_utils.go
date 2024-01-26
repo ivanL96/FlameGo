@@ -6,25 +6,6 @@ import (
 	"reflect"
 )
 
-// if dim order is not shuffled
-func isDimOrderInit(dimOrder []uint16) bool {
-	switch len(dimOrder) {
-	case 1:
-		return true
-	case 2:
-		return dimOrder[0] == 0
-	default:
-		var min uint16 = 0
-		for _, dim := range dimOrder {
-			if dim > min {
-				return false
-			}
-			min += 1
-		}
-		return true
-	}
-}
-
 func isIntKind(tensorDType reflect.Type) bool {
 	switch tensorDType.Kind() {
 	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64,

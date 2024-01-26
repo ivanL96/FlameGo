@@ -93,7 +93,7 @@ func (tensor *Tensor[T]) Index(indices ...int) *Tensor[T] {
 
 	// continuous data
 	// if data layout is continuous we can just take a slice start:end from data
-	if isDimOrderInit(tensor.dim_order) {
+	if tensor.IsContinuous() {
 		endFlatIndex := flatIndex + tensor.strides[n_indices-1]
 		subData := tensor.data()[flatIndex:endFlatIndex]
 		return CreateTensor(subData, innerShape)
@@ -174,8 +174,9 @@ func ISlc(start, end uint) *idxRange {
 //
 // should return
 // tensor.IndexAdv(Axis(), I(0)) ==> [1,4]
+// tensor.IndexAdv(Axis(), I(1)) ==> [2,5]
+// TODO FINISH advanced indexing
 func (tensor *Tensor[T]) IndexAdv(indices ...*idxRange) *Tensor[T] {
-	// TODO advanced indexing
 	if len(indices) == 0 {
 		panic("At least one index is required")
 	}
@@ -208,14 +209,34 @@ func (tensor *Tensor[T]) IndexAdv(indices ...*idxRange) *Tensor[T] {
 	if are_axis_wide {
 		return tensor.Copy()
 	}
-	// tensor.Index(index_range.end)
+
 	return tensor
+}
+
+// if dim order is not shuffled
+func (tensor *Tensor[T]) IsContinuous() bool {
+	dimOrder := tensor.dim_order
+	switch len(dimOrder) {
+	case 1:
+		return true
+	case 2:
+		return dimOrder[0] == 0
+	default:
+		var min uint16 = 0
+		for _, dim := range dimOrder {
+			if dim > min {
+				return false
+			}
+			min += 1
+		}
+		return true
+	}
 }
 
 // reorders data layout to continuous format.
 // it is useful for optimizing indexing/iterating for transposed & other non-continuous tensors
 func (tensor *Tensor[T]) AsContinuous(out *Tensor[T]) *Tensor[T] {
-	if isDimOrderInit(tensor.dim_order) {
+	if tensor.IsContinuous() {
 		return tensor
 	}
 

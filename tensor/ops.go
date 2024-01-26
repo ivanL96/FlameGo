@@ -51,7 +51,7 @@ func BaseBinElementwiseOp[T types.TensorType](
 		return outTensor
 	}
 
-	are_continuous := isDimOrderInit(tensor_a.dim_order) && isDimOrderInit(tensor_b.dim_order)
+	are_continuous := tensor_a.IsContinuous() && tensor_b.IsContinuous()
 
 	// tensors should have equal shapes or at least one of them should be scalar-like
 	if !AreBroadcastable(tensor_a.shape, tensor_b.shape) {
@@ -233,7 +233,7 @@ func (tensor *Tensor[T]) Dot(other *Tensor[T]) *Tensor[T] {
 
 	outer_dims_a := tensor.shape[:len(tensor.shape)-2]
 	outer_dims_b := other.shape[:len(tensor.shape)-2]
-	if !Equal_1D_slices(outer_dims_a, outer_dims_b) {
+	if !outer_dims_a.Equals(outer_dims_b) {
 		panic("Tensors must have equal outer dims. ")
 	}
 	var outer_shape_prod types.Dim = 1
