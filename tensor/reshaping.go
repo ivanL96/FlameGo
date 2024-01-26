@@ -56,6 +56,15 @@ func (tensor *Tensor[T]) Transpose(axes ...uint) *Tensor[T] {
 		for i := range axes {
 			axes[i] = uint(len(axes) - i - 1)
 		}
+	} else if len(axes) > 1 {
+		unique_axes := make(map[uint]bool)
+		for _, a := range axes {
+			if unique_axes[a] {
+				panic("Repeatable axis in transpose")
+			} else {
+				unique_axes[a] = true
+			}
+		}
 	}
 
 	outTensor := CreateTensor(tensor.data(), tensor.shape)
