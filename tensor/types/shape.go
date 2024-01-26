@@ -10,7 +10,7 @@ func (shape Shape) Squeeze() Shape {
 	return result
 }
 
-func (shape Shape) Equal(other_shape Shape) bool {
+func (shape Shape) Equals(other_shape Shape) bool {
 	if len(shape) != len(other_shape) {
 		return false
 	}

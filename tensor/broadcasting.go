@@ -7,7 +7,7 @@ import (
 
 func AreBroadcastable(shape_a, shape_b types.Shape) bool {
 	if (shape_a.IsScalarLike() && shape_b.IsScalarLike()) ||
-		Equal_1D_slices(shape_a, shape_b) {
+		shape_a.Equals(shape_b) {
 		return true
 	}
 	// If one shape has more dimensions than the other, prepend 1s to the shape of the smaller array
@@ -30,7 +30,8 @@ func AreBroadcastable(shape_a, shape_b types.Shape) bool {
 }
 
 func BroadcastShapes(shape_a, shape_b types.Shape) types.Shape {
-	if shape_a.IsScalarLike() && shape_b.IsScalarLike() || Equal_1D_slices(shape_a, shape_b) {
+	if shape_a.IsScalarLike() && shape_b.IsScalarLike() ||
+		shape_a.Equals(shape_b) {
 		return shape_a
 	}
 	if len(shape_a) < len(shape_b) {
@@ -68,7 +69,7 @@ func BroadcastShapes(shape_a, shape_b types.Shape) types.Shape {
 // tries to broadcast the shape and replicate the data accordingly
 func (tensor *Tensor[T]) Broadcast(shape ...types.Dim) *Tensor[T] {
 	// TODO test with transpose
-	if Equal_1D_slices(tensor.shape, shape) {
+	if tensor.shape.Equals(shape) {
 		return tensor
 	}
 

@@ -50,6 +50,10 @@ func Ones[T types.TensorType](shape ...types.Dim) *Tensor[T] {
 	return CreateEmptyTensor[T](shape...).Fill(1)
 }
 
+func Zeros[T types.TensorType](shape ...types.Dim) *Tensor[T] {
+	return CreateEmptyTensor[T](shape...)
+}
+
 // A tensor with Shape 1
 func Scalar[T types.TensorType](value T) *Tensor[T] {
 	return &Tensor[T]{

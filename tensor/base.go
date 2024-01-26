@@ -19,6 +19,14 @@ func (tensor *Tensor[T]) Shape() types.Shape {
 	return tensor.shape
 }
 
+func (tensor *Tensor[T]) Size() uint32 {
+	var res uint32 = 1
+	for _, d := range tensor.shape {
+		res *= uint32(d)
+	}
+	return res
+}
+
 func (tensor *Tensor[T]) Strides() []int {
 	return tensor.strides
 }
