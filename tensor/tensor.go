@@ -97,47 +97,6 @@ func (tensor *Tensor[T]) Copy() *Tensor[T] {
 	return newTensor
 }
 
-// Compares shapes and data:
-// iterates over two tensors and compares elementwise
-func (tensor *Tensor[T]) IsEqual(other *Tensor[T]) bool {
-	if !tensor.shape.Equals(other.shape) {
-		return false
-	}
-
-	it := tensor.CreateIterator()
-	for it.Iterate() {
-		idx := it.Next()
-		if tensor.Get_fast(idx...) != other.Get_fast(idx...) {
-			return false
-		}
-	}
-	return true
-}
-
-func (tensor *Tensor[T]) IsAllClose(tensor_or_scalar *Tensor[T], tol float64) bool {
-	if tensor_or_scalar.Shape().IsScalarLike() {
-		other_val := tensor_or_scalar.data()[0]
-		for _, val := range tensor.data() {
-			if math.Abs(float64(val-other_val)) > tol {
-				return false
-			}
-		}
-	} else if tensor_or_scalar.Shape().Equals(tensor.Shape()) {
-		it := tensor.CreateIterator()
-		for it.Iterate() {
-			idx := it.Next()
-			a := tensor.Get_fast(idx...)
-			b := tensor_or_scalar.Get_fast(idx...)
-			if math.Abs(float64(a-b)) > tol {
-				return false
-			}
-		}
-	} else {
-		panic("Other argument must be either tensor with the same shape or scalar.")
-	}
-	return true
-}
-
 // Creates a tensor with data ranged from 'start' to 'end'
 // limits: min 1 and max 3 arguments. Start, End, Step
 func Range[T types.TensorType](limits ...int) *Tensor[T] {
@@ -217,4 +176,45 @@ func (tensor *Tensor[T]) Set(indexes []int, value T) {
 
 func (tensor *Tensor[T]) CreateIterator() *iter.TensorIterator {
 	return iter.CreateIterator(len(tensor.data()), tensor.shape)
+}
+
+// Compares shapes and data:
+// iterates over two tensors and compares elementwise
+func (tensor *Tensor[T]) IsEqual(other *Tensor[T]) bool {
+	if !tensor.shape.Equals(other.shape) {
+		return false
+	}
+
+	it := tensor.CreateIterator()
+	for it.Iterate() {
+		idx := it.Next()
+		if tensor.Get_fast(idx...) != other.Get_fast(idx...) {
+			return false
+		}
+	}
+	return true
+}
+
+func (tensor *Tensor[T]) IsAllClose(tensor_or_scalar *Tensor[T], tol float64) bool {
+	if tensor_or_scalar.Shape().IsScalarLike() {
+		other_val := tensor_or_scalar.data()[0]
+		for _, val := range tensor.data() {
+			if math.Abs(float64(val-other_val)) > tol {
+				return false
+			}
+		}
+	} else if tensor_or_scalar.Shape().Equals(tensor.Shape()) {
+		it := tensor.CreateIterator()
+		for it.Iterate() {
+			idx := it.Next()
+			a := tensor.Get_fast(idx...)
+			b := tensor_or_scalar.Get_fast(idx...)
+			if math.Abs(float64(a-b)) > tol {
+				return false
+			}
+		}
+	} else {
+		panic("Other argument must be either tensor with the same shape or scalar.")
+	}
+	return true
 }

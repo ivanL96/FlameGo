@@ -63,25 +63,6 @@ func enumerate(n uint) []int {
 	return slice
 }
 
-// adds pad value at the beginning of the slice.
-// example: addLeftPadding([1,2,3], 4, 0) ==> [0,0,0,0,1,2,3]
-func addLeftPadding[T types.TensorType](slice []T, padding_size int, padding_val T) []T {
-	if padding_size == 0 {
-		return slice
-	}
-	expandedSlice := make([]T, len(slice)+padding_size)
-	for i := range expandedSlice {
-		if i < padding_size {
-			if padding_val != 0 {
-				expandedSlice[i] = padding_val
-			}
-			continue
-		}
-		expandedSlice[i] = slice[i-padding_size]
-	}
-	return expandedSlice
-}
-
 // sets specific value to []T buffer using loop unrolling opt.
 // Don't use for buffer with less than 4 elements
 func fill_data_unroll4[T types.TensorType](

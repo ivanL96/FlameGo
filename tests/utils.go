@@ -30,8 +30,8 @@ func assert(t *testing.T, stmt bool) {
 }
 
 const (
-	Equals    int = 0
-	NotEquals     = 1
+	Equals    = 0
+	NotEquals = 1
 )
 
 func assertStatement[T constraints.Ordered](t *testing.T, value1 T, operator int, value2 T) {

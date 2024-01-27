@@ -54,7 +54,7 @@ func BaseBinElementwiseOp[T types.TensorType](
 	are_continuous := tensor_a.IsContinuous() && tensor_b.IsContinuous()
 
 	// tensors should have equal shapes or at least one of them should be scalar-like
-	if !AreBroadcastable(tensor_a.shape, tensor_b.shape) {
+	if !tensor_a.shape.AreBroadcastable(tensor_b.shape) {
 		panic(
 			fmt.Sprintf("Shapes: %x, %x are not broadcastable", tensor_a.shape, tensor_b.shape),
 		)
@@ -103,7 +103,7 @@ func BaseBinElementwiseOp[T types.TensorType](
 	} else {
 		// (A, B ...) & (N, M, ...)
 		// apply operation for non scalar broadcastable tensors
-		broadcasted_shape := BroadcastShapes(tensor_a.Shape(), tensor_b.Shape())
+		broadcasted_shape := tensor_a.Shape().BroadcastShapes(tensor_b.Shape())
 
 		// determine which tensor (at least 1) should be broadcasted
 		var broadcasted_tensor_a *Tensor[T] = nil

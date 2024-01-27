@@ -3,18 +3,7 @@ package tensor
 import (
 	"fmt"
 	types "gograd/tensor/types"
-	"reflect"
 )
-
-func isIntKind(tensorDType reflect.Type) bool {
-	switch tensorDType.Kind() {
-	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64,
-		reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
-		return true
-	default:
-		return false
-	}
-}
 
 func PrepareOutTensor[T types.TensorType](out *Tensor[T], shape types.Shape) *Tensor[T] {
 	if out == nil {

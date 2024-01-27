@@ -1,70 +1,8 @@
 package tensor
 
 import (
-	"fmt"
 	types "gograd/tensor/types"
 )
-
-func AreBroadcastable(shape_a, shape_b types.Shape) bool {
-	if (shape_a.IsScalarLike() && shape_b.IsScalarLike()) ||
-		shape_a.Equals(shape_b) {
-		return true
-	}
-	// If one shape has more dimensions than the other, prepend 1s to the shape of the smaller array
-	if len(shape_a) < len(shape_b) {
-		ones_size := len(shape_b) - len(shape_a)
-		shape_a = addLeftPadding(shape_a, ones_size, 1)
-	} else if len(shape_b) < len(shape_a) {
-		ones_size := len(shape_a) - len(shape_b)
-		shape_b = addLeftPadding(shape_b, ones_size, 1)
-	}
-	// Start from the trailing dimensions and work forward
-	for i := len(shape_a) - 1; i >= 0; i-- {
-		dim1 := shape_a[i]
-		dim2 := shape_b[i]
-		if dim1 != dim2 && dim1 != 1 && dim2 != 1 {
-			return false
-		}
-	}
-	return true
-}
-
-func BroadcastShapes(shape_a, shape_b types.Shape) types.Shape {
-	if shape_a.IsScalarLike() && shape_b.IsScalarLike() ||
-		shape_a.Equals(shape_b) {
-		return shape_a
-	}
-	if len(shape_a) < len(shape_b) {
-		ones_size := len(shape_b) - len(shape_a)
-		shape_a = addLeftPadding(shape_a, ones_size, 1)
-	} else if len(shape_b) < len(shape_a) {
-		ones_size := len(shape_a) - len(shape_b)
-		shape_b = addLeftPadding(shape_b, ones_size, 1)
-	}
-	// start from the trailing dimensions
-	result_shape := make(types.Shape, len(shape_a))
-	for i := len(shape_a) - 1; i >= 0; i-- {
-		dim1 := shape_a[i]
-		dim2 := shape_b[i]
-		if dim1 != dim2 && dim1 != 1 && dim2 != 1 {
-			panic(
-				fmt.Sprintf(
-					"Shapes %v and %v are not broadcastable: Dim1 '%v' not equal Dim2 '%v'", shape_a, shape_b, dim1, dim2,
-				),
-			)
-		}
-		if dim1 == dim2 {
-			result_shape[i] = dim1
-		} else if dim2 != 1 {
-			result_shape[i] = dim2
-		} else if dim1 != 1 {
-			result_shape[i] = dim1
-		} else {
-			panic("Something went wrong during broadcasting")
-		}
-	}
-	return result_shape
-}
 
 // tries to broadcast the shape and replicate the data accordingly
 func (tensor *Tensor[T]) Broadcast(shape ...types.Dim) *Tensor[T] {
@@ -73,7 +11,7 @@ func (tensor *Tensor[T]) Broadcast(shape ...types.Dim) *Tensor[T] {
 		return tensor
 	}
 
-	broadcastedShape := BroadcastShapes(tensor.shape, shape)
+	broadcastedShape := tensor.shape.BroadcastShapes(shape)
 
 	outTensor := CreateEmptyTensor[T](broadcastedShape...)
 
