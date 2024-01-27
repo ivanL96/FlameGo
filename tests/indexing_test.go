@@ -83,14 +83,14 @@ func TestAdvIndexing(t *testing.T) {
 
 func TestAdvIndexing2(t *testing.T) {
 	a := tensor.Range[int32](2*2*2*2).Reshape(2, 2, 2, 2)
-	c := a.IndexAdv(tensor.Axis(), tensor.Axis(), tensor.Axis(), tensor.Axis())
+	c := a.IndexAdv(":,:,:,:")
 	// arr[:,:,:,0]
-	c = a.IndexAdv(tensor.Axis(), tensor.Axis(), tensor.Axis(), tensor.I(0))
+	c = a.IndexAdv(":,:,:,0")
 	assertEqualSlices(t, c.Data(), []int32{0, 2, 4, 6, 8, 10, 12, 14})
 	// arr[:,:,0,:]
-	c = a.IndexAdv(tensor.Axis(), tensor.Axis(), tensor.I(0), tensor.Axis())
+	c = a.IndexAdv(":,:,0,:")
 	assertEqualSlices(t, c.Data(), []int32{0, 1, 4, 5, 8, 9, 12, 13})
 	// arr[:,:,0,0]
-	c = a.IndexAdv(tensor.Axis(), tensor.Axis(), tensor.I(0), tensor.I(0))
+	c = a.IndexAdv(":,:,0,0")
 	assertEqualSlices(t, c.Data(), []int32{0, 4, 8, 12})
 }

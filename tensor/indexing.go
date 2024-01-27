@@ -3,6 +3,8 @@ package tensor
 import (
 	"fmt"
 	types "gograd/tensor/types"
+	"strconv"
+	"strings"
 )
 
 // func (tensor *Tensor[T]) unflatIndex(flatIdx int) []int {
@@ -164,6 +166,24 @@ func ISlc(start, end uint) *idxRange {
 	return &idxRange{int(start), int(end)}
 }
 
+func parse_indexes(expr string) []*idxRange {
+	symbols := strings.Split(expr, ",")
+	indices := make([]*idxRange, 0, len(symbols))
+	for _, el := range symbols {
+		el = strings.TrimSpace(el)
+		if el == ":" {
+			indices = append(indices, Axis())
+		} else if floatVal, err := strconv.ParseFloat(el, 64); err == nil {
+			indices = append(indices, I(int(floatVal)))
+		} else {
+			panic(fmt.Sprintf(
+				"Found unknown symbol in expression: %v", el,
+			))
+		}
+	}
+	return indices
+}
+
 // Advanced indexing allows to specify index ranges.
 //
 // Example: with given tensor:
@@ -174,9 +194,11 @@ func ISlc(start, end uint) *idxRange {
 //	[4,5,6]]
 //
 // should return
-// tensor.IndexAdv(Axis(), I(0)) ==> [1,4]
-// tensor.IndexAdv(Axis(), I(1)) ==> [2,5]
-func (tensor *Tensor[T]) IndexAdv(indices ...*idxRange) *Tensor[T] {
+// tensor.IndexAdv(":,0") ==> [1,4]
+// tensor.IndexAdv(":,1") ==> [2,5]
+func (tensor *Tensor[T]) IndexAdv(expr string) *Tensor[T] {
+	indices := parse_indexes(expr)
+
 	if len(indices) == 0 {
 		panic("At least one index is required")
 	}
