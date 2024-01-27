@@ -52,11 +52,7 @@ func (tensor *Tensor[T]) T(axes ...uint) *Tensor[T] {
 	if n_dims == 1 {
 		return tensor
 	}
-	if len(axes) < n_dims {
-		panic(fmt.Sprintf("Too few axes provided. Expected %v, got %v", n_dims, len(axes)))
-	} else if len(axes) > n_dims {
-		panic(fmt.Sprintf("Too many axes provided. Expected %v, got %v", n_dims, len(axes)))
-	}
+
 	if len(axes) == 0 {
 		axes = make([]uint, n_dims)
 		for i := range axes {
@@ -70,6 +66,12 @@ func (tensor *Tensor[T]) T(axes ...uint) *Tensor[T] {
 			} else {
 				unique_axes[a] = true
 			}
+		}
+	} else {
+		if len(axes) < n_dims {
+			panic(fmt.Sprintf("Too few axes provided. Expected %v, got %v", n_dims, len(axes)))
+		} else if len(axes) > n_dims {
+			panic(fmt.Sprintf("Too many axes provided. Expected %v, got %v", n_dims, len(axes)))
 		}
 	}
 
