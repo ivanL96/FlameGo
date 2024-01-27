@@ -167,6 +167,9 @@ func ISlc(start, end uint) *idxRange {
 }
 
 func parse_indexes(expr string) []*idxRange {
+	if len(expr) == 0 {
+		panic("Arguments cannot be empty.")
+	}
 	symbols := strings.Split(expr, ",")
 	indices := make([]*idxRange, 0, len(symbols))
 	for _, el := range symbols {
@@ -175,9 +178,13 @@ func parse_indexes(expr string) []*idxRange {
 			indices = append(indices, Axis())
 		} else if floatVal, err := strconv.ParseFloat(el, 64); err == nil {
 			indices = append(indices, I(int(floatVal)))
+		} else if el == "" {
+			panic(fmt.Sprintf(
+				"Invalid expression: '%v'. Arguments should be numeric or ':' and separated by ','", expr,
+			))
 		} else {
 			panic(fmt.Sprintf(
-				"Found unknown symbol in expression: %v", el,
+				"Found unknown symbol in expression: '%v'", el,
 			))
 		}
 	}
