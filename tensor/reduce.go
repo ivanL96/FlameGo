@@ -24,7 +24,7 @@ func (tensor *Tensor[T]) Sum(keep_dims bool) *Tensor[T] {
 	for _, val := range tensor.data() {
 		sum += val
 	}
-	return reduce_shape(tensor, T(sum), keep_dims)
+	return reduce_shape(tensor, sum, keep_dims)
 }
 
 func (tensor *Tensor[T]) Mean(keep_dims bool) *Tensor[T] {
@@ -33,5 +33,6 @@ func (tensor *Tensor[T]) Mean(keep_dims bool) *Tensor[T] {
 		sum += val
 	}
 	size := T(len(tensor.data()))
-	return reduce_shape(tensor, T(float64(sum/size)), keep_dims)
+	_mean := T(float64(sum) / float64(size))
+	return reduce_shape(tensor, _mean, keep_dims)
 }
