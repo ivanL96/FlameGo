@@ -106,7 +106,6 @@ func (tensor *Tensor[T]) Index(indices ...int) *Tensor[T] {
 		// 	strides:   getStrides(innerShape),
 		// }
 	}
-
 	// not continuous data. i.e. transposed tensor
 	subShape := innerShape
 	innerStrides := tensor.strides[n_indices:]
@@ -169,13 +168,14 @@ func ISlc(start, end uint) *idxRange {
 //
 // Example: with given tensor:
 //
+// shape (2,3), strides (3,1)
+//
 //	[[1,2,3],
 //	[4,5,6]]
 //
 // should return
 // tensor.IndexAdv(Axis(), I(0)) ==> [1,4]
 // tensor.IndexAdv(Axis(), I(1)) ==> [2,5]
-// TODO FINISH advanced indexing
 func (tensor *Tensor[T]) IndexAdv(indices ...*idxRange) *Tensor[T] {
 	if len(indices) == 0 {
 		panic("At least one index is required")
@@ -183,37 +183,73 @@ func (tensor *Tensor[T]) IndexAdv(indices ...*idxRange) *Tensor[T] {
 	if len(indices) > len(tensor.shape) {
 		panic("Too many indices")
 	}
-	are_constants := true
-	are_axis_wide := true
+	// remove trailing axis-wide idx
+	// for example: [I(),Axis(),I(),Axis(),Axis()] => [I(),Axis(),I()]
+	j := len(indices) - 1
+	for i := len(indices) - 1; i >= 0; i-- {
+		index_range := indices[i]
+		if index_range.start == 0 && index_range.end == -1 {
+			j -= 1
+		} else {
+			break
+		}
+	}
+	indices = indices[:j+1]
+	if len(indices) == 0 {
+		return tensor.Copy()
+	}
+
+	are_constants_only := true
 	for i := 0; i < len(indices); i++ {
 		index_range := indices[i]
 		if index_range.start == 0 && index_range.end == -1 {
-			// axis
-			are_constants = false
+			// axis wide
+			are_constants_only = false
 		} else if index_range.end != index_range.start {
 			// sub axis
-			are_constants = false
-		} else if index_range.start == index_range.end {
-			// constant
-			are_axis_wide = false
+			are_constants_only = false
 		}
 	}
 
-	if are_constants {
+	if are_constants_only {
 		idxs := make([]int, len(indices))
 		for i, idx_range := range indices {
 			idxs[i] = idx_range.start
 		}
 		return tensor.Index(idxs...)
 	}
-	if are_axis_wide {
-		return tensor.Copy()
-	}
 
+	// prepare axes to T()
+
+	// Example: indices => [Axis(),I(i),I(j)]
+	// init strides: [4,2,1]
+	// init axes: [0,1,2]
+	// It needs two (2 I()) transpositions with axes:
+	// [1,0,2] then: [1,0]
+	// T(1,0,2).Index(i).T(1,0).Index(j)
+	shift := 0
+	dims := len(tensor.shape)
+	axes := make([]uint, dims)
+	for j := range axes {
+		axes[j] = uint(j)
+	}
+	for i, idx := range indices {
+		if idx.start == idx.end {
+			axes = axes[:dims-shift]
+			shifted_axes := make([]uint, 0, dims-shift)
+			shifted_axes = append(shifted_axes, axes[i-shift])
+			shifted_axes = append(shifted_axes, axes[:i-shift]...)
+			shifted_axes = append(shifted_axes, axes[i+1-shift:]...)
+			tensor = tensor.TrC(shifted_axes...).Index(idx.start)
+			shift += 1
+		}
+	}
 	return tensor
 }
 
-// if dim order is not shuffled
+// DATA LAYOUT (move to other file?)
+
+// Check if dimensions order is not shuffled and data layout is continuous
 func (tensor *Tensor[T]) IsContinuous() bool {
 	dimOrder := tensor.dim_order
 	switch len(dimOrder) {

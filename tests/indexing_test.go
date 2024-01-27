@@ -67,3 +67,30 @@ func TestTransposeAndIndexFast(t *testing.T) {
 	// a.ToString()
 	assert(t, out == 3)
 }
+
+func TestAdvIndexing(t *testing.T) {
+	a := tensor.Range[int32](2*2*2*2).Reshape(2, 2, 2, 2)
+	// arr[:,:,:,0]
+	c := a.TrC(3, 0, 1, 2).Index(0)
+	assertEqualSlices(t, c.Data(), []int32{0, 2, 4, 6, 8, 10, 12, 14})
+	// arr[:,:,0,:]
+	c = a.TrC(2, 0, 1, 3).Index(0)
+	assertEqualSlices(t, c.Data(), []int32{0, 1, 4, 5, 8, 9, 12, 13})
+	// arr[:,:,0,0]
+	c = c.TrC(2, 0, 1).Index(0)
+	assertEqualSlices(t, c.Data(), []int32{0, 4, 8, 12})
+}
+
+func TestAdvIndexing2(t *testing.T) {
+	a := tensor.Range[int32](2*2*2*2).Reshape(2, 2, 2, 2)
+	c := a.IndexAdv(tensor.Axis(), tensor.Axis(), tensor.Axis(), tensor.Axis())
+	// arr[:,:,:,0]
+	c = a.IndexAdv(tensor.Axis(), tensor.Axis(), tensor.Axis(), tensor.I(0))
+	assertEqualSlices(t, c.Data(), []int32{0, 2, 4, 6, 8, 10, 12, 14})
+	// arr[:,:,0,:]
+	c = a.IndexAdv(tensor.Axis(), tensor.Axis(), tensor.I(0), tensor.Axis())
+	assertEqualSlices(t, c.Data(), []int32{0, 1, 4, 5, 8, 9, 12, 13})
+	// arr[:,:,0,0]
+	c = a.IndexAdv(tensor.Axis(), tensor.Axis(), tensor.I(0), tensor.I(0))
+	assertEqualSlices(t, c.Data(), []int32{0, 4, 8, 12})
+}
