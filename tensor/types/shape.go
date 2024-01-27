@@ -22,11 +22,14 @@ func addLeftPadding[T TensorType](slice []T, padding_size int, padding_val T) []
 }
 
 func (shape Shape) Squeeze() Shape {
-	result := Shape{1}
+	result := make(Shape, 0, len(shape))
 	for _, v := range shape {
 		if v > 1 {
 			result = append(result, v)
 		}
+	}
+	if len(result) == 0 {
+		return Shape{1}
 	}
 	return result
 }
