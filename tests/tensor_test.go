@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"gograd/tensor"
 	types "gograd/tensor/types"
 	"reflect"
@@ -69,7 +68,7 @@ func TestFill(t *testing.T) {
 	a := tensor.CreateEmptyTensor[int32](12)
 	b := a.Copy()
 	a.Fill(2)
-	fmt.Println(b.ToString(), a.ToString())
+	// fmt.Println(b.ToString(), a.ToString())
 	assertEqualSlices(t, a.Shape(), b.Shape())
 	assertNotEqualSlices(t, a.Data(), b.Data())
 }

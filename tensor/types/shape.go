@@ -10,6 +10,16 @@ func (shape Shape) Squeeze() Shape {
 	return result
 }
 
+// Adds a new dimension for given axis:
+//
+// example: AddDim(0) for shape (4,2,3) returns (1,4,2,3)
+//
+// or: AddDim(1) for shape (4,2,3) returns (4,1,2,3)
+func (shape Shape) AddDim(axis uint) Shape {
+	newShape := append(shape[:axis], append(Shape{1}, shape[axis:]...)...)
+	return newShape
+}
+
 func (shape Shape) Equals(other_shape Shape) bool {
 	if len(shape) != len(other_shape) {
 		return false

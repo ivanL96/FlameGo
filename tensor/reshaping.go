@@ -12,8 +12,10 @@ func (tensor *Tensor[T]) Flatten(out *Tensor[T]) *Tensor[T] {
 		return tensor
 	}
 	outTensor := PrepareOutTensor(out, tensor.shape)
+	outTensor.SetData(tensor.data())
 	outTensor.shape = types.Shape{types.Dim(len(tensor.data()))}
-	outTensor.strides = []int{1}
+	outTensor.strides = outTensor.shape.GetStrides()
+	outTensor.dim_order = outTensor.shape.InitDimOrder()
 	return outTensor
 }
 
@@ -22,7 +24,17 @@ func (tensor *Tensor[T]) Squeeze(out *Tensor[T]) *Tensor[T] {
 		return tensor
 	}
 	outTensor := PrepareOutTensor(out, tensor.shape)
+	outTensor.SetData(tensor.data())
 	outTensor.shape = tensor.shape.Squeeze()
+	outTensor.strides = outTensor.shape.GetStrides()
+	outTensor.dim_order = outTensor.shape.InitDimOrder()
+	return outTensor
+}
+
+func (tensor *Tensor[T]) Unsqueeze(axis uint, out *Tensor[T]) *Tensor[T] {
+	outTensor := PrepareOutTensor(out, tensor.shape)
+	outTensor.SetData(tensor.data())
+	outTensor.shape = tensor.shape.AddDim(axis)
 	outTensor.strides = outTensor.shape.GetStrides()
 	outTensor.dim_order = outTensor.shape.InitDimOrder()
 	return outTensor

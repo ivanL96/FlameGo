@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"gograd/tensor"
 	types "gograd/tensor/types"
 	"testing"
@@ -10,7 +9,7 @@ import (
 func TestAdd(t *testing.T) {
 	a := tensor.CreateEmptyTensor[int32](3, 2).Fill(2)
 	b := tensor.CreateEmptyTensor[int32](3, 1).Fill(3)
-	fmt.Println(a.ToString(), b.ToString())
+	// fmt.Println(a.ToString(), b.ToString())
 	ab := a.Add(b, nil)
 	assertEqualSlices(t, ab.Data(), []int32{5, 5, 5, 5, 5, 5})
 	assertEqualSlices(t, ab.Shape(), types.Shape{3, 2})
@@ -26,7 +25,7 @@ func TestAdd2(t *testing.T) {
 	e := tensor.CreateEmptyTensor[int32](1).Fill(4)
 	f := tensor.CreateEmptyTensor[int32](1).Fill(1)
 	ef := e.Add(f, nil)
-	fmt.Println(ef.ToString())
+	// fmt.Println(ef.ToString())
 	assertEqualSlices(t, ef.Data(), []int32{5})
 	assertEqualSlices(t, ef.Shape(), types.Shape{1})
 }
@@ -86,7 +85,7 @@ func TestMatMul4Vec(t *testing.T) {
 	a2 := tensor.Range[float32](10).Reshape(1, 10)
 	b2 := tensor.Range[float32](10).Reshape(10, 1)
 	c2 := a2.MatMul(b2)
-	fmt.Println(c2.ToString())
+	// fmt.Println(c2.ToString())
 	assertEqualSlices(t, c2.Data(), []float32{285})
 	assertEqualSlices(t, c2.Shape(), types.Shape{1, 1})
 }
@@ -95,7 +94,7 @@ func TestMatMul5(t *testing.T) {
 	a2 := tensor.Range[float32](12).Reshape(3, 4)
 	b2 := tensor.Range[float32](8).Reshape(4, 2)
 	c2 := a2.MatMul(b2)
-	fmt.Println(c2.ToString())
+	// fmt.Println(c2.ToString())
 	assertEqualSlices(t, c2.Data(), []float32{28, 34, 76, 98, 124, 162})
 	assertEqualSlices(t, c2.Shape(), types.Shape{3, 2})
 }
@@ -104,7 +103,7 @@ func TestMatMul6(t *testing.T) {
 	a2 := tensor.Range[float32](12).Reshape(3, 4)
 	b2 := tensor.Range[float32](4).Reshape(4, 1)
 	c2 := a2.MatMul(b2)
-	fmt.Println(c2.ToString())
+	// fmt.Println(c2.ToString())
 	assertEqualSlices(t, c2.Data(), []float32{14, 38, 62})
 	assertEqualSlices(t, c2.Shape(), types.Shape{3, 1})
 }

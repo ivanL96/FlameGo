@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"gograd/tensor"
 	types "gograd/tensor/types"
 	"testing"
@@ -62,7 +61,7 @@ func TestTransposeAndIndex(t *testing.T) {
 
 func TestTransposeAndIndexFast(t *testing.T) {
 	a := tensor.Range[int32](8).Reshape(4, 2).T()
-	fmt.Println(a.ToString())
+	// fmt.Println(a.ToString())
 	out := a.Get_fast(1, 1)
 	// a.ToString()
 	assert(t, out == 3)
@@ -84,13 +83,15 @@ func TestAdvIndexing(t *testing.T) {
 func TestAdvIndexing2(t *testing.T) {
 	a := tensor.Range[int32](2*2*2*2).Reshape(2, 2, 2, 2)
 	c := a.IndexAdv(":,:,:,:")
-	// arr[:,:,:,0]
+	assertEqualSlices(t, c.Data(), a.Data())
 	c = a.IndexAdv(":,:,:,0")
 	assertEqualSlices(t, c.Data(), []int32{0, 2, 4, 6, 8, 10, 12, 14})
-	// arr[:,:,0,:]
 	c = a.IndexAdv(":,:,0,:")
 	assertEqualSlices(t, c.Data(), []int32{0, 1, 4, 5, 8, 9, 12, 13})
-	// arr[:,:,0,0]
+	c = a.IndexAdv(":,:,0")
+	assertEqualSlices(t, c.Data(), []int32{0, 1, 4, 5, 8, 9, 12, 13})
 	c = a.IndexAdv(":,:,0,0")
 	assertEqualSlices(t, c.Data(), []int32{0, 4, 8, 12})
+	c = a.IndexAdv("0,1,0,1")
+	assertEqualSlices(t, c.Data(), []int32{5})
 }
