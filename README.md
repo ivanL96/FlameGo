@@ -31,10 +31,12 @@ Supports:
    ```
 5. Auto differentiation. Grad sub-module implements reverse-mode auto grad logic.
     ```
-    a := grad.Variable[float32](tensor.Scalar[float32](4))
-  	b := grad.Variable[float32](tensor.Scalar[float32](5))
-  	z := a.Mul(b)
-  	z.Backward(nil) // Two gradients will be calculated for a & b vars
-    fmt.Println(a.Grad.ToString()) // dz/da: 5
-    fmt.Println(b.Grad.ToString()) // dz/db: 4
+	a := grad.Variable[float32](tensor.Scalar[float32](4))
+	b := grad.Variable[float32](tensor.Scalar[float32](5))
+	c := grad.Constant[float32](tensor.Scalar[float32](2))
+	z := a.Mul(b).Mul(c)
+	z.Backward(nil)                // Two gradients will be calculated for a & b vars
+	fmt.Println(a.Grad.ToString()) // dz/da: 10
+	fmt.Println(b.Grad.ToString()) // dz/db: 8
+	fmt.Println(c.Grad.ToString()) // grad for constant will not be created, so it's 0
    ```
