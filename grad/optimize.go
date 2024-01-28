@@ -10,13 +10,13 @@ type Optimizer[T types.TensorType] struct {
 	params []*Var[T]
 }
 
-func New[T types.TensorType](lr float64) *Optimizer[T] {
+func SGD[T types.TensorType](lr float64) *Optimizer[T] {
 	return &Optimizer[T]{
 		lr: tensor.Scalar[T](T(lr)),
 	}
 }
 
-func (opt *Optimizer[T]) SGD(parameters ...*Var[T]) {
+func (opt *Optimizer[T]) Step(parameters ...*Var[T]) {
 	// new = old - lr*gradient
 	opt.params = parameters
 	for _, param := range parameters {

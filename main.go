@@ -7,7 +7,7 @@ import (
 	"gograd/tensor/types"
 )
 
-func lin() {
+func linear_regression() {
 	var batch types.Dim = 10
 	// y_true := grad.Constant[float32](tensor.Ones[float32](batch, 3))
 	// X_batch = 2 * torch.rand(32, 1)
@@ -23,22 +23,22 @@ func lin() {
 	_y = _y.Add(rng.RandomFloat32(batch, 1))
 	y := grad.Constant[float32](_y)
 
-	optim := grad.New[float32](0.001)
+	optim := grad.SGD[float32](0.001)
 
 	w := grad.Variable[float32](rng.RandomFloat32(1, 1))
 	w.Alias = "W"
 	b := grad.Variable[float32](rng.RandomFloat32(1))
 	b.Alias = "B"
 	// fmt.Println("x, y", x.Value.Shape(), y.Value.Shape())
-	epochs := 10000
+	epochs := 1000
 	for i := 0; i < epochs; i++ {
-		y_pred := (x.MatMul(w)).Add(b) //.Sigmoid()
+		y_pred := (x.MatMul(w)).Add(b)
 		loss := y_pred.MSE(y)
 		loss.Backward(nil)
-		if (i+1)%50 == 0 {
-			fmt.Println("loss", loss.Value.Data())
+		if (i+1)%100 == 0 {
+			fmt.Println("Epoch", i, "loss", loss.Value.Data())
 		}
-		optim.SGD(w, b)
+		optim.Step(w, b)
 		optim.ZeroGrads()
 	}
 
@@ -54,8 +54,6 @@ func mse() {
 	a := grad.Variable[float32](tensor.CreateTensor[float32](
 		[]float32{3., 4., 5.}, types.Shape{1, 3}))
 	b := grad.Variable[float32](rng.RandomFloat32(1))
-	// c := grad.Constant[float32](tensor.CreateTensor[float32](
-	// 	[]float32{2., 1., 1.}, types.Shape{1, 3}))
 	z := a.Mul(b)
 	fmt.Println("z", z.ToString())
 	z.Backward(nil)
@@ -64,15 +62,8 @@ func mse() {
 }
 
 func mean() {
-	// a := grad.Variable[float32](tensor.CreateTensor[float32](
-	// 	[]float32{3., 4., 5.}, types.Shape{1, 3}))
-	// b := grad.Variable[float32](tensor.CreateTensor[float32](
-	// 	[]float32{3.}, types.Shape{1}))
 	a := grad.Variable[float32](tensor.Range[float32](6).Reshape(2, 3))
 	b := grad.Variable[float32](tensor.Range[float32](6).Reshape(3, 2))
-
-	// fmt.Println(a.Value.Shape(), b.Value.Shape())
-	// fmt.Println(a.Value.Shape().BroadcastShapes(b.Value.Shape()))
 	c := a.MatMul(b)
 	z := c.Mean()
 	z.Backward(nil)
@@ -112,7 +103,8 @@ func sum_axis() {
 }
 
 func main() {
-	lin()
+	// fmt.Println(addLeftPadding([]int{2, 3, 4, 5}, 2, 1))
+	// linear_regression()
 	// mse()
 	// mean()
 	// indexing()

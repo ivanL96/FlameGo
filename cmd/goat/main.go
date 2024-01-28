@@ -324,5 +324,7 @@ func main() {
 	}
 }
 
+// ubuntu
 // cd cmd/goat
 // go run . ../../tensor/internal/intrinsics/src/mul_avx2.c -O3 -mavx -mfma
+// go run . ../../tensor/internal/intrinsics/src/mul_avx2.c -O3 -mavx512f -mfma -mavx512dq

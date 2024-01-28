@@ -291,9 +291,9 @@ func (tensor *Tensor[T]) MatMul(other *Tensor[T]) *Tensor[T] {
 	b_data := other.data()
 	out_data := outTensor.data()
 	// gen impl
-	a_data_ := types.Any(a_data).([]float32)
-	b_data_ := types.Any(b_data).([]float32)
-	out_data_ := types.Any(out_data).([]float32)
+	a_data_ := any(a_data).([]float32)
+	b_data_ := any(b_data).([]float32)
+	out_data_ := any(out_data).([]float32)
 	ops.MatMulNaiveImpl_GEN(
 		auto_impl, a_data_, b_data_, tensor.shape, other.shape,
 		tensor.strides, other.strides, out_data_, outTensor.strides)
