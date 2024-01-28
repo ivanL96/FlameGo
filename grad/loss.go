@@ -15,7 +15,7 @@ func (y_pred *Var[T]) MSE(y_true *Var[T]) *Var[T] {
 	if y_pred.Requires_grad {
 		y_pred.backward_fn = func() *tensor.Tensor[T] {
 			n := tensor.Scalar[T](T(len(y_true.Value.Data())))
-			_const := tensor.Scalar[T](2).Div(n)
+			_const := tensor.Scalar[T](2).Div(n).Neg()
 			return out.Grad.Mul(_const.Mul(y_true.Value.Sub(y_pred.Value)))
 		}
 	}
