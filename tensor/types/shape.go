@@ -9,15 +9,15 @@ func addLeftPadding[T TensorType](slice []T, padding_size int, padding_val T) []
 		return slice
 	}
 	expandedSlice := make([]T, len(slice)+padding_size)
-	for i := range expandedSlice {
-		if i < padding_size {
-			if padding_val != 0 {
-				expandedSlice[i] = padding_val
-			}
-			continue
+	for i := 0; i < padding_size; i++ {
+		if i == padding_size {
+			break
 		}
-		expandedSlice[i] = slice[i-padding_size]
+		if padding_val != 0 {
+			expandedSlice[i] = padding_val
+		}
 	}
+	copy(expandedSlice[padding_size:], slice)
 	return expandedSlice
 }
 
