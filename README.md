@@ -6,6 +6,11 @@ Supports:
    a := tensor.CreateTensor[int32]([]int32{1,2,3}, types.Shape{3,1})
    b := tensor.CreateTensor[int32]([]int32{3,4,5}, types.Shape{1,3})
    c := a.Mul(b.T()) // transposes b and applies elementwise multiplication
+
+   // Matrix multiplication
+   a := tensor.CreateTensor[int32]([]int32{1,2,3,4,5,6}, types.Shape{3,2})
+   b := tensor.CreateTensor[int32]([]int32{1,2,3,4,5,6}, types.Shape{2,3})
+   c := a.MatMul(b) // result shape will be (3,3)
    ```
 2. Reshaping
    ```
