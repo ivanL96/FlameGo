@@ -61,10 +61,10 @@ func Dot(i Implementation, a, b []float32) float32 {
 		var c float32
 		amd64.Dot_mm256(a, b, &c)
 		return c
-	// case AVX512:
-	// 	var ret float32
-	// 	_mm512_dot(unsafe.Pointer(&a[0]), unsafe.Pointer(&b[0]), unsafe.Pointer(uintptr(len(a))), unsafe.Pointer(&ret))
-	// 	return ret
+	case AVX512: // temporary fallback to avx256
+		var c float32
+		amd64.Dot_mm256(a, b, &c)
+		return c
 	default:
 		var c float32
 		return noasm.Dot(a, b, c)
@@ -94,6 +94,8 @@ func input_to_float32[T types.TensorType](a, b, out []T) ([]float32, []float32, 
 func Mul[T types.TensorType](i Implementation, a, b, c []T) {
 	afl, bfl, cfl := input_to_float32(a, b, c)
 	if i == AVX && afl != nil {
+		amd64.Mul_mm256(afl, bfl, cfl)
+	} else if i == AVX512 && afl != nil { // temporary fallback to avx256
 		amd64.Mul_mm256(afl, bfl, cfl)
 	} else {
 		noasm.MulMatx(a, b, c)

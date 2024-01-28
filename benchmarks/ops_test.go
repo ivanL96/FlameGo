@@ -37,18 +37,28 @@ func BenchmarkBigAdd(b *testing.B) {
 	// fmt.Println(out.Get(999, 999))
 }
 
-// scalar op
-// BenchmarkBigMul-8             32          34.973.966 ns/op          626015 B/op          2 allocs/op
-// BenchmarkBigMul-8             31          40.353.242 ns/op          646199 B/op          2 allocs/op
-// BenchmarkBigMul-8             39          37.115.072 ns/op          513648 B/op          2 allocs/op
-// mul noasm
-// BenchmarkBigMul-8            434           2.422.563 ns/op           46155 B/op          0 allocs/op
-// BenchmarkBigMul-8            469           2.410.727 ns/op           42711 B/op          0 allocs/op
-// BenchmarkBigMul-8            480           2.434.254 ns/op           41732 B/op          0 allocs/op
-// avx2
-// BenchmarkBigMul-8           1047           1.095.734 ns/op           19132 B/op          0 allocs/op
-// BenchmarkBigMul-8           1172           1.150.072 ns/op           17090 B/op          0 allocs/op
-// BenchmarkBigMul-8           1178           1.024.620 ns/op           17003 B/op          0 allocs/op
+// goos: windows
+// goarch: amd64
+// pkg: gograd/benchmarks
+// cpu: 11th Gen Intel(R) Core(TM) i5-11400H @ 2.70GHz
+// scalar
+// BenchmarkBigMul-12           186           6120142 ns/op          107705 B/op          1 allocs/op
+// BenchmarkBigMul-12           198           5973748 ns/op          101178 B/op          1 allocs/op
+// BenchmarkBigMul-12           198           6092643 ns/op          101178 B/op          1 allocs/op
+// BenchmarkBigMul-12           198           5970509 ns/op          101179 B/op          1 allocs/op
+// BenchmarkBigMul-12           196           6123761 ns/op          102210 B/op          1 allocs/op
+// vec + goroutines
+// BenchmarkBigMul-12          1845            548058 ns/op           10856 B/op          0 allocs/op
+// BenchmarkBigMul-12          2286            514924 ns/op            8762 B/op          0 allocs/op
+// BenchmarkBigMul-12          2344            519922 ns/op            8545 B/op          0 allocs/op
+// BenchmarkBigMul-12          2221            638278 ns/op            9019 B/op          0 allocs/op
+// BenchmarkBigMul-12          1401            796004 ns/op           14297 B/op          0 allocs/op
+// AVX
+// BenchmarkBigMul-12          3416            377943 ns/op            5863 B/op          0 allocs/op
+// BenchmarkBigMul-12          3577            343849 ns/op            5599 B/op          0 allocs/op
+// BenchmarkBigMul-12          3550            350165 ns/op            5642 B/op          0 allocs/op
+// BenchmarkBigMul-12          3417            343890 ns/op            5861 B/op          0 allocs/op
+// BenchmarkBigMul-12          3476            394101 ns/op            5762 B/op          0 allocs/op
 // shape 1000x1000
 func BenchmarkBigMul(b *testing.B) {
 	scalar := tensor.Scalar[float32](1000)
@@ -58,7 +68,7 @@ func BenchmarkBigMul(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		a1.Mul(a2, out)
 	}
-	fmt.Println(out.Get(999, 999))
+	// fmt.Println(out.Get(999, 999))
 }
 
 func BenchmarkBigMulToConst(b *testing.B) {

@@ -59,28 +59,22 @@ func BenchmarkMatMulUnite(b *testing.B) {
 
 // O(N^3) impl
 // matmul for 1000x1000
-// BenchmarkMatMul-8   	          1		  69.653.349.600 ns/op	      12.020.000 B/op	      31 allocs/op
-// fast_get()
-// BenchmarkMatMul-8              1       33.566.461.400 ns/op        12.018.176 B/op         24 allocs/op
-// calculate index inplace
-// BenchmarkMatMul-8              1       17.409.256.100 ns/op        12.018.264 B/op         26 allocs/op
-// removed extra computations, minor loop unrolling
-// BenchmarkMatMul-8              1        6.891.281.300 ns/op        12.019.960 B/op         29 allocs/op
-// BenchmarkMatMul-8              1        7.084.445.400 ns/op        12.018.168 B/op         25 allocs/op
-//
-//	Using noasm Dot()
-//
-// BenchmarkMatMul-8              1        3.074.711.000 ns/op        20.032.064 B/op         40 allocs/op
-// GOASM AVX !!!!!!
-// BenchmarkMatMul-8              2          509.863.150 ns/op        20.024.276 B/op    1000028 allocs/op
-// BenchmarkMatMul-8              2          555.004.700 ns/op        20.024.208 B/op    1000027 allocs/op
-// go asm with noescape
-// BenchmarkMatMul-8              2          550.787.600 ns/op        16.024.252 B/op         28 allocs/op
-// BenchmarkMatMul-8              3          488.138.033 ns/op        14.688.850 B/op         24 allocs/op
-// avx + goroutines
-// BenchmarkMatMul-8             10          132.793.770 ns/op        12.979.567 B/op       2021 allocs/op
-// BenchmarkMatMul-8             10          119.697.910 ns/op        12.979.960 B/op       2022 allocs/op
-// BenchmarkMatMul-8             10          106.914.500 ns/op        12.979.402 B/op       2021 allocs/op
+// goos: windows
+// goarch: amd64
+// pkg: gograd/benchmarks
+// cpu: 11th Gen Intel(R) Core(TM) i5-11400H @ 2.70GHz
+// threads
+// BenchmarkMatMul-12            10         115.477.200 ns/op        13773644 B/op       2022 allocs/op
+// BenchmarkMatMul-12            12          94.282.383 ns/op        13506368 B/op       2020 allocs/op
+// BenchmarkMatMul-12            12          93.556.358 ns/op        13506376 B/op       2021 allocs/op
+// BenchmarkMatMul-12            12          92.763.142 ns/op        13506342 B/op       2020 allocs/op
+// BenchmarkMatMul-12            12          96.534.575 ns/op        13506392 B/op       2021 allocs/op
+// AVX + threads
+// BenchmarkMatMul-12            60          18.911.752 ns/op        12437393 B/op       2019 allocs/op
+// BenchmarkMatMul-12            62          18.853.710 ns/op        12428761 B/op       2019 allocs/op
+// BenchmarkMatMul-12            62          18.864.219 ns/op        12428772 B/op       2019 allocs/op
+// BenchmarkMatMul-12            58          18.832.110 ns/op        12446719 B/op       2019 allocs/op
+// BenchmarkMatMul-12            62          19.135.018 ns/op        12428771 B/op       2019 allocs/op
 // numpy matmul ref:
 // 4.184.719.133 ~ 4.910.045.600 ns
 // go test -benchmem -run=^$ -bench ^BenchmarkMatMul$ gograd/benchmarks -benchmem -v -count=5
