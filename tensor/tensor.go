@@ -184,6 +184,9 @@ func (tensor *Tensor[T]) IsEqual(other *Tensor[T]) bool {
 	if !tensor.shape.Equals(other.shape) {
 		return false
 	}
+	if tensor.IsContinuous() && other.IsContinuous() {
+		return EqualSlices[T](tensor.data(), other.data())
+	}
 
 	it := tensor.CreateIterator()
 	for it.Iterate() {

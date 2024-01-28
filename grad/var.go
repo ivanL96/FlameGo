@@ -34,8 +34,7 @@ func Variable[T types.TensorType](
 	children ...*Var[T],
 ) *Var[T] {
 	v := &Var[T]{
-		Value: tensor_val,
-		// Grad:  tensor.Scalar[T](0),
+		Value:         tensor_val,
 		Grad:          tensor.Zeros[T](tensor_val.Shape()...),
 		Children:      children,
 		Requires_grad: true,

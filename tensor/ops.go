@@ -31,9 +31,10 @@ func BaseBinElementwiseOp[T types.TensorType](
 ) *Tensor[T] {
 	var outTensor *Tensor[T]
 	// TODO if outTensor equals to a or b,  apply the *_to_const vectorized impl
+	// TODO try to vectorize operations for non continuous tensors. Right now it falls back to scalar impl which is slow
 
-	binOp, binVec, binVec2Scalar := op.scalar, op.vector, op.vector_to_scalar
-	if binOp == nil {
+	binScalar, binVec, binVec2Scalar := op.scalar, op.vector, op.vector_to_scalar
+	if binScalar == nil {
 		panic("At least op.scalar function must be set")
 	}
 
@@ -47,7 +48,7 @@ func BaseBinElementwiseOp[T types.TensorType](
 		}
 		outTensor = PrepareOutTensor(out, out_shape)
 		// most trivial case (1,) & (1,)
-		outTensor.data()[0] = binOp(tensor_a.data()[0], tensor_b.data()[0])
+		outTensor.data()[0] = binScalar(tensor_a.data()[0], tensor_b.data()[0])
 		return outTensor
 	}
 
@@ -71,7 +72,7 @@ func BaseBinElementwiseOp[T types.TensorType](
 			for iter.Iterate() {
 				idx := iter.Next()
 				outIdx := get_flat_idx_fast(outTensor.strides, idx...)
-				out_data[outIdx] = binOp(tensor_a.Get_fast(idx...), tensor_b.Get_fast(idx...))
+				out_data[outIdx] = binScalar(tensor_a.Get_fast(idx...), tensor_b.Get_fast(idx...))
 			}
 		}
 	} else if len(tensor_b.data()) == 1 {
@@ -82,7 +83,7 @@ func BaseBinElementwiseOp[T types.TensorType](
 		if binVec2Scalar == nil {
 			value := tensor_b.data()[0]
 			for i, val := range tensor_a.data() {
-				out_data[i] = binOp(val, value)
+				out_data[i] = binScalar(val, value)
 			}
 		} else {
 			binVec2Scalar(auto_impl, tensor_a.data(), tensor_b.data(), out_data)
@@ -95,12 +96,13 @@ func BaseBinElementwiseOp[T types.TensorType](
 		if binVec2Scalar == nil {
 			value := tensor_a.data()[0]
 			for i, val := range tensor_b.data() {
-				out_data[i] = binOp(value, val)
+				out_data[i] = binScalar(value, val)
 			}
 		} else {
 			binVec2Scalar(auto_impl, tensor_b.data(), tensor_a.data(), out_data)
 		}
 	} else {
+		// both tensors are not scalar but have completely different shapes
 		// (A, B ...) & (N, M, ...)
 		// apply operation for non scalar broadcastable tensors
 		broadcasted_shape := tensor_a.Shape().BroadcastShapes(tensor_b.Shape())
@@ -136,7 +138,7 @@ func BaseBinElementwiseOp[T types.TensorType](
 			for iter.Iterate() {
 				dataIndex := iter.Index()
 				idx := iter.Next()
-				out_data[dataIndex] = binOp(
+				out_data[dataIndex] = binScalar(
 					broadcasted_tensor_a.Get_fast(idx...), broadcasted_tensor_b.Get_fast(idx...))
 			}
 		}
@@ -300,6 +302,7 @@ func (tensor *Tensor[T]) MatMul(other *Tensor[T]) *Tensor[T] {
 	// 	tensor.strides, other.strides,
 	// 	out_data, outTensor.strides)
 	outTensor.data_buff = types.Any(outTensor.data()).([]T)
+	// outTensor.data_buff = outTensor.data()
 	return outTensor
 }
 

@@ -12,13 +12,13 @@ import (
 // go test ./tests -v
 
 func assertEqualSlices[DT types.TensorType](t *testing.T, slice1 []DT, slice2 []DT) {
-	if !tensor.Equal_1D_slices(slice1, slice2) {
+	if !tensor.EqualSlices(slice1, slice2) {
 		t.Errorf("Slices must be equal. Got %v and %v", slice1, slice2)
 	}
 }
 
 func assertNotEqualSlices[DT types.TensorType](t *testing.T, slice1 []DT, slice2 []DT) {
-	if tensor.Equal_1D_slices(slice1, slice2) {
+	if tensor.EqualSlices(slice1, slice2) {
 		t.Errorf("Slices must be not equal. Got %v and %v", slice1, slice2)
 	}
 }
