@@ -8,11 +8,11 @@ import (
 )
 
 type Var[T types.TensorType] struct {
-	Alias         string
-	Children      []*Var[T]
 	Value         *tensor.Tensor[T]
 	Grad          *tensor.Tensor[T]
 	backward_fn   func() *tensor.Tensor[T]
+	Alias         string
+	Children      []*Var[T]
 	Requires_grad bool
 }
 
