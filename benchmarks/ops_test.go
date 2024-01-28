@@ -14,20 +14,19 @@ func BenchmarkAdd(b *testing.B) {
 	}
 }
 
-// init/range data
-// BenchmarkBigAdd-8			26	  		42.891.900 ns/op		4.314.271 B/op	       7 allocs/op
-// Get_fast/range data
-// BenchmarkBigAdd-8  			44     		23.705.093 ns/op   		4.188.202 B/op          7 allocs/op
-// out Tensor prepared/Get_fast/range data
-// BenchmarkBigAdd-8 			50     		23.525.360 ns/op	 	  160.285 B/op          1 allocs/op
-// AVX
-// BenchmarkBigAdd-8            456          2.198.060 ns/op           26.358 B/op          0 allocs/op
-// BenchmarkBigAdd-8            328          3.064.911 ns/op           36.644 B/op          0 allocs/op
-// BenchmarkBigAdd-8            489          2.165.072 ns/op           24.579 B/op          0 allocs/op
-
-// same values tests
-// Fill() unrolled 4
-// 654    1.885.201 ns/op    4.018.343 B/op          6 allocs/op
+// go test -benchmem -run=^$ -bench ^BenchmarkBigAdd$ gograd/benchmarks -benchmem -v -count=5
+// goos: windows
+// goarch: amd64
+// pkg: gograd/benchmarks
+// cpu: 11th Gen Intel(R) Core(TM) i5-11400H @ 2.70GHz
+// scalar
+// BenchmarkBigAdd-12           199           5888470 ns/op           60408 B/op          1 allocs/op
+// vectorized
+// BenchmarkBigAdd-12          1946            523187 ns/op            6175 B/op          0 allocs/op
+// BenchmarkBigAdd-12          1957            529357 ns/op            6141 B/op          0 allocs/op
+// vec + goroutines
+// BenchmarkBigAdd-12          7246            158306 ns/op            3212 B/op         25 allocs/op
+// BenchmarkBigAdd-12          6296            199704 ns/op            3460 B/op         25 allocs/op
 func BenchmarkBigAdd(b *testing.B) {
 	a1 := tensor.Range[int32](1000000).Reshape(1000, 1000) //.Fill(1)
 	a2 := tensor.Range[int32](1000000).Reshape(1000, 1000) //.Fill(1)
@@ -35,7 +34,7 @@ func BenchmarkBigAdd(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		a1.Add(a2, out)
 	}
-	fmt.Println(out.Get(999, 999))
+	// fmt.Println(out.Get(999, 999))
 }
 
 // scalar op

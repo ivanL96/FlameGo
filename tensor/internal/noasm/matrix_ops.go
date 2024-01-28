@@ -3,6 +3,8 @@ package noasm
 import (
 	"gograd/tensor/types"
 	"math"
+	"runtime"
+	"sync"
 )
 
 // noasm vector operations for two-dim matrices
@@ -14,18 +16,48 @@ func makeOutMat[T types.TensorType](out []T, size int) []T {
 	return out
 }
 
-func AddMatx[T types.TensorType](a, b, out []T) {
-	out_ := makeOutMat(out, len(a))
-	for i, val := range a {
-		out_[i] = val + b[i]
+var numCPU int = runtime.NumCPU()
+
+func MatxParallel[T types.TensorType](
+	f func(int, int, []T, []T, []T),
+	a, b, out []T,
+) {
+	chunk_size := (len(a) + numCPU - 1) / numCPU
+
+	var wg sync.WaitGroup
+	wg.Add(numCPU)
+
+	for i := 0; i < numCPU; i++ {
+		start := i * chunk_size
+		end := (i + 1) * chunk_size
+		if end > len(a) {
+			end = len(a)
+		}
+
+		go func(start, end int) {
+			defer wg.Done()
+			f(start, end, a, b, out)
+		}(start, end)
 	}
+	wg.Wait()
+}
+
+func AddMatx[T types.TensorType](a, b, out []T) {
+	add_chunk := func(start, end int, a, b, out []T) {
+		for i := start; i < end; i++ {
+			out[i] = a[i] + b[i]
+		}
+	}
+	MatxParallel[T](add_chunk, a, b, makeOutMat(out, len(a)))
 }
 
 func SubMatx[T types.TensorType](a, b, out []T) {
-	out_ := makeOutMat(out, len(a))
-	for i, val := range a {
-		out_[i] = val - b[i]
+	sub_chunk := func(start, end int, a, b, out []T) {
+		for i := start; i < end; i++ {
+			out[i] = a[i] - b[i]
+		}
 	}
+	MatxParallel[T](sub_chunk, a, b, makeOutMat(out, len(a)))
 }
 
 func Dot[T types.TensorType](a, b []T, c T) T {
