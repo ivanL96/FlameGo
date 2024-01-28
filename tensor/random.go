@@ -37,6 +37,10 @@ type RNG struct {
 	Seed int64
 }
 
+func NewRNG(seed int64) *RNG {
+	return &RNG{seed}
+}
+
 func (rng *RNG) RandomFloat64(shape ...types.Dim) *Tensor[float64] {
 	randTensor := CreateEmptyTensor[float64](shape...)
 	value := createRandFloat64Slice(len(randTensor.data()), rng.Seed)

@@ -85,7 +85,7 @@ func BenchmarkMatMulUnite(b *testing.B) {
 // 4.184.719.133 ~ 4.910.045.600 ns
 // go test -benchmem -run=^$ -bench ^BenchmarkMatMul$ gograd/benchmarks -benchmem -v -count=5
 func BenchmarkMatMul(b *testing.B) {
-	rng := &tensor.RNG{Seed: -1}
+	rng := tensor.NewRNG(-1)
 	var size types.Dim = 1000
 	// a1 := tensor.Range[float32](int(size*size)).Reshape(size, size)
 	// b1 := tensor.Range[float32](int(size*size)).Reshape(size, size)

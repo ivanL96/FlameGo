@@ -82,7 +82,7 @@ func BenchmarkMulScalar(b *testing.B) {
 }
 
 func BenchmarkSigmoid(b *testing.B) {
-	rng := &tensor.RNG{Seed: 0}
+	rng := tensor.NewRNG(0)
 	a1 := rng.RandomFloat32(100, 100)
 	for i := 0; i < b.N; i++ {
 		a1.Sigmoid(nil)
