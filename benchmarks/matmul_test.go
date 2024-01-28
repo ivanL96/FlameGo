@@ -75,8 +75,19 @@ func BenchmarkMatMulUnite(b *testing.B) {
 // BenchmarkMatMul-12            62          18.864.219 ns/op        12428772 B/op       2019 allocs/op
 // BenchmarkMatMul-12            58          18.832.110 ns/op        12446719 B/op       2019 allocs/op
 // BenchmarkMatMul-12            62          19.135.018 ns/op        12428771 B/op       2019 allocs/op
-// numpy matmul ref:
-// 4.184.719.133 ~ 4.910.045.600 ns
+// AVX + threads + thread affinity, moved some code outside the loop
+// BenchmarkMatMul-12            61          19.399.064 ns/op        12432996 B/op       2019 allocs/op
+// BenchmarkMatMul-12            62          18.772.816 ns/op        12429338 B/op       2020 allocs/op
+// BenchmarkMatMul-12            62          18.690.979 ns/op        12428797 B/op       2019 allocs/op
+// BenchmarkMatMul-12            63          18.725.068 ns/op        12424663 B/op       2019 allocs/op
+// BenchmarkMatMul-12            63          18.659.789 ns/op        12424688 B/op       2019 allocs/op
+// AVX 512
+// BenchmarkMatMul-12            70          16.607.281 ns/op        12399209 B/op       2019 allocs/op
+// BenchmarkMatMul-12            70          16.702.821 ns/op        12399208 B/op       2019 allocs/op
+// BenchmarkMatMul-12            70          16.621.721 ns/op        12399222 B/op       2019 allocs/op
+//
+// numpy matmul ref                          10.645.914.1 ns/op
+//
 // go test -benchmem -run=^$ -bench ^BenchmarkMatMul$ gograd/benchmarks -benchmem -v -count=5
 func BenchmarkMatMul(b *testing.B) {
 	rng := tensor.NewRNG(-1)

@@ -56,3 +56,11 @@ func BenchmarkTensorCreate(b *testing.B) {
 		tensor.CreateEmptyTensor[float64](100, 100, 10)
 	}
 }
+
+func BenchmarkIndexFast(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		a := tensor.Range[int32](50).Reshape(10, 5)
+		// a.Get_fast(6, 1)
+		a.Get(6, 1)
+	}
+}

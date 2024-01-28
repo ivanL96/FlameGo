@@ -3,8 +3,11 @@ package ops
 import (
 	"gograd/tensor/internal/cpu"
 	"gograd/tensor/types"
+	"runtime"
 	"sync"
 )
+
+var numCPU int = runtime.NumCPU()
 
 // Naive implementation of matrix multiplication with time complexity n^3
 // input A and B, both n by n matrices
@@ -56,23 +59,28 @@ func MatMulNaiveImpl_GEN(
 	out_data []float32,
 	out_strides []int,
 ) {
-	var wg sync.WaitGroup
-
 	a_dim0 := int(a_shape[0])
 	b_dim0 := int(b_shape[0])
 	out_stride0 := out_strides[0]
 	a_stride0 := a_strides[0]
 	b_stride0 := b_strides[0]
+
+	runtime.GOMAXPROCS(numCPU)
+
+	var wg sync.WaitGroup
 	for i := 0; i < a_dim0; i++ {
 		wg.Add(1)
 		go func(i int) {
 			defer wg.Done()
+			// Set affinity to a specific CPU core
+			runtime.LockOSThread()
+			defer runtime.UnlockOSThread()
 
 			a_stride0_i := a_stride0 * i
 			a_stride0_i_end := a_stride0 * (i + 1)
 			out_stride0_i := out_stride0 * i
+			_a := a_data[a_stride0_i:a_stride0_i_end]
 			for j := 0; j < b_dim0; j++ {
-				_a := a_data[a_stride0_i:a_stride0_i_end]
 				_b := b_data[b_stride0*j : b_stride0*(j+1)]
 				out_data[out_stride0_i+j] = cpu.Dot(impl, _a, _b)
 			}
