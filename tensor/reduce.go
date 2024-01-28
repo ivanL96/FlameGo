@@ -30,6 +30,12 @@ func (tensor *Tensor[T]) Sum(keep_dims bool) *Tensor[T] {
 	return reduce_shape(tensor, sum, keep_dims)
 }
 
+// Example:
+// a = [
+// [1,2],
+// [3,4]]
+// a.SumAlongAxis(0, false) => [4, 6]
+// a.SumAlongAxis(0, true) => [[4, 6]]
 func (tensor *Tensor[T]) SumAlongAxis(
 	axis uint,
 	keep_dims bool,

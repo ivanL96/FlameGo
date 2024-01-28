@@ -5,7 +5,7 @@ import (
 	"gograd/tensor/types"
 )
 
-func _toposort[T types.TensorType](
+func toposort[T types.TensorType](
 	topo_sorted *[]*Var[T],
 	visited *VarSet[T],
 	v *Var[T],
@@ -15,7 +15,7 @@ func _toposort[T types.TensorType](
 	}
 	visited.Add(v)
 	for _, child := range v.Children {
-		_toposort(topo_sorted, visited, child)
+		toposort(topo_sorted, visited, child)
 	}
 	*topo_sorted = append(*topo_sorted, v)
 }
@@ -37,7 +37,7 @@ func (this *Var[T]) Backward(gradient *tensor.Tensor[T]) {
 	// toposort
 	topo_sorted := make([]*Var[T], 0, 8)
 	visited := CreateVarSet[T]()
-	_toposort(&topo_sorted, visited, this)
+	toposort(&topo_sorted, visited, this)
 	reverse_vars_inplace(topo_sorted)
 
 	// gradient w.r.t the current variable is ones tensor
@@ -55,6 +55,18 @@ func (this *Var[T]) Backward(gradient *tensor.Tensor[T]) {
 
 const EPSILON = 0.00000000001
 
+// numerical derivative calc can be used for verifying auto-diff expressions
+//
+// Example:
+// f=x*5, where x=4;
+//
+//	_mul := func(x float64) float64 {
+//		return x * 5
+//	}
+//
+// dx := grad.NumericDeriv(grad.EPSILON, 4, _mul)
+//
+// dx ~5
 func NumericDeriv(epsilon, value float64, op_func func(x float64) float64) float64 {
 	return (op_func(value+epsilon) - op_func(value)) / epsilon
 }
