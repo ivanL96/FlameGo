@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"gograd/tensor"
-	"gograd/tensor/types"
 	"testing"
 )
 
@@ -83,7 +82,8 @@ func BenchmarkMulScalar(b *testing.B) {
 }
 
 func BenchmarkSigmoid(b *testing.B) {
-	a1 := tensor.RandomFloat32(types.Shape{100, 100}, 0)
+	rng := &tensor.RNG{Seed: 0}
+	a1 := rng.RandomFloat32(100, 100)
 	for i := 0; i < b.N; i++ {
 		a1.Sigmoid(nil)
 	}
