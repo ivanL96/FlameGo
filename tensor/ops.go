@@ -281,7 +281,7 @@ func (tensor *Tensor[T]) MatMul(other *Tensor[T]) *Tensor[T] {
 
 	// isVec2Scalar := adim0 == 1 && bdim1 == 1
 
-	tensor = tensor.AsContinuous(nil)
+	tensor = tensor.AsContinuous()
 	// needs to be in column-major format for the AVX support
 	other = other.TrC()
 

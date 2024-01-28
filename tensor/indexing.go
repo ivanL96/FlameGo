@@ -300,12 +300,12 @@ func (tensor *Tensor[T]) IsContinuous() bool {
 
 // reorders data layout to continuous format.
 // it is useful for optimizing indexing/iterating for transposed & other non-continuous tensors
-func (tensor *Tensor[T]) AsContinuous(out *Tensor[T]) *Tensor[T] {
+func (tensor *Tensor[T]) AsContinuous() *Tensor[T] {
 	if tensor.IsContinuous() {
 		return tensor
 	}
 
-	outTensor := PrepareOutTensor(out, tensor.shape)
+	outTensor := CreateEmptyTensor[T](tensor.shape...)
 	iter := tensor.CreateIterator()
 	for iter.Iterate() {
 		dataIndex := iter.Index()

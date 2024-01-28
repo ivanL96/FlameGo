@@ -97,9 +97,9 @@ func (tensor *Tensor[T]) T(axes ...uint) *Tensor[T] {
 	return outTensor
 }
 
-// alias for .T(axes).AsContinuous(nil)
+// alias for .T(axes).AsContinuous()
 func (tensor *Tensor[T]) TrC(axes ...uint) *Tensor[T] {
-	return tensor.T(axes...).AsContinuous(nil)
+	return tensor.T(axes...).AsContinuous()
 }
 
 // stacks tensors together. All tensors should have the same shape

@@ -60,6 +60,6 @@ func BenchmarkAsContinuous(b *testing.B) {
 	a := tensor.Range[int32](1000*1000).Reshape(1000, 1000)
 	for i := 0; i < b.N; i++ {
 		a = a.T()
-		a.AsContinuous(nil)
+		a.AsContinuous()
 	}
 }
