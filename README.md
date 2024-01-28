@@ -8,8 +8,8 @@ Supports:
    c := a.Mul(b.T()) // transposes b and applies elementwise multiplication
 
    // Matrix multiplication
-   a := tensor.CreateTensor[int32]([]int32{1,2,3,4,5,6}, types.Shape{3,2})
-   b := tensor.CreateTensor[int32]([]int32{1,2,3,4,5,6}, types.Shape{2,3})
+   a := tensor.CreateTensor[float32]([]float32{1,2,3,4,5,6}, types.Shape{3,2})
+   b := tensor.CreateTensor[float32]([]float32{1,2,3,4,5,6}, types.Shape{2,3})
    c := a.MatMul(b) // result shape will be (3,3)
    ```
 2. Reshaping
@@ -35,6 +35,6 @@ Supports:
   	b := grad.Variable[float32](tensor.Scalar[float32](5))
   	z := a.Mul(b)
   	z.Backward(nil) // Two gradients will be calculated for a & b vars
-    fmt.Println(a.Grad.ToString()) // dz/da 5
-    fmt.Println(b.Grad.ToString()) // dz/db 4
+    fmt.Println(a.Grad.ToString()) // dz/da: 5
+    fmt.Println(b.Grad.ToString()) // dz/db: 4
    ```
