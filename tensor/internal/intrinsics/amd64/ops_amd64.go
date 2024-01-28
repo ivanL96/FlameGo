@@ -8,6 +8,10 @@ func Dot_mm256(a, b []float32, ret *float32) {
 	// return ret
 }
 
+func Dot_mm512(a, b []float32, ret *float32) {
+	_mm512_dot(unsafe.Pointer(&a[0]), unsafe.Pointer(&b[0]), unsafe.Pointer(uintptr(len(a))), unsafe.Pointer(ret))
+}
+
 func Mul_mm256(a, b, c []float32) {
 	_mm256_mul_to(unsafe.Pointer(&a[0]), unsafe.Pointer(&b[0]), unsafe.Pointer(&c[0]), unsafe.Pointer(uintptr(len(a))))
 }

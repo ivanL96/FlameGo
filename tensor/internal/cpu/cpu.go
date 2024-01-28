@@ -63,7 +63,7 @@ func Dot(i Implementation, a, b []float32) float32 {
 		return c
 	case AVX512: // temporary fallback to avx256
 		var c float32
-		amd64.Dot_mm256(a, b, &c)
+		amd64.Dot_mm512(a, b, &c)
 		return c
 	default:
 		var c float32
