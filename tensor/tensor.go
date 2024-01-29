@@ -10,7 +10,7 @@ import (
 // set of primitive common tensor methods
 //tensor initialization-----------------------------------------------------
 
-func makeTensor[T types.TensorType](dataPtr *[]T, shape types.Shape) *Tensor[T] {
+func makeTensor[T types.TensorType](dataPtr *[]T, shape types.Shape, copy bool) *Tensor[T] {
 	var shapeProd types.Dim = 1
 	for _, dim := range shape {
 		shapeProd *= dim
@@ -20,8 +20,12 @@ func makeTensor[T types.TensorType](dataPtr *[]T, shape types.Shape) *Tensor[T] 
 		// if nil ptr create an empty slice with size of 'shapeProd'
 		data = make([]T, shapeProd)
 	} else {
-		// copies data
-		data = append([]T(nil), (*dataPtr)...)
+		if copy {
+			// copies data
+			data = append([]T(nil), (*dataPtr)...)
+		} else {
+			data = *dataPtr
+		}
 	}
 	if len(shape) == 0 || int(shapeProd) != len(data) {
 		panic(fmt.Sprintf("makeTensor: Value length %v cannot have shape %v", len(data), shape))
@@ -38,12 +42,16 @@ func makeTensor[T types.TensorType](dataPtr *[]T, shape types.Shape) *Tensor[T] 
 
 // inits a tensor with data
 func CreateTensor[T types.TensorType](value []T, shape types.Shape) *Tensor[T] {
-	return makeTensor(&value, shape)
+	return makeTensor(&value, shape, true)
+}
+
+func CreateTensorNoCopy[T types.TensorType](value []T, shape types.Shape) *Tensor[T] {
+	return makeTensor(&value, shape, false)
 }
 
 // inits an empty tensor with specific shape
 func CreateEmptyTensor[T types.TensorType](shape ...types.Dim) *Tensor[T] {
-	return makeTensor[T](nil, shape)
+	return makeTensor[T](nil, shape, true)
 }
 
 func Ones[T types.TensorType](shape ...types.Dim) *Tensor[T] {
@@ -91,7 +99,7 @@ func AsType[OLDT types.TensorType, NEWT types.TensorType](tensor *Tensor[OLDT]) 
 func (tensor *Tensor[T]) Copy() *Tensor[T] {
 	newData := make([]T, len(tensor.data()))
 	copy(newData, tensor.data())
-	newTensor := CreateTensor(newData, tensor.shape)
+	newTensor := CreateTensorNoCopy(newData, tensor.shape)
 	newTensor.strides = tensor.strides
 	newTensor.dim_order = tensor.dim_order
 	return newTensor
