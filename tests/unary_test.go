@@ -15,3 +15,10 @@ func TestSigmoid(t *testing.T) {
 	assertEqualSlices(t, s.Data(), data)
 	assertEqualSlices(t, s.Shape(), types.Shape{2, 3})
 }
+
+func TestNeg(t *testing.T) {
+	a := tensor.Range[float32](10)
+	s := a.Neg()
+	assertEqualSlices(t, s.Data(), []float32{0, -1, -2, -3, -4, -5, -6, -7, -8, -9})
+	assertEqualSlices(t, s.Shape(), types.Shape{10})
+}

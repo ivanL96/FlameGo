@@ -223,6 +223,7 @@ func (tensor *Tensor[T]) Pow(other_tensor *Tensor[T], out ...*Tensor[T]) *Tensor
 func (tensor *Tensor[T]) Neg(out ...*Tensor[T]) *Tensor[T] {
 	neg := UnaryOp[T]{
 		scalar: ops.NegAtomic[T],
+		vector: cpu.Neg[T],
 	}
 	return unaryElementwiseRoutine(tensor, neg, get_param(out...))
 }

@@ -14,34 +14,43 @@ import (
 // auto-detection of various cpu instructions
 // is nothing is supported falls back to pure go implementation
 
-type Implementation int
+type Implementation struct {
+	impl         int
+	all_suppored []int
+}
 
 const (
-	Default Implementation = iota
+	Default int = iota
 	AVX
 	AVX512
+	CUDA // To be implemented
 )
 
 // finds possible accelerations instructions
 func DetectImpl() Implementation {
-	var impl Implementation = 0
+	var impl Implementation
 	if cpuid.CPU.Supports(cpuid.AVX512F, cpuid.AVX512DQ) {
-		impl = AVX512
+		impl.all_suppored = append(impl.all_suppored, AVX512)
+	}
+	if cpuid.CPU.Supports(cpuid.AVX) {
+		impl.all_suppored = append(impl.all_suppored, AVX)
+	}
+	// select the best cpu impl
+	if cpuid.CPU.Supports(cpuid.AVX512F, cpuid.AVX512DQ) {
+		impl.impl = AVX512
 	} else if cpuid.CPU.Supports(cpuid.AVX) {
-		impl = AVX
+		impl.impl = AVX
 	}
 	return impl
 }
 
 func (i Implementation) ShowDebugInfo() Implementation {
-	var name string
-	switch i {
-	case AVX:
-		name = "avx"
-	case AVX512:
-		name = "avx512"
-	default:
-		name = ""
+	name := make([]string, 0)
+	if i.impl == AVX {
+		name = append(name, "avx")
+	}
+	if i.impl == AVX512 {
+		name = append(name, "avx512")
 	}
 	if len(name) > 0 {
 		fmt.Println("CPU acceleration:", name, "available.")
@@ -49,20 +58,20 @@ func (i Implementation) ShowDebugInfo() Implementation {
 	return i
 }
 
-func IsImplAvailable(impl Implementation) bool {
-	if impl == AVX512 && !cpuid.CPU.Supports(cpuid.AVX512F, cpuid.AVX512DQ) {
+func IsImplAvailable(i Implementation) bool {
+	if i.impl == AVX512 && !cpuid.CPU.Supports(cpuid.AVX512F, cpuid.AVX512DQ) {
 		return false
 		// panic(fmt.Sprintf("Implementation %v is not supported", impl.String()))
-	} else if impl == AVX && !cpuid.CPU.Supports(cpuid.AVX) {
+	} else if i.impl == AVX && !cpuid.CPU.Supports(cpuid.AVX) {
 		return false
-	} else if impl != Default {
+	} else if i.impl != Default {
 		return false
 	}
 	return true
 }
 
 func Dot(i Implementation, a, b []float32) float32 {
-	switch i {
+	switch i.impl {
 	case AVX:
 		var c float32
 		amd64.Dot_mm256(a, b, &c)
@@ -99,9 +108,9 @@ func input_to_float32[T types.TensorType](a, b, out []T) ([]float32, []float32, 
 
 func Mul[T types.TensorType](i Implementation, a, b, c []T) {
 	afl, bfl, cfl := input_to_float32(a, b, c)
-	if i == AVX && afl != nil {
+	if i.impl == AVX && afl != nil {
 		amd64.Mul_mm256(afl, bfl, cfl)
-	} else if i == AVX512 && afl != nil {
+	} else if i.impl == AVX512 && afl != nil {
 		amd64.Mul_mm512(afl, bfl, cfl)
 	} else {
 		noasm.MulMatx(a, b, c)
@@ -110,7 +119,7 @@ func Mul[T types.TensorType](i Implementation, a, b, c []T) {
 
 func MulToConst[T types.TensorType](i Implementation, a []T, b []T, c []T) {
 	afl, bfl, cfl := input_b_scalar_to_float32(a, b[0], c)
-	if i == AVX && afl != nil {
+	if i.impl == AVX && afl != nil {
 		amd64.Mul_to_const_mm256(afl, bfl, cfl)
 	} else {
 		noasm.MulMatxToConst(a, b[0], c)
@@ -123,9 +132,9 @@ func Div[T types.TensorType](i Implementation, a, b, c []T) {
 
 func Add[T types.TensorType](i Implementation, a, b, c []T) {
 	afl, bfl, cfl := input_to_float32(a, b, c)
-	if i == AVX && afl != nil {
+	if i.impl == AVX && afl != nil {
 		amd64.Add_mm256(afl, bfl, cfl)
-	} else if i == AVX512 && afl != nil {
+	} else if i.impl == AVX512 && afl != nil {
 		amd64.Add_mm256(afl, bfl, cfl)
 	} else {
 		noasm.AddMatx(a, b, c)
@@ -142,4 +151,8 @@ func Pow[T types.TensorType](i Implementation, a, b, c []T) {
 
 func Sigmoid[T types.TensorType](i Implementation, a, c []T) {
 	noasm.SigmoidMatx(a, c)
+}
+
+func Neg[T types.TensorType](i Implementation, a, c []T) {
+	noasm.NegMatx(a, c)
 }
