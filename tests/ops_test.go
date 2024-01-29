@@ -115,3 +115,19 @@ func TestPow(t *testing.T) {
 	assertEqualSlices(t, c2.Data(), []float32{1, 4, 27})
 	assertEqualSlices(t, c2.Shape(), types.Shape{3})
 }
+
+func TestDiv(t *testing.T) {
+	a2 := tensor.Range[float32](1, 4)
+	b2 := tensor.CreateTensor[float32]([]float32{2, 2, 2}, types.Shape{3})
+	c2 := a2.Div(b2)
+	assertEqualSlices(t, c2.Data(), []float32{0.5, 1, 1.5})
+	assertEqualSlices(t, c2.Shape(), types.Shape{3})
+}
+
+func TestDivInplace(t *testing.T) {
+	a2 := tensor.Range[float32](1, 4)
+	b2 := tensor.CreateTensor[float32]([]float32{2, 2, 2}, types.Shape{3})
+	a2.Div(b2, a2)
+	assertEqualSlices(t, a2.Data(), []float32{0.5, 1, 1.5})
+	assertEqualSlices(t, a2.Shape(), types.Shape{3})
+}

@@ -123,13 +123,14 @@ func (tensor *Tensor[T]) TrC2D() *Tensor[T] {
 		wg.Add(1)
 		go func(i int) {
 			defer wg.Done()
+			i_cols := i * cols
 			for j := 0; j < cols; j++ {
-				transposed[j*rows+i] = data[i*cols+j]
+				transposed[j*rows+i] = data[i_cols+j]
 			}
 		}(i)
 	}
 	wg.Wait()
-	return CreateTensor[T](transposed, types.Shape{sh[1], sh[0]})
+	return CreateTensorNoCopy[T](transposed, types.Shape{sh[1], sh[0]})
 }
 
 // stacks tensors together. All tensors should have the same shape

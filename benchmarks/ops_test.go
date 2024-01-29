@@ -162,3 +162,12 @@ func BenchmarkPow(b *testing.B) {
 		a1.Pow(b1)
 	}
 }
+
+func BenchmarkDiv(b *testing.B) {
+	rng := tensor.NewRNG(0)
+	a1 := rng.RandomFloat32(1000, 1000)
+	b1 := rng.RandomFloat32(1000, 1000)
+	for i := 0; i < b.N; i++ {
+		a1.Div(b1)
+	}
+}

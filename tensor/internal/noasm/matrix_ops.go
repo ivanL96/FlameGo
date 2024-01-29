@@ -22,7 +22,8 @@ func MatxParallel[T types.TensorType](
 	f func(int, int, []T, []T, []T),
 	a, b, out []T,
 ) {
-	chunk_size := (len(a) + numCPU - 1) / numCPU
+	la := len(a)
+	chunk_size := (la + numCPU - 1) / numCPU
 
 	var wg sync.WaitGroup
 	wg.Add(numCPU)
@@ -30,8 +31,8 @@ func MatxParallel[T types.TensorType](
 	for i := 0; i < numCPU; i++ {
 		start := i * chunk_size
 		end := (i + 1) * chunk_size
-		if end > len(a) {
-			end = len(a)
+		if end > la {
+			end = la
 		}
 
 		go func(start, end int) {
@@ -82,10 +83,12 @@ func MulMatxToConst[T types.TensorType](a []T, b T, out []T) {
 }
 
 func DivMatx[T types.TensorType](a, b, out []T) {
-	out_ := makeOutMat(out, len(a))
-	for i, val := range a {
-		out_[i] = val / b[i]
+	div_chunk := func(start, end int, a, b, out []T) {
+		for i := start; i < end; i++ {
+			out[i] = a[i] / b[i]
+		}
 	}
+	MatxParallel[T](div_chunk, a, b, makeOutMat(out, len(a)))
 }
 
 func PowMatx[T types.TensorType](a, b, out []T) {
