@@ -7,15 +7,6 @@ import (
 	"reflect"
 )
 
-type Var[T types.TensorType] struct {
-	Value         *tensor.Tensor[T]
-	Grad          *tensor.Tensor[T]
-	backward_fn   func() *tensor.Tensor[T]
-	Alias         string
-	Children      []*Var[T]
-	Requires_grad bool
-}
-
 var intKinds map[reflect.Kind]bool = map[reflect.Kind]bool{
 	reflect.Uint:   true,
 	reflect.Uint8:  true,
@@ -27,6 +18,15 @@ var intKinds map[reflect.Kind]bool = map[reflect.Kind]bool{
 	reflect.Int16:  true,
 	reflect.Int32:  true,
 	reflect.Int64:  true,
+}
+
+type Var[T types.TensorType] struct {
+	Value         *tensor.Tensor[T]
+	Grad          *tensor.Tensor[T]
+	backward_fn   func() *tensor.Tensor[T]
+	Alias         string
+	Children      []*Var[T]
+	Requires_grad bool
 }
 
 func Variable[T types.TensorType](

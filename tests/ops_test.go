@@ -14,6 +14,7 @@ func TestAdd(t *testing.T) {
 	assertEqualSlices(t, ab.Data(), []int32{5, 5, 5, 5, 5, 5})
 	assertEqualSlices(t, ab.Shape(), types.Shape{3, 2})
 }
+
 func TestAdd1(t *testing.T) {
 	c := tensor.CreateEmptyTensor[int32](3, 3).Fill(4)
 	d := tensor.CreateEmptyTensor[int32](1).Fill(1)
@@ -21,6 +22,7 @@ func TestAdd1(t *testing.T) {
 	assertEqualSlices(t, cd.Data(), []int32{5, 5, 5, 5, 5, 5, 5, 5, 5})
 	assertEqualSlices(t, cd.Shape(), types.Shape{3, 3})
 }
+
 func TestAdd2(t *testing.T) {
 	e := tensor.CreateEmptyTensor[int32](1).Fill(4)
 	f := tensor.CreateEmptyTensor[int32](1).Fill(1)
@@ -29,6 +31,7 @@ func TestAdd2(t *testing.T) {
 	assertEqualSlices(t, ef.Data(), []int32{5})
 	assertEqualSlices(t, ef.Shape(), types.Shape{1})
 }
+
 func TestAdd3(t *testing.T) {
 	e1 := tensor.Range[int32](10).Reshape(5, 2).T()
 	e2 := tensor.Range[int32](10).Reshape(5, 2).T().AsContinuous()
@@ -39,6 +42,7 @@ func TestAdd3(t *testing.T) {
 	assertEqualSlices(t, ef1.Shape(), types.Shape{2, 5})
 	// fmt.Println(ef1.ToString())
 }
+
 func TestAdd4(t *testing.T) {
 	g1 := tensor.Range[int32](5).Reshape(5, 1).T()
 	g2 := tensor.Range[int32](15).Reshape(5, 3).T()
@@ -48,12 +52,32 @@ func TestAdd4(t *testing.T) {
 	assertEqualSlices(t, g3.Data(), g4.Data())
 }
 
+func TestAddInplace(t *testing.T) {
+	a1 := tensor.Range[int32](4).Reshape(2, 2)
+	b1 := tensor.Range[int32](4).Reshape(2, 2)
+	a1.Add(b1, a1)
+	assertEqualSlices(t, a1.Data(), []int32{0, 2, 4, 6})
+
+	a2 := tensor.Range[int32](4).Reshape(2, 2)
+	b2 := tensor.Range[int32](4).Reshape(2, 2)
+	a2.Add(b2, b2)
+	assertEqualSlices(t, b2.Data(), []int32{0, 2, 4, 6})
+}
+
 func TestMul(t *testing.T) {
 	a := tensor.CreateEmptyTensor[int32](3, 2).Fill(2)
 	b := tensor.CreateEmptyTensor[int32](3, 1).Fill(3)
 	ab := a.Mul(b, nil)
 	assertEqualSlices(t, ab.Data(), []int32{6, 6, 6, 6, 6, 6})
 	assertEqualSlices(t, ab.Shape(), types.Shape{3, 2})
+}
+
+func TestMulToConst(t *testing.T) {
+	a1 := tensor.CreateTensor([]float32{1, 2, 3, 4, 5, 6}, types.Shape{2, 3})
+	a2 := tensor.Scalar[float32](2)
+	out := a1.Mul(a2)
+	// fmt.Println(out.Get(999, 999))
+	assertEqualSlices(t, out.Data(), []float32{2, 4, 6, 8, 10, 12})
 }
 
 func TestMatMul1(t *testing.T) {

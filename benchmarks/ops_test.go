@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"gograd/tensor"
 	"testing"
 )
@@ -30,6 +29,9 @@ func BenchmarkAdd(b *testing.B) {
 // avx
 // BenchmarkBigAdd-12          6844            171370 ns/op            3517 B/op         26 allocs/op
 // BenchmarkBigAdd-12          5796            175902 ns/op            3833 B/op         26 allocs/op
+// avx + inplace
+// BenchmarkBigAdd-12          8274            141875 ns/op            2728 B/op         26 allocs/op
+// BenchmarkBigAdd-12          7477            142808 ns/op            2831 B/op         26 allocs/o
 
 func BenchmarkBigAdd(b *testing.B) {
 	a1 := tensor.Range[int32](1000000).Reshape(1000, 1000) //.Fill(1)
@@ -76,15 +78,21 @@ func BenchmarkBigMul(b *testing.B) {
 	// fmt.Println(out.Get(999, 999))
 }
 
-func BenchmarkBigMulToConst(b *testing.B) {
-	scalar := tensor.Scalar[float32](1000)
-	a1 := tensor.Range[float32](1000000).Reshape(1000, 1000).Div(scalar, nil)
-	a2 := scalar
+// avx
+// BenchmarkMulToConst-12              6510            171877 ns/op            1854 B/op          1 allocs/op
+// BenchmarkMulToConst-12              6363            185830 ns/op            1897 B/op          1 allocs/op
+// BenchmarkMulToConst-12              6712            179904 ns/op            1799 B/op          1 allocs/op
+// BenchmarkMulToConst-12              6818            184437 ns/op            1771 B/op          1 allocs/op
+// BenchmarkMulToConst-12              6506            180120 ns/op            1856 B/op          1 allocs/op
+func BenchmarkMulToConst(b *testing.B) {
+	rng := tensor.NewRNG(0)
+	a1 := rng.RandomFloat32(1000, 1000)
+	a2 := tensor.Scalar[float32](5)
 	out := tensor.CreateEmptyTensor[float32](1000, 1000)
 	for i := 0; i < b.N; i++ {
 		a1.Mul(a2, out)
 	}
-	fmt.Println(out.Get(999, 999))
+	// fmt.Println(out.Get(999, 999))
 }
 
 func BenchmarkMulScalar(b *testing.B) {
@@ -178,5 +186,27 @@ func BenchmarkSum(b *testing.B) {
 	// b1 := rng.RandomFloat32(1000, 1000)
 	for i := 0; i < b.N; i++ {
 		a1.SumAlongAxis(0, false)
+	}
+}
+
+// goos: windows
+// goarch: amd64
+// pkg: gograd/benchmarks
+// cpu: 11th Gen Intel(R) Core(TM) i5-11400H @ 2.70GHz
+//
+// BenchmarkSub-12             6736            166.824 ns/op            4735 B/op         26 allocs/op
+// BenchmarkSub-12             7200            166.884 ns/op            4543 B/op         26 allocs/op
+// BenchmarkSub-12             6364            166.159 ns/op            4909 B/op         26 allocs/op
+// inplace
+// BenchmarkSub-12             7800            139.553 ns/op            3818 B/op         26 allocs/op
+// BenchmarkSub-12             8596            138.748 ns/op            3625 B/op         26 allocs/op
+// BenchmarkSub-12             8678            138.503 ns/op            3608 B/op         26 allocs/op
+func BenchmarkSub(b *testing.B) {
+	rng := tensor.NewRNG(0)
+	a1 := rng.RandomFloat32(1000, 1000)
+	b1 := rng.RandomFloat32(1000, 1000)
+	// out := tensor.CreateEmptyTensor[float32](1000, 1000)
+	for i := 0; i < b.N; i++ {
+		a1.Sub(b1, a1)
 	}
 }

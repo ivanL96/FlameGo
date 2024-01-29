@@ -121,6 +121,8 @@ func MulToConst[T types.TensorType](i Implementation, a []T, b []T, c []T) {
 	afl, bfl, cfl := input_b_scalar_to_float32(a, b[0], c)
 	if i.impl == AVX && afl != nil {
 		amd64.Mul_to_const_mm256(afl, bfl, cfl)
+	} else if i.impl == AVX512 && afl != nil {
+		amd64.Mul_to_const_mm256(afl, bfl, cfl)
 	} else {
 		noasm.MulMatxToConst(a, b[0], c)
 	}
