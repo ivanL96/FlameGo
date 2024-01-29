@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"gograd/tensor"
 	"gograd/tensor/types"
 	"testing"
@@ -30,25 +31,37 @@ func sum_float64_go_unroll4[T types.TensorType](buf []T) T {
 	return acc0 + acc1 + acc2 + acc3
 }
 
-// BenchmarkLoop-8            15199             89881 ns/op              52 B/op          0 allocs/op
-// BenchmarkLoop-8            13575             91785 ns/op              59 B/op          0 allocs/op
-// BenchmarkLoop-8            15489             79947 ns/op              51 B/op          0 allocs/op
+// goos: windows
+// goarch: amd64
+// pkg: gograd/benchmarks
+// cpu: 11th Gen Intel(R) Core(TM) i5-11400H @ 2.70GHz
+// BenchmarkLoop
+// BenchmarkLoop-12           50310             23327 ns/op              15 B/op          0 allocs/op
+// BenchmarkLoop-12           50791             23276 ns/op              15 B/op          0 allocs/op
+// BenchmarkLoop-12           49707             23137 ns/op              16 B/op          0 allocs/op
+// BenchmarkLoop-12           51193             23085 ns/op              15 B/op          0 allocs/op
 func BenchmarkLoop(b *testing.B) {
 	data := tensor.Range[float64](100 * 100 * 10).Data()
+	var res float64
 	for i := 0; i < b.N; i++ {
 		sum_float64_go(data)
 	}
+	fmt.Println(res) //4.99995e+09
 }
 
 // 4,5x speed up
-// BenchmarkLoopUnroll-8              55106             19717 ns/op              14 B/op          0 allocs/op
-// BenchmarkLoopUnroll-8              55365             23707 ns/op              14 B/op          0 allocs/op
-// BenchmarkLoopUnroll-8              51512             22441 ns/op              15 B/op          0 allocs/op
+// BenchmarkLoopUnroll-12            191854              5902 ns/op               4 B/op          0 allocs/op
+// BenchmarkLoopUnroll-12            196690              5824 ns/op               4 B/op          0 allocs/op
+// BenchmarkLoopUnroll-12            195310              5818 ns/op               4 B/op          0 allocs/op
+// BenchmarkLoopUnroll-12            196312              5793 ns/op               4 B/op          0 allocs/op
+// BenchmarkLoopUnroll-12            194678              5779 ns/op               4 B/op          0 allocs/op
 func BenchmarkLoopUnroll(b *testing.B) {
 	data := tensor.Range[float64](100 * 100 * 10).Data()
+	var res float64
 	for i := 0; i < b.N; i++ {
 		sum_float64_go_unroll4(data)
 	}
+	fmt.Println(res) //4.99995e+09
 }
 
 func BenchmarkTensorCreate(b *testing.B) {

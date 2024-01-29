@@ -96,3 +96,13 @@ func PowMatx[T types.TensorType](a, b, out []T) {
 		outf[i] = math.Pow(val, bf[i])
 	}
 }
+
+func SigmoidMatx[T types.TensorType](a, out []T) {
+	sigm_chunk := func(start, end int, a, dummy, out []T) {
+		for i := start; i < end; i++ {
+			out[i] = T(1. / (1. + math.Pow(math.E, float64(-a[i]))))
+		}
+	}
+	var dummy []T
+	MatxParallel[T](sigm_chunk, a, dummy, makeOutMat(out, len(a)))
+}

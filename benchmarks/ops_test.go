@@ -90,9 +90,25 @@ func BenchmarkMulScalar(b *testing.B) {
 	}
 }
 
+// goos: windows
+// goarch: amd64
+// pkg: gograd/benchmarks
+// cpu: 11th Gen Intel(R) Core(TM) i5-11400H @ 2.70GHz
+// atomic impl
+// BenchmarkSigmoid-12           16          62.976.994 ns/op         4507318 B/op          6 allocs/op
+// BenchmarkSigmoid-12           19          61.038.279 ns/op         4427986 B/op          5 allocs/op
+// BenchmarkSigmoid-12           19          60.590.647 ns/op         4427981 B/op          5 allocs/op
+// BenchmarkSigmoid-12           19          60.433.121 ns/op         4427981 B/op          5 allocs/op
+// BenchmarkSigmoid-12           19          62.144.426 ns/op         4427981 B/op          5 allocs/op
+// vector + goroutines
+// BenchmarkSigmoid-12          139           8.282.268 ns/op         4065871 B/op         32 allocs/op
+// BenchmarkSigmoid-12          150           7.802.250 ns/op         4061361 B/op         31 allocs/op
+// BenchmarkSigmoid-12          147           7.908.745 ns/op         4062321 B/op         31 allocs/op
+// BenchmarkSigmoid-12          151           7.952.143 ns/op         4060873 B/op         31 allocs/op
+// BenchmarkSigmoid-12          150           7.858.647 ns/op         4061227 B/op         31 allocs/op
 func BenchmarkSigmoid(b *testing.B) {
 	rng := tensor.NewRNG(0)
-	a1 := rng.RandomFloat32(100, 100)
+	a1 := rng.RandomFloat32(1000, 1000)
 	for i := 0; i < b.N; i++ {
 		a1.Sigmoid(nil)
 	}

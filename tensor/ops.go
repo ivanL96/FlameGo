@@ -11,7 +11,10 @@ import (
 
 var auto_impl cpu.Implementation = cpu.DetectImpl().ShowDebugInfo()
 
-type UnaryScalarOp[T types.TensorType] func(T) T
+type UnaryOp[T types.TensorType] struct {
+	scalar func(T) T
+	vector func(cpu.Implementation, []T, []T)
+}
 
 type BinaryOp[T types.TensorType] struct {
 	// required prop, contains function with scalar bin operation
@@ -149,16 +152,24 @@ func BaseBinElementwiseOp[T types.TensorType](
 
 func unaryElementwiseRoutine[T types.TensorType](
 	tensor *Tensor[T],
-	unaryOp UnaryScalarOp[T],
+	op UnaryOp[T],
 	out *Tensor[T],
 ) *Tensor[T] {
+	unaryScalarOp, unaryVecOp := op.scalar, op.vector
 	outTensor := PrepareOutTensor(out, tensor.Shape())
 	if tensor.shape.IsScalarLike() {
-		outTensor.data()[0] = unaryOp(tensor.data()[0])
+		outTensor.data()[0] = unaryScalarOp(tensor.data()[0])
 		return outTensor
 	}
-	for i, val := range tensor.data() {
-		outTensor.data()[i] = unaryOp(val)
+	if unaryScalarOp == nil {
+		panic("At least op.scalar function must be set")
+	}
+	if unaryVecOp == nil {
+		for i, val := range tensor.data() {
+			outTensor.data()[i] = unaryScalarOp(val)
+		}
+	} else {
+		unaryVecOp(auto_impl, tensor.data(), outTensor.data())
 	}
 	return outTensor
 }
@@ -210,15 +221,26 @@ func (tensor *Tensor[T]) Pow(other_tensor *Tensor[T], out ...*Tensor[T]) *Tensor
 
 // unary
 func (tensor *Tensor[T]) Neg(out ...*Tensor[T]) *Tensor[T] {
-	return unaryElementwiseRoutine(tensor, ops.NegAtomic[T], get_param(out...))
+	neg := UnaryOp[T]{
+		scalar: ops.NegAtomic[T],
+	}
+	return unaryElementwiseRoutine(tensor, neg, get_param(out...))
 }
 
 func (tensor *Tensor[T]) Sigmoid(out ...*Tensor[T]) *Tensor[T] {
-	return unaryElementwiseRoutine(tensor, ops.SigmoidAtomic[T], get_param(out...))
+	// sigmoid :=
+	sigma := UnaryOp[T]{
+		scalar: ops.SigmoidAtomic[T],
+		vector: cpu.Sigmoid[T],
+	}
+	return unaryElementwiseRoutine(tensor, sigma, get_param(out...))
 }
 
 func (tensor *Tensor[T]) Ln(out ...*Tensor[T]) *Tensor[T] {
-	return unaryElementwiseRoutine(tensor, ops.LnAtomic[T], get_param(out...))
+	ln := UnaryOp[T]{
+		scalar: ops.LnAtomic[T],
+	}
+	return unaryElementwiseRoutine(tensor, ln, get_param(out...))
 }
 
 //
@@ -295,13 +317,10 @@ func (tensor *Tensor[T]) MatMul(other *Tensor[T]) *Tensor[T] {
 		other = other.TrC()
 	}
 
-	a_data := tensor.data()
-	b_data := other.data()
-	out_data := outTensor.data()
 	// gen impl
-	a_data_ := any(a_data).([]float32)
-	b_data_ := any(b_data).([]float32)
-	out_data_ := any(out_data).([]float32)
+	a_data_ := any(tensor.data()).([]float32)
+	b_data_ := any(other.data()).([]float32)
+	out_data_ := any(outTensor.data()).([]float32)
 	ops.MatMulNaiveImpl_GEN(
 		auto_impl,
 		a_data_,
@@ -316,8 +335,7 @@ func (tensor *Tensor[T]) MatMul(other *Tensor[T]) *Tensor[T] {
 	// ops.MatMulNaiveImpl(a_data, b_data, tensor.shape, other.shape,
 	// 	tensor.strides, other.strides,
 	// 	out_data, outTensor.strides)
-	outTensor.data_buff = types.Any(outTensor.data()).([]T)
-	// outTensor.data_buff = outTensor.data()
+	outTensor.data_buff = any(outTensor.data()).([]T)
 	return outTensor
 }
 

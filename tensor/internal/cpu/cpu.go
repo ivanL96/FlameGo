@@ -137,3 +137,7 @@ func Sub[T types.TensorType](i Implementation, a, b, c []T) {
 func Pow[T types.TensorType](i Implementation, a, b, c []T) {
 	noasm.PowMatx(a, b, c)
 }
+
+func Sigmoid[T types.TensorType](i Implementation, a, c []T) {
+	noasm.SigmoidMatx(a, c)
+}
