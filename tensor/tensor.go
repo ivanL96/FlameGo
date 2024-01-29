@@ -72,17 +72,19 @@ func Scalar[T types.TensorType](value T) *Tensor[T] {
 	}
 }
 
-//-----------------------------------------------------
+// -----------------------------------------------------
 
-func AsType[OLDT types.TensorType, NEWT types.TensorType](tensor *Tensor[OLDT]) *Tensor[NEWT] {
-	// naive impl with copying the data & tensor
-	// example:
-	// AsType(int32, float64)(tensor) ==> float64 tensor
-	data := make([]NEWT, len(tensor.data()))
+// Naive impl with copying the data & tensor
+//
+// Example:
+//
+// AsType(int32, float64)(int_tensor) ==> float64 tensor
+func AsType[OLD_T types.TensorType, NEW_T types.TensorType](tensor *Tensor[OLD_T]) *Tensor[NEW_T] {
+	data := make([]NEW_T, len(tensor.data()))
 	for i, val := range tensor.data() {
-		data[i] = NEWT(val)
+		data[i] = NEW_T(val)
 	}
-	return CreateTensor(data, tensor.shape)
+	return CreateTensorNoCopy(data, tensor.shape)
 }
 
 func (tensor *Tensor[T]) Copy() *Tensor[T] {
