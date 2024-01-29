@@ -1,3 +1,5 @@
+//go:build !noasm && amd64
+
 TEXT ·_mm512_dot(SB), $0-32
 	MOVQ a+0(FP), DI
 	MOVQ b+8(FP), SI
