@@ -272,7 +272,8 @@ func (tensor *Tensor[T]) IsContinuous() bool {
 		return dimOrder[0] == 0
 	default:
 		var min uint16 = 0
-		for _, dim := range dimOrder {
+		var dim uint16
+		for _, dim = range dimOrder {
 			if dim > min {
 				return false
 			}

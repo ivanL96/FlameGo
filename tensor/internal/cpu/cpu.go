@@ -3,6 +3,7 @@
 package cpu
 
 import (
+	"fmt"
 	"gograd/tensor/internal/intrinsics/amd64"
 	"gograd/tensor/internal/noasm"
 	"gograd/tensor/types"
@@ -32,6 +33,22 @@ func DetectImpl() Implementation {
 	return impl
 }
 
+func (i Implementation) ShowDebugInfo() Implementation {
+	var name string
+	switch i {
+	case AVX:
+		name = "avx"
+	case AVX512:
+		name = "avx512"
+	default:
+		name = ""
+	}
+	if len(name) > 0 {
+		fmt.Println("CPU acceleration:", name, "available.")
+	}
+	return i
+}
+
 func IsImplAvailable(impl Implementation) bool {
 	if impl == AVX512 && !cpuid.CPU.Supports(cpuid.AVX512F, cpuid.AVX512DQ) {
 		return false
@@ -42,17 +59,6 @@ func IsImplAvailable(impl Implementation) bool {
 		return false
 	}
 	return true
-}
-
-func (i Implementation) String() string {
-	switch i {
-	case AVX:
-		return "avx"
-	case AVX512:
-		return "avx512"
-	default:
-		return "default"
-	}
 }
 
 func Dot(i Implementation, a, b []float32) float32 {

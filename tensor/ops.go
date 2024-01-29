@@ -6,9 +6,10 @@ import (
 	"gograd/tensor/iter"
 	ops "gograd/tensor/ops"
 	types "gograd/tensor/types"
+	"reflect"
 )
 
-var auto_impl cpu.Implementation = cpu.DetectImpl()
+var auto_impl cpu.Implementation = cpu.DetectImpl().ShowDebugInfo()
 
 type UnaryScalarOp[T types.TensorType] func(T) T
 
@@ -266,6 +267,9 @@ func (tensor *Tensor[T]) Dot(other *Tensor[T]) *Tensor[T] {
 }
 
 func (tensor *Tensor[T]) MatMul(other *Tensor[T]) *Tensor[T] {
+	if tensor.DType().Kind() != reflect.Float32 {
+		panic("MatMul() only supports tensors of type []float32")
+	}
 	if len(tensor.shape) != 2 || len(other.shape) != 2 {
 		panic("Tensors must be two-dim.")
 	}
@@ -299,8 +303,15 @@ func (tensor *Tensor[T]) MatMul(other *Tensor[T]) *Tensor[T] {
 	b_data_ := any(b_data).([]float32)
 	out_data_ := any(out_data).([]float32)
 	ops.MatMulNaiveImpl_GEN(
-		auto_impl, a_data_, b_data_, tensor.shape, other.shape,
-		tensor.strides, other.strides, out_data_, outTensor.strides)
+		auto_impl,
+		a_data_,
+		b_data_,
+		tensor.shape,
+		other.shape,
+		tensor.strides,
+		other.strides,
+		out_data_,
+		outTensor.strides)
 
 	// ops.MatMulNaiveImpl(a_data, b_data, tensor.shape, other.shape,
 	// 	tensor.strides, other.strides,
