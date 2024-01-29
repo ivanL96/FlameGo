@@ -1,6 +1,8 @@
 package iter
 
-import "gograd/tensor/types"
+import (
+	"gograd/tensor/types"
+)
 
 // iterates a tensor and for each step returns an N-dim index.
 //
@@ -10,13 +12,12 @@ import "gograd/tensor/types"
 //
 // it = iter.CreateIterator(len(tensor.data()), tensor.shape)
 //
-// for it.Iterate(){
-// 	flat_index := it.Index() // to get iterator index. Note: the index is incremented after the Next() is invoked
-// 	idx := it.Next()  // Required to update the iterator state.
-//  //Returns the index to access internal data layout. Copy before changing its values!
-// 	tensor.Index(idx...) // can be used here
-// }
-//
+//	for it.Iterate(){
+//		flat_index := it.Index() // to get iterator index. Note: the index is incremented after the Next() is invoked
+//		idx := it.Next()  // Required to update the iterator state.
+//	 //Returns the index to access internal data layout. Copy before changing its values!
+//		tensor.Index(idx...) // can be used here
+//	}
 type TensorIterator struct {
 	shape          types.Shape
 	currentIndexes []int
@@ -41,7 +42,7 @@ func (ti *TensorIterator) Index() int {
 }
 
 func (ti *TensorIterator) Iterate() bool {
-	return ti.index != ti.dataLen
+	return ti.index < ti.dataLen
 }
 
 func (ti *TensorIterator) Next() []int {
