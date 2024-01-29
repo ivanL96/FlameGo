@@ -9,6 +9,14 @@ import (
 
 // noasm vector operations for two-dim matrices
 
+func identical[T types.TensorType](s1, s2 []T) bool {
+	if len(s1) != len(s2) {
+		return false
+	}
+
+	return len(s1) == 0 || &s1[0] == &s2[0]
+}
+
 func makeOutMat[T types.TensorType](out []T, size int) []T {
 	if out == nil {
 		return make([]T, size)
@@ -44,18 +52,49 @@ func MatxParallel[T types.TensorType](
 }
 
 func AddMatx[T types.TensorType](a, b, out []T) {
-	add_chunk := func(start, end int, a, b, out []T) {
-		for i := start; i < end; i++ {
-			out[i] = a[i] + b[i]
+	// identical(b, out)
+	var add_chunk func(int, int, []T, []T, []T)
+	if identical(a, out) {
+		add_chunk = func(start, end int, a, b, out []T) {
+			for i := start; i < end; i++ {
+				out[i] += b[i]
+			}
+		}
+	} else if identical(b, out) {
+		add_chunk = func(start, end int, a, b, out []T) {
+			for i := start; i < end; i++ {
+				out[i] += a[i]
+			}
+		}
+	} else {
+		add_chunk = func(start, end int, a, b, out []T) {
+			for i := start; i < end; i++ {
+				out[i] = a[i] + b[i]
+			}
 		}
 	}
 	MatxParallel[T](add_chunk, a, b, makeOutMat(out, len(a)))
 }
 
 func SubMatx[T types.TensorType](a, b, out []T) {
-	sub_chunk := func(start, end int, a, b, out []T) {
-		for i := start; i < end; i++ {
-			out[i] = a[i] - b[i]
+	var sub_chunk func(int, int, []T, []T, []T)
+	if identical(a, out) {
+		sub_chunk = func(start, end int, a, b, out []T) {
+			for i := start; i < end; i++ {
+				out[i] -= b[i]
+			}
+		}
+	} else if identical(b, out) {
+		sub_chunk = func(start, end int, a, b, out []T) {
+			for i := start; i < end; i++ {
+				out[i] -= a[i]
+			}
+		}
+	} else {
+		sub_chunk = func(start, end int, a, b, out []T) {
+			for i := start; i < end; i++ {
+				out[i] = a[i] - b[i]
+			}
 		}
 	}
 	MatxParallel[T](sub_chunk, a, b, makeOutMat(out, len(a)))
