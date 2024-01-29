@@ -228,7 +228,6 @@ func (tensor *Tensor[T]) Neg(out ...*Tensor[T]) *Tensor[T] {
 }
 
 func (tensor *Tensor[T]) Sigmoid(out ...*Tensor[T]) *Tensor[T] {
-	// sigmoid :=
 	sigma := UnaryOp[T]{
 		scalar: ops.SigmoidAtomic[T],
 		vector: cpu.Sigmoid[T],

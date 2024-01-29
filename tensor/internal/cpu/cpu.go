@@ -101,8 +101,8 @@ func Mul[T types.TensorType](i Implementation, a, b, c []T) {
 	afl, bfl, cfl := input_to_float32(a, b, c)
 	if i == AVX && afl != nil {
 		amd64.Mul_mm256(afl, bfl, cfl)
-	} else if i == AVX512 && afl != nil { // temporary fallback to avx256
-		amd64.Mul_mm256(afl, bfl, cfl)
+	} else if i == AVX512 && afl != nil {
+		amd64.Mul_mm512(afl, bfl, cfl)
 	} else {
 		noasm.MulMatx(a, b, c)
 	}
@@ -122,12 +122,14 @@ func Div[T types.TensorType](i Implementation, a, b, c []T) {
 }
 
 func Add[T types.TensorType](i Implementation, a, b, c []T) {
-	// switch i {
-	// case AVX:
-	// 	amd64.Mul_mm256(a, b, c)
-	// default:
-	noasm.AddMatx(a, b, c)
-	// }
+	afl, bfl, cfl := input_to_float32(a, b, c)
+	if i == AVX && afl != nil {
+		amd64.Add_mm256(afl, bfl, cfl)
+	} else if i == AVX512 && afl != nil {
+		amd64.Add_mm256(afl, bfl, cfl)
+	} else {
+		noasm.AddMatx(a, b, c)
+	}
 }
 
 func Sub[T types.TensorType](i Implementation, a, b, c []T) {

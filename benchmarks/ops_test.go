@@ -27,6 +27,10 @@ func BenchmarkAdd(b *testing.B) {
 // vec + goroutines
 // BenchmarkBigAdd-12          7246            158306 ns/op            3212 B/op         25 allocs/op
 // BenchmarkBigAdd-12          6296            199704 ns/op            3460 B/op         25 allocs/op
+// avx
+// BenchmarkBigAdd-12          6844            171370 ns/op            3517 B/op         26 allocs/op
+// BenchmarkBigAdd-12          5796            175902 ns/op            3833 B/op         26 allocs/op
+
 func BenchmarkBigAdd(b *testing.B) {
 	a1 := tensor.Range[int32](1000000).Reshape(1000, 1000) //.Fill(1)
 	a2 := tensor.Range[int32](1000000).Reshape(1000, 1000) //.Fill(1)
@@ -53,17 +57,18 @@ func BenchmarkBigAdd(b *testing.B) {
 // BenchmarkBigMul-12          2344            519922 ns/op            8545 B/op          0 allocs/op
 // BenchmarkBigMul-12          2221            638278 ns/op            9019 B/op          0 allocs/op
 // BenchmarkBigMul-12          1401            796004 ns/op           14297 B/op          0 allocs/op
-// AVX
-// BenchmarkBigMul-12          3416            377943 ns/op            5863 B/op          0 allocs/op
+// AVX2 / AVX512 ~same speed
 // BenchmarkBigMul-12          3577            343849 ns/op            5599 B/op          0 allocs/op
 // BenchmarkBigMul-12          3550            350165 ns/op            5642 B/op          0 allocs/op
 // BenchmarkBigMul-12          3417            343890 ns/op            5861 B/op          0 allocs/op
-// BenchmarkBigMul-12          3476            394101 ns/op            5762 B/op          0 allocs/op
+// avx512
+// BenchmarkBigMul-12          3069            360250 ns/op            6530 B/op          0 allocs/op
+// BenchmarkBigMul-12          3379            344345 ns/op            5930 B/op          0 allocs/op
 // shape 1000x1000
 func BenchmarkBigMul(b *testing.B) {
-	scalar := tensor.Scalar[float32](1000)
-	a1 := tensor.Range[float32](1000000).Reshape(1000, 1000).Div(scalar, nil)
-	a2 := tensor.Range[float32](1000000).Reshape(1000, 1000).Div(scalar, nil)
+	rng := tensor.NewRNG(0)
+	a1 := rng.RandomFloat32(1000, 1000)
+	a2 := rng.RandomFloat32(1000, 1000)
 	out := tensor.CreateEmptyTensor[float32](1000, 1000)
 	for i := 0; i < b.N; i++ {
 		a1.Mul(a2, out)
@@ -106,6 +111,7 @@ func BenchmarkMulScalar(b *testing.B) {
 // BenchmarkSigmoid-12          147           7.908.745 ns/op         4062321 B/op         31 allocs/op
 // BenchmarkSigmoid-12          151           7.952.143 ns/op         4060873 B/op         31 allocs/op
 // BenchmarkSigmoid-12          150           7.858.647 ns/op         4061227 B/op         31 allocs/op
+// numpy sigmoid 							 10.001.420 ns/op
 func BenchmarkSigmoid(b *testing.B) {
 	rng := tensor.NewRNG(0)
 	a1 := rng.RandomFloat32(1000, 1000)
@@ -113,30 +119,3 @@ func BenchmarkSigmoid(b *testing.B) {
 		a1.Sigmoid(nil)
 	}
 }
-
-// type X struct {
-// 	data []int
-// }
-
-// func (x *X) Data() []int {
-// 	return x.data()
-// }
-
-// func BenchmarkProp(b *testing.B) {
-// 	x := X{data: []int{0, 1, 2, 3, 4, 5, 6, 7, 8, 9}}
-// 	c := make([]int, 10)
-// 	for i := 0; i < b.N; i++ {
-// 		c = x.data()
-// 	}
-// 	x.data() = c
-// }
-
-// func BenchmarkPropFunc(b *testing.B) {
-// 	x := X{data: []int{0, 1, 2, 3, 4, 5, 6, 7, 8, 9}}
-// 	c := make([]int, 10)
-// 	c = x.Data()
-// 	for i := 0; i < b.N; i++ {
-// 		c = x.Data()
-// 	}
-// 	x.data() = c
-// }
