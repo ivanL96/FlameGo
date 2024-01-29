@@ -48,7 +48,7 @@ func (this *Var[T]) Backward(gradient *tensor.Tensor[T]) {
 	}
 	for _, v := range topo_sorted {
 		if v.backward_fn != nil {
-			v.Grad = v.Grad.Add(v.backward_fn())
+			v.Grad.Add(v.backward_fn(), v.Grad)
 		}
 	}
 }

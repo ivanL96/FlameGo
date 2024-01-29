@@ -68,7 +68,7 @@ func (v *Var[T]) ToString() string {
 
 // VARIABLE OPS
 
-// reduce gradient dimensions
+// reduce gradient shape
 func unbroadcast[T types.TensorType](
 	grad,
 	other *tensor.Tensor[T],

@@ -50,7 +50,7 @@ func (tensor *Tensor[T]) SumAlongAxis(
 	dim := int(tensor.Shape()[axis])
 	for i := 1; i < dim; i++ {
 		args[axis] = strconv.Itoa(i)
-		reduced = reduced.Add(tensor.IndexAdv(strings.Join(args, ",")))
+		reduced.Add(tensor.IndexAdv(strings.Join(args, ",")), reduced)
 	}
 	if keep_dims {
 		return reduced.Unsqueeze(axis, nil)
