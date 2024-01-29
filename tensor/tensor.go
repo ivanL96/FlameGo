@@ -72,17 +72,6 @@ func Scalar[T types.TensorType](value T) *Tensor[T] {
 	}
 }
 
-// Creates a tensor without copying the data
-func AsTensor[T types.TensorType](data []T, shape types.Shape) *Tensor[T] {
-	t := &Tensor[T]{
-		strides:   shape.GetStrides(),
-		data_buff: data,
-		dim_order: shape.InitDimOrder(),
-		shape:     shape,
-	}
-	return t
-}
-
 //-----------------------------------------------------
 
 func AsType[OLDT types.TensorType, NEWT types.TensorType](tensor *Tensor[OLDT]) *Tensor[NEWT] {
