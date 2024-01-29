@@ -5,24 +5,8 @@ import (
 	types "gograd/tensor/types"
 	"strconv"
 	"strings"
+	"sync"
 )
-
-// func (tensor *Tensor[T]) unflatIndex(flatIdx int) []int {
-// TODO finish
-// 	ndims := len(tensor.strides)
-// 	unflatIdx := make([]int, ndims)
-// 	if flatIdx == 0 {
-// 		return unflatIdx
-// 	}
-// 	i := 0
-// 	for true {
-// 		stride := tensor.strides[i]
-// 		if stride < flatIdx {
-// 			flatIdx -= stride
-// 			unflatIdx[i]++
-// 		}
-// 	}
-// }
 
 func (tensor *Tensor[T]) getFlatIndex(indices ...int) int {
 	flatIndex := 0
@@ -304,12 +288,31 @@ func (tensor *Tensor[T]) AsContinuous() *Tensor[T] {
 	if tensor.IsContinuous() {
 		return tensor
 	}
-
 	outTensor := CreateEmptyTensor[T](tensor.shape...)
-	iter := tensor.CreateIterator()
-	for iter.Iterate() {
-		dataIndex := iter.Index()
-		valueIndexes := iter.Next()
+	if len(tensor.shape) == 2 {
+		// make matrix continuous
+		var wg sync.WaitGroup
+		rows := int(tensor.shape[0])
+		cols := int(tensor.shape[1])
+		out_data := outTensor.data()
+		for j := 0; j < cols; j++ {
+			wg.Add(1)
+			go func(j int) {
+				defer wg.Done()
+				j_rows := j * rows
+				for i := 0; i < rows; i++ {
+					out_data[i*cols+j] = tensor.data()[j_rows+i]
+				}
+			}(j)
+		}
+		wg.Wait()
+		return outTensor
+	}
+
+	it := tensor.CreateIterator()
+	for it.Iterate() {
+		dataIndex := it.Index()
+		valueIndexes := it.Next()
 		val := tensor.Get_fast(valueIndexes...)
 		outTensor.data()[dataIndex] = val
 	}

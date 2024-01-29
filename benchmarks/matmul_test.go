@@ -64,20 +64,14 @@ func BenchmarkMatMulUnite(b *testing.B) {
 // pkg: gograd/benchmarks
 // cpu: 11th Gen Intel(R) Core(TM) i5-11400H @ 2.70GHz
 // threads
-// BenchmarkMatMul-12            10         115.477.200 ns/op        13773644 B/op       2022 allocs/op
 // BenchmarkMatMul-12            12          94.282.383 ns/op        13506368 B/op       2020 allocs/op
 // BenchmarkMatMul-12            12          93.556.358 ns/op        13506376 B/op       2021 allocs/op
 // BenchmarkMatMul-12            12          92.763.142 ns/op        13506342 B/op       2020 allocs/op
-// BenchmarkMatMul-12            12          96.534.575 ns/op        13506392 B/op       2021 allocs/op
 // AVX + threads
 // BenchmarkMatMul-12            60          18.911.752 ns/op        12437393 B/op       2019 allocs/op
-// BenchmarkMatMul-12            62          18.853.710 ns/op        12428761 B/op       2019 allocs/op
 // BenchmarkMatMul-12            62          18.864.219 ns/op        12428772 B/op       2019 allocs/op
 // BenchmarkMatMul-12            58          18.832.110 ns/op        12446719 B/op       2019 allocs/op
-// BenchmarkMatMul-12            62          19.135.018 ns/op        12428771 B/op       2019 allocs/op
 // AVX + threads + thread affinity, moved some code outside the loop
-// BenchmarkMatMul-12            61          19.399.064 ns/op        12432996 B/op       2019 allocs/op
-// BenchmarkMatMul-12            62          18.772.816 ns/op        12429338 B/op       2020 allocs/op
 // BenchmarkMatMul-12            62          18.690.979 ns/op        12428797 B/op       2019 allocs/op
 // BenchmarkMatMul-12            63          18.725.068 ns/op        12424663 B/op       2019 allocs/op
 // BenchmarkMatMul-12            63          18.659.789 ns/op        12424688 B/op       2019 allocs/op

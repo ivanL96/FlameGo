@@ -36,7 +36,7 @@ func (tensor *Tensor[T]) Order() []uint16 {
 }
 
 func (tensor *Tensor[T]) Data() []T {
-	return tensor.data_buff
+	return tensor.data()
 }
 
 func (tensor *Tensor[T]) data() []T {
