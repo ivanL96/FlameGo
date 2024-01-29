@@ -89,12 +89,12 @@ func DivMatx[T types.TensorType](a, b, out []T) {
 }
 
 func PowMatx[T types.TensorType](a, b, out []T) {
-	af := any(a).([]float64)
-	bf := any(b).([]float64)
-	outf := any(makeOutMat(out, len(a))).([]float64)
-	for i, val := range af {
-		outf[i] = math.Pow(val, bf[i])
+	pow_chunk := func(start, end int, a, b, out []T) {
+		for i := start; i < end; i++ {
+			out[i] = T(math.Pow(float64(a[i]), float64(b[i])))
+		}
 	}
+	MatxParallel[T](pow_chunk, a, b, makeOutMat(out, len(a)))
 }
 
 func SigmoidMatx[T types.TensorType](a, out []T) {

@@ -128,6 +128,7 @@ func BenchmarkSigmoid(b *testing.B) {
 // BenchmarkNeg-12              517           2.252.472 ns/op         4021526 B/op          5 allocs/op
 // BenchmarkNeg-12              512           2.272.280 ns/op         4021676 B/op          5 allocs/op
 // BenchmarkNeg-12              519           2.247.524 ns/op         4021467 B/op          5 allocs/op
+// vec
 // BenchmarkNeg-12             2515             466.966 ns/op         4010974 B/op         31 allocs/op
 // BenchmarkNeg-12             2566             465.331 ns/op         4010908 B/op         31 allocs/op
 // BenchmarkNeg-12             2486             477.069 ns/op         4011007 B/op         31 allocs/op
@@ -136,5 +137,28 @@ func BenchmarkNeg(b *testing.B) {
 	a1 := rng.RandomFloat32(1000, 1000)
 	for i := 0; i < b.N; i++ {
 		a1.Neg(nil)
+	}
+}
+
+// goos: windows
+// goarch: amd64
+// pkg: gograd/benchmarks
+// cpu: 11th Gen Intel(R) Core(TM) i5-11400H @ 2.70GHz
+// scalar
+// BenchmarkPow-12               20          55.058.685 ns/op         4807766 B/op          6 allocs/op
+// BenchmarkPow-12               21          56.090.957 ns/op         4769588 B/op          6 allocs/op
+// BenchmarkPow-12               21          55.177.438 ns/op         4769593 B/op          6 allocs/op
+// vec
+// BenchmarkPow-12              145           8.629.586 ns/op         4118926 B/op         32 allocs/op
+// BenchmarkPow-12              146           8.994.234 ns/op         4117723 B/op         31 allocs/op
+// BenchmarkPow-12              133           8.472.005 ns/op         4128340 B/op         31 allocs/op
+// BenchmarkPow-12              145           7.985.862 ns/op         4118395 B/op         31 allocs/op
+// BenchmarkPow-12              144           8.125.274 ns/op         4119241 B/op         31 allocs/op
+func BenchmarkPow(b *testing.B) {
+	rng := tensor.NewRNG(0)
+	a1 := rng.RandomFloat32(1000, 1000)
+	b1 := rng.RandomFloat32(1000, 1000)
+	for i := 0; i < b.N; i++ {
+		a1.Pow(b1)
 	}
 }

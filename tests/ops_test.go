@@ -107,3 +107,11 @@ func TestMatMul6(t *testing.T) {
 	assertEqualSlices(t, c2.Data(), []float32{14, 38, 62})
 	assertEqualSlices(t, c2.Shape(), types.Shape{3, 1})
 }
+
+func TestPow(t *testing.T) {
+	a2 := tensor.Range[float32](1, 4)
+	b2 := tensor.Range[float32](1, 4)
+	c2 := a2.Pow(b2)
+	assertEqualSlices(t, c2.Data(), []float32{1, 4, 27})
+	assertEqualSlices(t, c2.Shape(), types.Shape{3})
+}
