@@ -2,6 +2,7 @@ package amd64
 
 import "unsafe"
 
+// go install github.com/gorse-io/goat@latest
 // implemented in /internal/intrinsics/amd64/
 
 //go:noescape

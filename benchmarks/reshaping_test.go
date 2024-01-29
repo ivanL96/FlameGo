@@ -2,6 +2,7 @@ package main
 
 import (
 	"gograd/tensor"
+	"gograd/tensor/types"
 	"testing"
 )
 
@@ -56,8 +57,20 @@ func BenchmarkToString(b *testing.B) {
 	}
 }
 
+// goos: windows
+// goarch: amd64
+// pkg: gograd/benchmarks
+// cpu: 11th Gen Intel(R) Core(TM) i5-11400H @ 2.70GHz
+// 1000x1000
+// 1 thread
+// BenchmarkAsContinuous-12             346           3.331.553 ns/op         6020632 B/op          9 allocs/op
+// BenchmarkAsContinuous-12             362           3.334.450 ns/op         6020120 B/op          9 allocs/op
+// BenchmarkAsContinuous-12             352           3.305.912 ns/op         6020435 B/op          9 allocs/op
+// BenchmarkAsContinuous-12             367           3.312.905 ns/op         6025425 B/op          9 allocs/op
+// BenchmarkAsContinuous-12             363           3.293.073 ns/op         6025606 B/op          9 allocs/op
 func BenchmarkAsContinuous(b *testing.B) {
-	a := tensor.Range[int32](1000*1000).Reshape(1000, 1000)
+	var side types.Dim = 10
+	a := tensor.Range[int32](int(side*side)).Reshape(side, side)
 	for i := 0; i < b.N; i++ {
 		a = a.T()
 		a.AsContinuous()

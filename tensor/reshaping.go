@@ -3,6 +3,7 @@ package tensor
 import (
 	"fmt"
 	types "gograd/tensor/types"
+	"sync"
 )
 
 // set of operations for shaping routines
@@ -100,6 +101,35 @@ func (tensor *Tensor[T]) T(axes ...uint) *Tensor[T] {
 // alias for .T(axes).AsContinuous()
 func (tensor *Tensor[T]) TrC(axes ...uint) *Tensor[T] {
 	return tensor.T(axes...).AsContinuous()
+}
+
+// TrC for 2D matrix
+// [1,2,3][4,5,6] => [1,4][2,5][3,6]
+func (tensor *Tensor[T]) TrC2D() *Tensor[T] {
+	if len(tensor.Shape()) != 2 {
+		panic("Tensor must be 2D")
+	}
+	if !tensor.IsContinuous() {
+		panic("Tensor must be continuous")
+	}
+	sh := tensor.shape
+	rows := int(sh[0])
+	cols := int(sh[1])
+	transposed := make([]T, len(tensor.data()))
+	data := tensor.data()
+
+	var wg sync.WaitGroup
+	for i := 0; i < rows; i++ {
+		wg.Add(1)
+		go func(i int) {
+			defer wg.Done()
+			for j := 0; j < cols; j++ {
+				transposed[j*rows+i] = data[i*cols+j]
+			}
+		}(i)
+	}
+	wg.Wait()
+	return CreateTensor[T](transposed, types.Shape{sh[1], sh[0]})
 }
 
 // stacks tensors together. All tensors should have the same shape

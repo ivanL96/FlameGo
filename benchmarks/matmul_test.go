@@ -81,12 +81,20 @@ func BenchmarkMatMulUnite(b *testing.B) {
 // BenchmarkMatMul-12            62          18.690.979 ns/op        12428797 B/op       2019 allocs/op
 // BenchmarkMatMul-12            63          18.725.068 ns/op        12424663 B/op       2019 allocs/op
 // BenchmarkMatMul-12            63          18.659.789 ns/op        12424688 B/op       2019 allocs/op
-// AVX 512
+// AVX512
 // BenchmarkMatMul-12            70          16.607.281 ns/op        12399209 B/op       2019 allocs/op
 // BenchmarkMatMul-12            70          16.702.821 ns/op        12399208 B/op       2019 allocs/op
 // BenchmarkMatMul-12            70          16.621.721 ns/op        12399222 B/op       2019 allocs/op
+// AVX512 + changed TrC() to TrC2D()
+// BenchmarkMatMul-12            87          12.798.697 ns/op        12354380 B/op       2014 allocs/op
+// BenchmarkMatMul-12            91          13.362.971 ns/op        12346251 B/op       2014 allocs/op
+// BenchmarkMatMul-12            91          12.793.149 ns/op        12346250 B/op       2014 allocs/op
+// AVX512 + multithreaded TrC2D()
+// BenchmarkMatMul-12           100          11.420.477 ns/op        12450394 B/op       4015 allocs/op
+// BenchmarkMatMul-12           102          11.561.105 ns/op        12447245 B/op       4015 allocs/op
+// BenchmarkMatMul-12           102          11.648.135 ns/op        12447252 B/op       4015 allocs/op
 //
-// numpy matmul ref                          10.645.914.1 ns/op
+// numpy matmul ref                          10.645.914 ns/op
 //
 // go test -benchmem -run=^$ -bench ^BenchmarkMatMul$ gograd/benchmarks -benchmem -v -count=5
 func BenchmarkMatMul(b *testing.B) {

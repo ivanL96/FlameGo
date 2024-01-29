@@ -285,7 +285,11 @@ func (tensor *Tensor[T]) MatMul(other *Tensor[T]) *Tensor[T] {
 
 	tensor = tensor.AsContinuous()
 	// needs to be in column-major format for the AVX support
-	other = other.TrC()
+	if other.IsContinuous() {
+		other = other.TrC2D()
+	} else {
+		other = other.TrC()
+	}
 
 	a_data := tensor.data()
 	b_data := other.data()
