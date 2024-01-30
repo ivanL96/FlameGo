@@ -31,12 +31,16 @@ func BenchmarkAdd(b *testing.B) {
 // BenchmarkBigAdd-12          5796            175902 ns/op            3833 B/op         26 allocs/op
 // avx + inplace
 // BenchmarkBigAdd-12          8274            141875 ns/op            2728 B/op         26 allocs/op
-// BenchmarkBigAdd-12          7477            142808 ns/op            2831 B/op         26 allocs/o
+// BenchmarkBigAdd-12          7477            142808 ns/op            2831 B/op         26 allocs/op
+// axv + goroutines
+// BenchmarkBigAdd-12         10390            108.364 ns/op            2925 B/op         26 allocs/op
+// BenchmarkBigAdd-12          9687            107.917 ns/op            3008 B/op         26 allocs/op
+// BenchmarkBigAdd-12          9469            105.879 ns/op            3037 B/op         26 allocs/op
 
 func BenchmarkBigAdd(b *testing.B) {
-	a1 := tensor.Range[int32](1000000).Reshape(1000, 1000) //.Fill(1)
-	a2 := tensor.Range[int32](1000000).Reshape(1000, 1000) //.Fill(1)
-	out := tensor.CreateEmptyTensor[int32](1000, 1000)
+	a1 := tensor.Range[float32](1000000).Reshape(1000, 1000) //.Fill(1)
+	a2 := tensor.Range[float32](1000000).Reshape(1000, 1000) //.Fill(1)
+	out := tensor.CreateEmptyTensor[float32](1000, 1000)
 	for i := 0; i < b.N; i++ {
 		a1.Add(a2, out)
 	}

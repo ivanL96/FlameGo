@@ -80,37 +80,8 @@ func Dot(i Implementation, a, b []float32) float32 {
 	}
 }
 
-func input_b_scalar_to_float32[T types.TensorType](a []T, b T, out []T) ([]float32, float32, []float32) {
-	afl, ok_a := any(a).([]float32)
-	bfl, ok_b := any(b).(float32)
-	cfl, ok_c := any(out).([]float32)
-	if !ok_a || !ok_b || !ok_c {
-		return nil, 0, nil
-	}
-	return afl, bfl, cfl
-}
-
-func input_to_float32[T types.TensorType](a, b, out []T) ([]float32, []float32, []float32) {
-	afl, ok_a := any(a).([]float32)
-	bfl, ok_b := any(b).([]float32)
-	cfl, ok_c := any(out).([]float32)
-	if !ok_a || !ok_b || !ok_c {
-		return nil, nil, nil
-	}
-	return afl, bfl, cfl
-}
-
-func reduce_input_to_float32[T types.TensorType](a, out []T) ([]float32, []float32) {
-	afl, ok_a := any(a).([]float32)
-	cfl, ok_c := any(out).([]float32)
-	if !ok_a || !ok_c {
-		return nil, nil
-	}
-	return afl, cfl
-}
-
 func Mul[T types.TensorType](i Implementation, a, b, c []T) {
-	afl, bfl, cfl := input_to_float32(a, b, c)
+	afl, bfl, cfl := types.Input_to_float32(a, b, c)
 	if i.impl == AVX && afl != nil {
 		amd64.Mul_mm256(afl, bfl, cfl)
 	} else if i.impl == AVX512 && afl != nil {
@@ -121,7 +92,7 @@ func Mul[T types.TensorType](i Implementation, a, b, c []T) {
 }
 
 func MulToConst[T types.TensorType](i Implementation, a []T, b []T, c []T) {
-	afl, bfl, cfl := input_b_scalar_to_float32(a, b[0], c)
+	afl, bfl, cfl := types.Input_b_scalar_to_float32(a, b[0], c)
 	if i.impl == AVX && afl != nil {
 		amd64.Mul_to_const_mm256(afl, bfl, cfl)
 	} else if i.impl == AVX512 && afl != nil {
@@ -136,13 +107,13 @@ func Div[T types.TensorType](i Implementation, a, b, c []T) {
 }
 
 func Add[T types.TensorType](i Implementation, a, b, c []T) {
-	afl, bfl, cfl := input_to_float32(a, b, c)
+	afl, _, _ := types.Input_to_float32(a, b, c)
 	if i.impl == AVX && afl != nil {
-		amd64.Add_mm256(afl, bfl, cfl)
+		noasm.AddMatx(a, b, c, amd64.Add_mm256)
 	} else if i.impl == AVX512 && afl != nil {
-		amd64.Add_mm256(afl, bfl, cfl)
+		noasm.AddMatx(a, b, c, amd64.Add_mm256)
 	} else {
-		noasm.AddMatx(a, b, c)
+		noasm.AddMatx(a, b, c, nil)
 	}
 }
 
