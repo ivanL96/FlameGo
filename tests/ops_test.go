@@ -53,22 +53,22 @@ func TestAdd4(t *testing.T) {
 }
 
 func TestAddInplace(t *testing.T) {
-	a1 := tensor.Range[int32](4).Reshape(2, 2)
-	b1 := tensor.Range[int32](4).Reshape(2, 2)
+	a1 := tensor.Range[float32](4).Reshape(2, 2)
+	b1 := tensor.Range[float32](4).Reshape(2, 2)
 	a1.Add(b1, a1)
-	assertEqualSlices(t, a1.Data(), []int32{0, 2, 4, 6})
+	assertEqualSlices(t, a1.Data(), []float32{0, 2, 4, 6})
 
-	a2 := tensor.Range[int32](4).Reshape(2, 2)
-	b2 := tensor.Range[int32](4).Reshape(2, 2)
+	a2 := tensor.Range[float32](4).Reshape(2, 2)
+	b2 := tensor.Range[float32](4).Reshape(2, 2)
 	a2.Add(b2, b2)
-	assertEqualSlices(t, b2.Data(), []int32{0, 2, 4, 6})
+	assertEqualSlices(t, b2.Data(), []float32{0, 2, 4, 6})
 }
 
 func TestMul(t *testing.T) {
-	a := tensor.CreateEmptyTensor[int32](3, 2).Fill(2)
-	b := tensor.CreateEmptyTensor[int32](3, 1).Fill(3)
+	a := tensor.CreateEmptyTensor[float32](3, 2).Fill(2)
+	b := tensor.CreateEmptyTensor[float32](3, 1).Fill(3)
 	ab := a.Mul(b, nil)
-	assertEqualSlices(t, ab.Data(), []int32{6, 6, 6, 6, 6, 6})
+	assertEqualSlices(t, ab.Data(), []float32{6, 6, 6, 6, 6, 6})
 	assertEqualSlices(t, ab.Shape(), types.Shape{3, 2})
 }
 

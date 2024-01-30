@@ -70,6 +70,10 @@ func BenchmarkBigAdd(b *testing.B) {
 // avx512
 // BenchmarkBigMul-12          3069            360.250 ns/op            6530 B/op          0 allocs/op
 // BenchmarkBigMul-12          3379            344.345 ns/op            5930 B/op          0 allocs/op
+// avx512 + goroutines combo
+// BenchmarkBigMul-12         10958            106.339 ns/op            3596 B/op         26 allocs/op
+// BenchmarkBigMul-12         11272            108.102 ns/op            3545 B/op         26 allocs/op
+// BenchmarkBigMul-12         11263            106.109 ns/op            3547 B/op         26 allocs/op
 // shape 1000x1000
 func BenchmarkBigMul(b *testing.B) {
 	rng := tensor.NewRNG(0)

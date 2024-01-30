@@ -81,13 +81,13 @@ func Dot(i Implementation, a, b []float32) float32 {
 }
 
 func Mul[T types.TensorType](i Implementation, a, b, c []T) {
-	afl, bfl, cfl := types.Input_to_float32(a, b, c)
+	afl, _, _ := types.Input_to_float32(a, b, c)
 	if i.impl == AVX && afl != nil {
-		amd64.Mul_mm256(afl, bfl, cfl)
+		noasm.MulMatx(a, b, c, amd64.Mul_mm256)
 	} else if i.impl == AVX512 && afl != nil {
-		amd64.Mul_mm512(afl, bfl, cfl)
+		noasm.MulMatx(a, b, c, amd64.Mul_mm256)
 	} else {
-		noasm.MulMatx(a, b, c)
+		noasm.MulMatx(a, b, c, nil)
 	}
 }
 
