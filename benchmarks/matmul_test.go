@@ -41,11 +41,18 @@ func BenchmarkMatMulSplit(b *testing.B) {
 	}
 }
 
-// BenchmarkMatMulUnite-8             36697             30950 ns/op           41115 B/op          6 allocs/op
-// prealloc out tensor
-// BenchmarkMatMulUnite-8            138862              7659 ns/op               8 B/op          1 allocs/op
+// goos: windows
+// goarch: amd64
+// pkg: gograd/benchmarks
+// cpu: 11th Gen Intel(R) Core(TM) i5-11400H @ 2.70GHz
+// 1000 x 1000
+// BenchmarkMatMulUnite-12             6656            186.442 ns/op            1215 B/op          1 allocs/op
+// BenchmarkMatMulUnite-12             6686            179.048 ns/op            1210 B/op          1 allocs/op
+// BenchmarkMatMulUnite-12             5698            195.163 ns/op            1418 B/op          1 allocs/op
+// BenchmarkMatMulUnite-12             6565            175.231 ns/op            1232 B/op          1 allocs/op
+// BenchmarkMatMulUnite-12             6696            177.467 ns/op            1208 B/op          1 allocs/op
 func BenchmarkMatMulUnite(b *testing.B) {
-	var dim types.Dim = 100
+	var dim types.Dim = 1000
 	X := tensor.Range[int32](int(dim*dim)).Reshape(dim, dim)
 	a1 := tensor.CreateEmptyTensor[int32](dim/2, dim/2)
 	b1 := tensor.CreateEmptyTensor[int32](dim/2, dim/2)
@@ -89,6 +96,10 @@ func BenchmarkMatMulUnite(b *testing.B) {
 // BenchmarkMatMul-12           102          11.648.135 ns/op        12447252 B/op       4015 allocs/op
 // removed extra copy of data, reduced mem
 // BenchmarkMatMul-12            98          11.766.727 ns/op         8479747 B/op       4014 allocs/op
+// blocks
+// BenchmarkMatMul-12           102          10.851.742 ns/op        12308552 B/op       2144 allocs/op
+// BenchmarkMatMul-12           109          10.775.502 ns/op        12298450 B/op       2144 allocs/op
+// BenchmarkMatMul-12           105          11.092.542 ns/op        12304045 B/op       2144 allocs/op
 //
 // numpy matmul ref                          10.645.914 ns/op
 //
@@ -102,5 +113,26 @@ func BenchmarkMatMul(b *testing.B) {
 	b1 := rng.RandomFloat32(size, size)
 	for i := 0; i < b.N; i++ {
 		a1.MatMul(b1)
+	}
+}
+
+// goos: windows
+// goarch: amd64
+// pkg: gograd/benchmarks
+// cpu: 11th Gen Intel(R) Core(TM) i5-11400H @ 2.70GHz
+// 10 x 1000 x 1000
+// BenchmarkDot-12                8         142.658.350 ns/op        223290256 B/op     40265 allocs/op
+// BenchmarkDot-12                8         137.481.225 ns/op        223285272 B/op     40254 allocs/op
+// BenchmarkDot-12                7         143.675.343 ns/op        226142722 B/op     40254 allocs/op
+// BenchmarkDot-12                8         138.330.538 ns/op        223285312 B/op     40254 allocs/op
+// BenchmarkDot-12                8         139.397.838 ns/op        223285272 B/op     40254 allocs/op
+func BenchmarkDot(b *testing.B) {
+	rng := tensor.NewRNG(-1)
+	var size types.Dim = 1000
+	var batch types.Dim = 10
+	a1 := rng.RandomFloat32(batch, size, size)
+	b1 := rng.RandomFloat32(batch, size, size)
+	for i := 0; i < b.N; i++ {
+		a1.Dot(b1)
 	}
 }

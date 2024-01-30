@@ -134,7 +134,7 @@ func (tensor *Tensor[T]) TrC2D() *Tensor[T] {
 }
 
 // stacks tensors together. All tensors should have the same shape
-func Unite[T types.TensorType](tensors ...*Tensor[T]) *Tensor[T] {
+func Stack[T types.TensorType](tensors ...*Tensor[T]) *Tensor[T] {
 	if len(tensors) < 2 {
 		panic("At least 2 tensors is required.")
 	}
@@ -156,10 +156,16 @@ func Unite[T types.TensorType](tensors ...*Tensor[T]) *Tensor[T] {
 	copy(united_shape[1:], tensors[0].shape)
 
 	united := CreateEmptyTensor[T](united_shape...)
+	var wg sync.WaitGroup
 	for i := 0; i < len(tensors); i++ {
-		tensor := tensors[i]
-		size := len(tensor.data())
-		copy(united.data()[size*i:size*(i+1)], tensor.data())
+		wg.Add(1)
+		go func(i int) {
+			defer wg.Done()
+			tensor := tensors[i]
+			size := len(tensor.data())
+			copy(united.data()[size*i:size*(i+1)], tensor.data())
+		}(i)
 	}
+	wg.Wait()
 	return united
 }

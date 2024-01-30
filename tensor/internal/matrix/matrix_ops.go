@@ -72,12 +72,13 @@ func AddMatx[T types.TensorType](a, b, out []T, impl func([]float32, []float32, 
 			if start >= end {
 				return
 			}
-			if impl == nil {
+			af, bf, cf := types.Input_to_float32(a[start:end], b[start:end], out[start:end])
+			if impl == nil || af == nil {
 				for i := start; i < end; i++ {
 					out[i] = a[i] + b[i]
 				}
 			} else {
-				impl(types.Input_to_float32(a[start:end], b[start:end], out[start:end]))
+				impl(af, bf, cf)
 			}
 		}
 	}
@@ -120,12 +121,13 @@ func MulMatx[T types.TensorType](a, b, out []T, impl func([]float32, []float32, 
 		if start >= end {
 			return
 		}
-		if impl == nil {
+		af, bf, cf := types.Input_to_float32(a[start:end], b[start:end], out[start:end])
+		if impl == nil || af == nil {
 			for i := start; i < end; i++ {
 				out[i] = a[i] * b[i]
 			}
 		} else {
-			impl(types.Input_to_float32(a[start:end], b[start:end], out[start:end]))
+			impl(af, bf, cf)
 		}
 	}
 	MatxParallel[T](mul_chunk, a, b, makeOutMat(out, len(a)))

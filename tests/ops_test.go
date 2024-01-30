@@ -7,11 +7,11 @@ import (
 )
 
 func TestAdd(t *testing.T) {
-	a := tensor.CreateEmptyTensor[int32](3, 2).Fill(2)
-	b := tensor.CreateEmptyTensor[int32](3, 1).Fill(3)
+	a := tensor.CreateEmptyTensor[float32](3, 2).Fill(2)
+	b := tensor.CreateEmptyTensor[float32](3, 1).Fill(3)
 	// fmt.Println(a.ToString(), b.ToString())
 	ab := a.Add(b, nil)
-	assertEqualSlices(t, ab.Data(), []int32{5, 5, 5, 5, 5, 5})
+	assertEqualSlices(t, ab.Data(), []float32{5, 5, 5, 5, 5, 5})
 	assertEqualSlices(t, ab.Shape(), types.Shape{3, 2})
 }
 
@@ -69,6 +69,14 @@ func TestMul(t *testing.T) {
 	b := tensor.CreateEmptyTensor[float32](3, 1).Fill(3)
 	ab := a.Mul(b, nil)
 	assertEqualSlices(t, ab.Data(), []float32{6, 6, 6, 6, 6, 6})
+	assertEqualSlices(t, ab.Shape(), types.Shape{3, 2})
+}
+
+func TestMul2(t *testing.T) {
+	a := tensor.CreateEmptyTensor[int32](3, 2).Fill(2)
+	b := tensor.CreateEmptyTensor[int32](3, 1).Fill(3)
+	ab := a.Mul(b, nil)
+	assertEqualSlices(t, ab.Data(), []int32{6, 6, 6, 6, 6, 6})
 	assertEqualSlices(t, ab.Shape(), types.Shape{3, 2})
 }
 

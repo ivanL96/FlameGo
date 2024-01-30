@@ -267,6 +267,7 @@ func (tensor *Tensor[T]) Dot(other *Tensor[T]) *Tensor[T] {
 	}
 	tensors_stack := make([]*Tensor[T], int(outer_shape_prod))
 	shape_iter := iter.CreateIterator(int(outer_shape_prod), outer_dims_a)
+
 	for shape_iter.Iterate() {
 		i := shape_iter.Index()
 		idx := shape_iter.Next()
@@ -276,15 +277,14 @@ func (tensor *Tensor[T]) Dot(other *Tensor[T]) *Tensor[T] {
 		tensors_stack[i] = out
 	}
 
-	out := Unite(tensors_stack...)
+	out := Stack(tensors_stack...)
 
 	out_shape := make(types.Shape, len(tensor.shape))
 	copy(out_shape[:len(outer_dims_a)], outer_dims_a)
 	out_shape[len(out_shape)-2] = tensor.shape[len(tensor.shape)-2]
 	out_shape[len(out_shape)-1] = other.shape[len(other.shape)-1]
 
-	out = out.Reshape(out_shape...)
-	return out
+	return out.Reshape(out_shape...)
 }
 
 func (tensor *Tensor[T]) MatMul(other *Tensor[T]) *Tensor[T] {
@@ -304,7 +304,8 @@ func (tensor *Tensor[T]) MatMul(other *Tensor[T]) *Tensor[T] {
 		return tensor.Mul(other)
 	}
 	adim0, bdim1 := tensor.shape[0], other.shape[1]
-	outTensor := CreateEmptyTensor[T](adim0, bdim1)
+	out_data := make([]float32, int(adim0*bdim1))
+	out_shape := types.Shape{adim0, bdim1}
 
 	// isVec2Scalar := adim0 == 1 && bdim1 == 1
 
@@ -316,11 +317,10 @@ func (tensor *Tensor[T]) MatMul(other *Tensor[T]) *Tensor[T] {
 		other = other.TrC()
 	}
 
-	// gen impl
 	a_data_ := any(tensor.data()).([]float32)
 	b_data_ := any(other.data()).([]float32)
-	out_data_ := any(outTensor.data()).([]float32)
-	ops.MatMulNaiveImpl_GEN(
+	ops.MatMulBlocked(
+		// ops.MatMulNaiveImpl_GEN(
 		auto_impl,
 		a_data_,
 		b_data_,
@@ -328,13 +328,15 @@ func (tensor *Tensor[T]) MatMul(other *Tensor[T]) *Tensor[T] {
 		other.shape,
 		tensor.strides,
 		other.strides,
-		out_data_,
-		outTensor.strides)
+		out_data,
+		out_shape.GetStrides(),
+		64,
+	)
 
 	// ops.MatMulNaiveImpl(a_data, b_data, tensor.shape, other.shape,
 	// 	tensor.strides, other.strides,
 	// 	out_data, outTensor.strides)
-	outTensor.data_buff = any(outTensor.data()).([]T)
+	outTensor := CreateTensor[T](any(out_data).([]T), out_shape)
 	return outTensor
 }
 

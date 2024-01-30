@@ -1,5 +1,3 @@
-//go:build !noasm
-
 package device
 
 import (
@@ -81,12 +79,13 @@ func Dot(i Implementation, a, b []float32) float32 {
 }
 
 func Mul[T types.TensorType](i Implementation, a, b, c []T) {
-	afl, _, _ := types.Input_to_float32(a, b, c)
-	if i.impl == AVX && afl != nil {
+	// afl, _, _ := types.Input_to_float32(a, b, c)
+	switch i.impl {
+	case AVX:
 		matrix.MulMatx(a, b, c, amd64.Mul_mm256)
-	} else if i.impl == AVX512 && afl != nil {
+	case AVX512:
 		matrix.MulMatx(a, b, c, amd64.Mul_mm256)
-	} else {
+	default:
 		matrix.MulMatx(a, b, c, nil)
 	}
 }
@@ -107,12 +106,13 @@ func Div[T types.TensorType](i Implementation, a, b, c []T) {
 }
 
 func Add[T types.TensorType](i Implementation, a, b, c []T) {
-	afl, _, _ := types.Input_to_float32(a, b, c)
-	if i.impl == AVX && afl != nil {
+	// afl, _, _ := types.Input_to_float32(a, b, c)
+	switch i.impl {
+	case AVX:
 		matrix.AddMatx(a, b, c, amd64.Add_mm256)
-	} else if i.impl == AVX512 && afl != nil {
+	case AVX512:
 		matrix.AddMatx(a, b, c, amd64.Add_mm256)
-	} else {
+	default:
 		matrix.AddMatx(a, b, c, nil)
 	}
 }
