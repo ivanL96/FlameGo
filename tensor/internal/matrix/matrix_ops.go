@@ -166,8 +166,7 @@ func SigmoidMatx[T types.TensorType](a, out []T) {
 			out[i] = T(1. / (1. + math.Pow(math.E, float64(-a[i]))))
 		}
 	}
-	var dummy []T
-	MatxParallel[T](sigm_chunk, a, dummy, makeOutMat(out, len(a)))
+	MatxParallel[T](sigm_chunk, a, nil, makeOutMat(out, len(a)))
 }
 
 func NegMatx[T types.TensorType](a, out []T) {
@@ -176,8 +175,21 @@ func NegMatx[T types.TensorType](a, out []T) {
 			out[i] = -a[i]
 		}
 	}
-	var dummy []T
-	MatxParallel[T](neg_chunk, a, dummy, makeOutMat(out, len(a)))
+	MatxParallel[T](neg_chunk, a, nil, makeOutMat(out, len(a)))
+}
+
+func ReluMatx[T types.TensorType](a, out []T) {
+	relu_chunk := func(start, end int, a, dummy, out []T) {
+		for i := start; i < end; i++ {
+			el := a[i]
+			if el > 0 {
+				out[i] = el
+			} else {
+				out[i] = 0
+			}
+		}
+	}
+	MatxParallel[T](relu_chunk, a, nil, makeOutMat(out, len(a)))
 }
 
 func SumMatx[T types.TensorType](a, out []T) {
@@ -186,6 +198,5 @@ func SumMatx[T types.TensorType](a, out []T) {
 			out[0] += a[i]
 		}
 	}
-	var dummy []T
-	MatxParallel[T](sum_chunk, a, dummy, makeOutMat(out, len(a)))
+	MatxParallel[T](sum_chunk, a, nil, makeOutMat(out, len(a)))
 }

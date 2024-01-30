@@ -47,7 +47,7 @@ func MatMulNaiveImpl[T types.TensorType](
 		}
 	}
 }
-func MatMulBlocked(
+func MatMulImpl(
 	impl device.Implementation,
 	a_data, b_data []float32,
 	a_shape, b_shape types.Shape,
@@ -79,13 +79,13 @@ func MatMulBlocked(
 					for bj := 0; bj < block_size; bj++ {
 						row := i + bi
 						col := j + bj
-						if row < a_dim0 && col < b_dim0 {
-							out_stride0_ij := out_stride0 * row
-							a := a_data[a_stride0*row : a_stride0*(row+1)]
-							b := b_data[b_stride0*col : b_stride0*(col+1)]
-
-							out_data[out_stride0_ij+col] = device.Dot(impl, a, b)
+						if row >= a_dim0 || col >= b_dim0 {
+							continue
 						}
+						a := a_data[a_stride0*row : a_stride0*(row+1)]
+						b := b_data[b_stride0*col : b_stride0*(col+1)]
+
+						out_data[out_stride0*row+col] = device.Dot(impl, a, b)
 					}
 				}
 			}(i, j)

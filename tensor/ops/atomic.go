@@ -38,3 +38,10 @@ func SigmoidAtomic[T types.TensorType](a T) T {
 func LnAtomic[T types.TensorType](a T) T {
 	return T(math.Log(float64(a)))
 }
+
+func ReluAtomic[T types.TensorType](a T) T {
+	if a > 0 {
+		return a
+	}
+	return 0
+}

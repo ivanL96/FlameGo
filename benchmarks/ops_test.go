@@ -204,3 +204,20 @@ func BenchmarkSub(b *testing.B) {
 		a1.Sub(b1, a1)
 	}
 }
+
+// 1000x1000
+// scalar
+// BenchmarkRelu-12             538           2.207.686 ns/op         4020922 B/op          5 allocs/op
+// BenchmarkRelu-12             534           2.204.835 ns/op         4021032 B/op          5 allocs/op
+// BenchmarkRelu-12             531           2.198.954 ns/op         4021116 B/op          5 allocs/op
+// vector
+// BenchmarkRelu-12            2304             496.967 ns/op         4011268 B/op         31 allocs/op
+// BenchmarkRelu-12            2036             501.141 ns/op         4011721 B/op         31 allocs/op
+// BenchmarkRelu-12            2418             489.242 ns/op         4011099 B/op         31 allocs/op
+func BenchmarkRelu(b *testing.B) {
+	rng := tensor.NewRNG(0)
+	a1 := rng.RandomFloat32(1000, 1000)
+	for i := 0; i < b.N; i++ {
+		a1.Relu()
+	}
+}

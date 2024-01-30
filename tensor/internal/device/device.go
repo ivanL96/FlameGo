@@ -134,6 +134,10 @@ func Neg[T types.TensorType](i Implementation, a, c []T) {
 	matrix.NegMatx(a, c)
 }
 
+func Relu[T types.TensorType](i Implementation, a, c []T) {
+	matrix.ReluMatx(a, c)
+}
+
 // reduce
 func Sum[T types.TensorType](i Implementation, a, c []T) {
 	// afl, cfl := reduce_input_to_float32(a, c)
