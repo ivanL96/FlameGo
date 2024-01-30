@@ -5,7 +5,7 @@ package device
 import (
 	"fmt"
 	"gograd/tensor/internal/intrinsics/amd64"
-	"gograd/tensor/internal/noasm"
+	"gograd/tensor/internal/matrix"
 	"gograd/tensor/types"
 
 	"github.com/klauspost/cpuid/v2"
@@ -76,18 +76,18 @@ func Dot(i Implementation, a, b []float32) float32 {
 		return c
 	default:
 		var c float32
-		return noasm.Dot(a, b, c)
+		return matrix.Dot(a, b, c)
 	}
 }
 
 func Mul[T types.TensorType](i Implementation, a, b, c []T) {
 	afl, _, _ := types.Input_to_float32(a, b, c)
 	if i.impl == AVX && afl != nil {
-		noasm.MulMatx(a, b, c, amd64.Mul_mm256)
+		matrix.MulMatx(a, b, c, amd64.Mul_mm256)
 	} else if i.impl == AVX512 && afl != nil {
-		noasm.MulMatx(a, b, c, amd64.Mul_mm256)
+		matrix.MulMatx(a, b, c, amd64.Mul_mm256)
 	} else {
-		noasm.MulMatx(a, b, c, nil)
+		matrix.MulMatx(a, b, c, nil)
 	}
 }
 
@@ -98,40 +98,40 @@ func MulToConst[T types.TensorType](i Implementation, a []T, b []T, c []T) {
 	} else if i.impl == AVX512 && afl != nil {
 		amd64.Mul_to_const_mm256(afl, bfl, cfl)
 	} else {
-		noasm.MulMatxToConst(a, b[0], c)
+		matrix.MulMatxToConst(a, b[0], c)
 	}
 }
 
 func Div[T types.TensorType](i Implementation, a, b, c []T) {
-	noasm.DivMatx(a, b, c)
+	matrix.DivMatx(a, b, c)
 }
 
 func Add[T types.TensorType](i Implementation, a, b, c []T) {
 	afl, _, _ := types.Input_to_float32(a, b, c)
 	if i.impl == AVX && afl != nil {
-		noasm.AddMatx(a, b, c, amd64.Add_mm256)
+		matrix.AddMatx(a, b, c, amd64.Add_mm256)
 	} else if i.impl == AVX512 && afl != nil {
-		noasm.AddMatx(a, b, c, amd64.Add_mm256)
+		matrix.AddMatx(a, b, c, amd64.Add_mm256)
 	} else {
-		noasm.AddMatx(a, b, c, nil)
+		matrix.AddMatx(a, b, c, nil)
 	}
 }
 
 func Sub[T types.TensorType](i Implementation, a, b, c []T) {
-	noasm.SubMatx(a, b, c)
+	matrix.SubMatx(a, b, c)
 }
 
 func Pow[T types.TensorType](i Implementation, a, b, c []T) {
-	noasm.PowMatx(a, b, c)
+	matrix.PowMatx(a, b, c)
 }
 
 // unary
 func Sigmoid[T types.TensorType](i Implementation, a, c []T) {
-	noasm.SigmoidMatx(a, c)
+	matrix.SigmoidMatx(a, c)
 }
 
 func Neg[T types.TensorType](i Implementation, a, c []T) {
-	noasm.NegMatx(a, c)
+	matrix.NegMatx(a, c)
 }
 
 // reduce
@@ -142,6 +142,6 @@ func Sum[T types.TensorType](i Implementation, a, c []T) {
 	// } else if i.impl == AVX512 && afl != nil {
 	// 	amd64.Sum_mm256(afl, cfl)
 	// } else {
-	noasm.SumMatx(a, c)
+	matrix.SumMatx(a, c)
 	// }
 }

@@ -61,15 +61,10 @@ func BenchmarkBigAdd(b *testing.B) {
 // BenchmarkBigMul-12          1845            548.058 ns/op           10856 B/op          0 allocs/op
 // BenchmarkBigMul-12          2286            514.924 ns/op            8762 B/op          0 allocs/op
 // BenchmarkBigMul-12          2344            519.922 ns/op            8545 B/op          0 allocs/op
-// BenchmarkBigMul-12          2221            638.278 ns/op            9019 B/op          0 allocs/op
-// BenchmarkBigMul-12          1401            796.004 ns/op           14297 B/op          0 allocs/op
 // AVX2 / AVX512 ~same speed
 // BenchmarkBigMul-12          3577            343.849 ns/op            5599 B/op          0 allocs/op
 // BenchmarkBigMul-12          3550            350.165 ns/op            5642 B/op          0 allocs/op
 // BenchmarkBigMul-12          3417            343.890 ns/op            5861 B/op          0 allocs/op
-// avx512
-// BenchmarkBigMul-12          3069            360.250 ns/op            6530 B/op          0 allocs/op
-// BenchmarkBigMul-12          3379            344.345 ns/op            5930 B/op          0 allocs/op
 // avx512 + goroutines combo
 // BenchmarkBigMul-12         10958            106.339 ns/op            3596 B/op         26 allocs/op
 // BenchmarkBigMul-12         11272            108.102 ns/op            3545 B/op         26 allocs/op

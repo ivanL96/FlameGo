@@ -1,4 +1,4 @@
-package noasm
+package matrix
 
 import (
 	"gograd/tensor/types"
@@ -51,6 +51,8 @@ func MatxParallel[T types.TensorType](
 	wg.Wait()
 }
 
+// here's the logic of elementwise addition between matrices.
+// The "impl" argument can contain an implementation to accelerate inner loop using avx,etc
 func AddMatx[T types.TensorType](a, b, out []T, impl func([]float32, []float32, []float32)) {
 	var add_chunk func(int, int, []T, []T, []T)
 	if identical(a, out) {
