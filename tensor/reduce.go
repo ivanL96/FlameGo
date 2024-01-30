@@ -1,7 +1,7 @@
 package tensor
 
 import (
-	"gograd/tensor/internal/cpu"
+	"gograd/tensor/internal/device"
 	types "gograd/tensor/types"
 	"strconv"
 	"strings"
@@ -25,7 +25,7 @@ func reduce_shape[T types.TensorType](
 
 func (tensor *Tensor[T]) Sum(keep_dims bool) *Tensor[T] {
 	sum := []T{0}
-	cpu.Sum(auto_impl, tensor.data(), sum)
+	device.Sum(auto_impl, tensor.data(), sum)
 	return reduce_shape(tensor, sum[0], keep_dims)
 }
 

@@ -1,6 +1,6 @@
 //go:build !noasm
 
-package cpu
+package device
 
 import (
 	"fmt"

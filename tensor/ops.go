@@ -2,28 +2,28 @@ package tensor
 
 import (
 	"fmt"
-	"gograd/tensor/internal/cpu"
+	"gograd/tensor/internal/device"
 	"gograd/tensor/iter"
 	ops "gograd/tensor/ops"
 	types "gograd/tensor/types"
 	"reflect"
 )
 
-var auto_impl cpu.Implementation = cpu.DetectImpl().ShowDebugInfo()
+var auto_impl device.Implementation = device.DetectImpl().ShowDebugInfo()
 
 type UnaryOp[T types.TensorType] struct {
 	scalar func(T) T
-	vector func(cpu.Implementation, []T, []T)
+	vector func(device.Implementation, []T, []T)
 }
 
 type BinaryOp[T types.TensorType] struct {
 	// required prop, contains function with scalar bin operation
 	scalar func(T, T) T
 	// vector is optional prop used to accelerate applying operation to vectors
-	vector func(cpu.Implementation, []T, []T, []T)
+	vector func(device.Implementation, []T, []T, []T)
 	// despite one of the args will be scalar, it's generally unknown which one is exactly.
 	// Therefore let the vector_to_scalar impl define the order of args.
-	vector_to_scalar func(cpu.Implementation, []T, []T, []T)
+	vector_to_scalar func(device.Implementation, []T, []T, []T)
 }
 
 // general use Binary operator
@@ -181,7 +181,7 @@ func unaryElementwiseRoutine[T types.TensorType](
 func (tensor *Tensor[T]) Add(other_tensor *Tensor[T], out ...*Tensor[T]) *Tensor[T] {
 	add := BinaryOp[T]{
 		scalar: ops.AddAtomic[T],
-		vector: cpu.Add[T],
+		vector: device.Add[T],
 	}
 	return BaseBinElementwiseOp(tensor, other_tensor, &add, get_param(out...))
 }
@@ -189,7 +189,7 @@ func (tensor *Tensor[T]) Add(other_tensor *Tensor[T], out ...*Tensor[T]) *Tensor
 func (tensor *Tensor[T]) Sub(other_tensor *Tensor[T], out ...*Tensor[T]) *Tensor[T] {
 	sub := BinaryOp[T]{
 		scalar: ops.SubAtomic[T],
-		vector: cpu.Sub[T],
+		vector: device.Sub[T],
 	}
 	return BaseBinElementwiseOp(tensor, other_tensor, &sub, get_param(out...))
 }
@@ -197,8 +197,8 @@ func (tensor *Tensor[T]) Sub(other_tensor *Tensor[T], out ...*Tensor[T]) *Tensor
 func (tensor *Tensor[T]) Mul(other_tensor *Tensor[T], out ...*Tensor[T]) *Tensor[T] {
 	mul := BinaryOp[T]{
 		scalar:           ops.MulAtomic[T],
-		vector:           cpu.Mul[T],
-		vector_to_scalar: cpu.MulToConst[T],
+		vector:           device.Mul[T],
+		vector_to_scalar: device.MulToConst[T],
 	}
 	return BaseBinElementwiseOp(tensor, other_tensor, &mul, get_param(out...))
 }
@@ -206,7 +206,7 @@ func (tensor *Tensor[T]) Mul(other_tensor *Tensor[T], out ...*Tensor[T]) *Tensor
 func (tensor *Tensor[T]) Div(other_tensor *Tensor[T], out ...*Tensor[T]) *Tensor[T] {
 	div := BinaryOp[T]{
 		scalar: ops.DivAtomic[T],
-		vector: cpu.Div[T],
+		vector: device.Div[T],
 	}
 	return BaseBinElementwiseOp(tensor, other_tensor, &div, get_param(out...))
 }
@@ -214,7 +214,7 @@ func (tensor *Tensor[T]) Div(other_tensor *Tensor[T], out ...*Tensor[T]) *Tensor
 func (tensor *Tensor[T]) Pow(other_tensor *Tensor[T], out ...*Tensor[T]) *Tensor[T] {
 	pow := BinaryOp[T]{
 		scalar: ops.PowAtomic[T],
-		vector: cpu.Pow[T],
+		vector: device.Pow[T],
 	}
 	return BaseBinElementwiseOp(tensor, other_tensor, &pow, get_param(out...))
 }
@@ -223,7 +223,7 @@ func (tensor *Tensor[T]) Pow(other_tensor *Tensor[T], out ...*Tensor[T]) *Tensor
 func (tensor *Tensor[T]) Neg(out ...*Tensor[T]) *Tensor[T] {
 	neg := UnaryOp[T]{
 		scalar: ops.NegAtomic[T],
-		vector: cpu.Neg[T],
+		vector: device.Neg[T],
 	}
 	return unaryElementwiseRoutine(tensor, neg, get_param(out...))
 }
@@ -231,7 +231,7 @@ func (tensor *Tensor[T]) Neg(out ...*Tensor[T]) *Tensor[T] {
 func (tensor *Tensor[T]) Sigmoid(out ...*Tensor[T]) *Tensor[T] {
 	sigma := UnaryOp[T]{
 		scalar: ops.SigmoidAtomic[T],
-		vector: cpu.Sigmoid[T],
+		vector: device.Sigmoid[T],
 	}
 	return unaryElementwiseRoutine(tensor, sigma, get_param(out...))
 }

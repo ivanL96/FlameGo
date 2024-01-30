@@ -1,7 +1,7 @@
 package ops
 
 import (
-	"gograd/tensor/internal/cpu"
+	"gograd/tensor/internal/device"
 	"gograd/tensor/types"
 	"runtime"
 	"sync"
@@ -49,7 +49,7 @@ func MatMulNaiveImpl[T types.TensorType](
 }
 
 func MatMulNaiveImpl_GEN(
-	impl cpu.Implementation,
+	impl device.Implementation,
 	a_data,
 	b_data []float32,
 	a_shape,
@@ -82,7 +82,7 @@ func MatMulNaiveImpl_GEN(
 			_a := a_data[a_stride0_i:a_stride0_i_end]
 			for j := 0; j < b_dim0; j++ {
 				_b := b_data[b_stride0*j : b_stride0*(j+1)]
-				out_data[out_stride0_i+j] = cpu.Dot(impl, _a, _b)
+				out_data[out_stride0_i+j] = device.Dot(impl, _a, _b)
 			}
 		}(i)
 	}
