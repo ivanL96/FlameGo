@@ -38,8 +38,8 @@ func BaseBinElementwiseOp[T types.TensorType](
 	// TODO try to vectorize operations for non continuous tensors. Right now it falls back to scalar impl which is slow
 
 	binScalar, binVec, binVec2Scalar := op.scalar, op.vector, op.vector_to_scalar
-	if binScalar == nil {
-		panic("At least op.scalar function must be set")
+	if binScalar == nil && binVec == nil && binVec2Scalar == nil {
+		panic("No implementation found.")
 	}
 
 	if tensor_a.shape.IsScalarLike() && tensor_b.shape.IsScalarLike() {
@@ -161,8 +161,8 @@ func unaryElementwiseRoutine[T types.TensorType](
 		outTensor.data()[0] = unaryScalarOp(tensor.data()[0])
 		return outTensor
 	}
-	if unaryScalarOp == nil {
-		panic("At least op.scalar function must be set")
+	if unaryScalarOp == nil && unaryVecOp == nil {
+		panic("No implementation found.")
 	}
 	if unaryVecOp == nil {
 		for i, val := range tensor.data() {

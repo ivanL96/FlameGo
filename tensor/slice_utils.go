@@ -81,5 +81,8 @@ func get_param[T types.TensorType](params ...*Tensor[T]) *Tensor[T] {
 	if len(params) == 1 {
 		return params[0]
 	}
+	if len(params) > 1 {
+		panic("Only one out tensor is allowed")
+	}
 	return nil
 }
