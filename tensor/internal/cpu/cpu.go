@@ -16,7 +16,7 @@ import (
 
 type Implementation struct {
 	impl         int
-	all_suppored []int
+	all_suppored []string
 }
 
 const (
@@ -30,10 +30,10 @@ const (
 func DetectImpl() Implementation {
 	var impl Implementation
 	if cpuid.CPU.Supports(cpuid.AVX512F, cpuid.AVX512DQ) {
-		impl.all_suppored = append(impl.all_suppored, AVX512)
+		impl.all_suppored = append(impl.all_suppored, "AVX512")
 	}
 	if cpuid.CPU.Supports(cpuid.AVX) {
-		impl.all_suppored = append(impl.all_suppored, AVX)
+		impl.all_suppored = append(impl.all_suppored, "AVX")
 	}
 	// select the best cpu impl
 	if cpuid.CPU.Supports(cpuid.AVX512F, cpuid.AVX512DQ) {
@@ -45,15 +45,8 @@ func DetectImpl() Implementation {
 }
 
 func (i Implementation) ShowDebugInfo() Implementation {
-	name := make([]string, 0)
-	if i.impl == AVX {
-		name = append(name, "avx")
-	}
-	if i.impl == AVX512 {
-		name = append(name, "avx512")
-	}
-	if len(name) > 0 {
-		fmt.Println("CPU acceleration:", name, "available.")
+	if len(i.all_suppored) > 0 {
+		fmt.Println("CPU acceleration:", i.all_suppored, "available.")
 	}
 	return i
 }
@@ -70,6 +63,7 @@ func IsImplAvailable(i Implementation) bool {
 	return true
 }
 
+// binary
 func Dot(i Implementation, a, b []float32) float32 {
 	switch i.impl {
 	case AVX:
@@ -151,10 +145,16 @@ func Pow[T types.TensorType](i Implementation, a, b, c []T) {
 	noasm.PowMatx(a, b, c)
 }
 
+// unary
 func Sigmoid[T types.TensorType](i Implementation, a, c []T) {
 	noasm.SigmoidMatx(a, c)
 }
 
 func Neg[T types.TensorType](i Implementation, a, c []T) {
 	noasm.NegMatx(a, c)
+}
+
+// reduce
+func Sum[T types.TensorType](i Implementation, a, c []T) {
+	noasm.SumMatx(a, c)
 }

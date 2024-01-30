@@ -160,3 +160,13 @@ func NegMatx[T types.TensorType](a, out []T) {
 	var dummy []T
 	MatxParallel[T](neg_chunk, a, dummy, makeOutMat(out, len(a)))
 }
+
+func SumMatx[T types.TensorType](a, out []T) {
+	sum_chunk := func(start, end int, a, dummy, out []T) {
+		for i := start; i < end; i++ {
+			out[0] += a[i]
+		}
+	}
+	var dummy []T
+	MatxParallel[T](sum_chunk, a, dummy, makeOutMat(out, len(a)))
+}

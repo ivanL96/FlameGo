@@ -22,3 +22,10 @@ func TestSum2(t *testing.T) {
 	assertEqualSlices(t, b.Shape(), types.Shape{1, 1})
 	assertEqualSlices(t, b.Data(), []int32{173})
 }
+
+func TestSum3(t *testing.T) {
+	a := tensor.Range[int32](3*2).Reshape(1, 2, 3)
+	b := a.Sum(true)
+	assertEqualSlices(t, b.Shape(), types.Shape{1, 1, 1})
+	assertEqualSlices(t, b.Data(), []int32{1 + 2 + 3 + 4 + 5})
+}

@@ -87,6 +87,8 @@ func BenchmarkMatMulUnite(b *testing.B) {
 // BenchmarkMatMul-12           100          11.420.477 ns/op        12450394 B/op       4015 allocs/op
 // BenchmarkMatMul-12           102          11.561.105 ns/op        12447245 B/op       4015 allocs/op
 // BenchmarkMatMul-12           102          11.648.135 ns/op        12447252 B/op       4015 allocs/op
+// removed extra copy of data, reduced mem
+// BenchmarkMatMul-12            98          11.766.727 ns/op         8479747 B/op       4014 allocs/op
 //
 // numpy matmul ref                          10.645.914 ns/op
 //
