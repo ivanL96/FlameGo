@@ -29,6 +29,7 @@ const (
 // finds possible accelerations instructions
 func DetectImpl() Implementation {
 	var impl Implementation
+	impl.impl = Default
 	if cpuid.CPU.Supports(cpuid.AVX512F, cpuid.AVX512DQ) {
 		impl.all_suppored = append(impl.all_suppored, "AVX512")
 	}
@@ -54,7 +55,6 @@ func (i Implementation) ShowDebugInfo() Implementation {
 func IsImplAvailable(i Implementation) bool {
 	if i.impl == AVX512 && !cpuid.CPU.Supports(cpuid.AVX512F, cpuid.AVX512DQ) {
 		return false
-		// panic(fmt.Sprintf("Implementation %v is not supported", impl.String()))
 	} else if i.impl == AVX && !cpuid.CPU.Supports(cpuid.AVX) {
 		return false
 	} else if i.impl != Default {
