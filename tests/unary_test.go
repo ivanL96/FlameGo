@@ -29,3 +29,26 @@ func TestRelu(t *testing.T) {
 	assertEqualSlices(t, s.Data(), []float32{0, 0, 0, 0, 1, 2, 3, 4, 5, 6})
 	assertEqualSlices(t, s.Shape(), types.Shape{10})
 }
+
+func TestMask1(t *testing.T) {
+	a := tensor.Range[float32](6).Reshape(2, 3)
+	expr := func(a float32) float32 {
+		return -a
+	}
+	s := a.Mask(expr)
+	assertEqualSlices(t, s.Shape(), types.Shape{2, 3})
+	assertEqualSlices(t, s.Data(), []float32{0, -1, -2, -3, -4, -5})
+}
+
+func TestMask2(t *testing.T) {
+	a := tensor.Range[float32](-3, 3).Reshape(2, 3)
+	expr := func(a float32) float32 {
+		if a > 0 {
+			return 1
+		}
+		return 0
+	}
+	s := a.Mask(expr)
+	assertEqualSlices(t, s.Shape(), types.Shape{2, 3})
+	assertEqualSlices(t, s.Data(), []float32{0, 0, 0, 0, 1, 1})
+}

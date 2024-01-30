@@ -138,6 +138,11 @@ func Relu[T types.TensorType](i Implementation, a, c []T) {
 	matrix.ReluMatx(a, c)
 }
 
+// masking
+func Mask[T types.TensorType](i Implementation, a []T, expr func(T) T, out []T) {
+	matrix.MaskMatx(a, expr, out)
+}
+
 // reduce
 func Sum[T types.TensorType](i Implementation, a, c []T) {
 	// afl, cfl := reduce_input_to_float32(a, c)

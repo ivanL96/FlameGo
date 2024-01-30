@@ -47,6 +47,7 @@ func MatMulNaiveImpl[T types.TensorType](
 		}
 	}
 }
+
 func MatMulImpl(
 	impl device.Implementation,
 	a_data, b_data []float32,
@@ -71,7 +72,6 @@ func MatMulImpl(
 			wg.Add(1)
 			go func(i, j int) {
 				defer wg.Done()
-				// Set affinity to a specific CPU core
 				runtime.LockOSThread()
 				defer runtime.UnlockOSThread()
 
@@ -91,7 +91,6 @@ func MatMulImpl(
 			}(i, j)
 		}
 	}
-
 	wg.Wait()
 }
 
