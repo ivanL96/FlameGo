@@ -100,6 +100,15 @@ func input_to_float32[T types.TensorType](a, b, out []T) ([]float32, []float32, 
 	return afl, bfl, cfl
 }
 
+func reduce_input_to_float32[T types.TensorType](a, out []T) ([]float32, []float32) {
+	afl, ok_a := any(a).([]float32)
+	cfl, ok_c := any(out).([]float32)
+	if !ok_a || !ok_c {
+		return nil, nil
+	}
+	return afl, cfl
+}
+
 func Mul[T types.TensorType](i Implementation, a, b, c []T) {
 	afl, bfl, cfl := input_to_float32(a, b, c)
 	if i.impl == AVX && afl != nil {
@@ -156,5 +165,12 @@ func Neg[T types.TensorType](i Implementation, a, c []T) {
 
 // reduce
 func Sum[T types.TensorType](i Implementation, a, c []T) {
+	// afl, cfl := reduce_input_to_float32(a, c)
+	// if i.impl == AVX && afl != nil {
+	// 	amd64.Sum_mm256(afl, cfl)
+	// } else if i.impl == AVX512 && afl != nil {
+	// 	amd64.Sum_mm256(afl, cfl)
+	// } else {
 	noasm.SumMatx(a, c)
+	// }
 }
