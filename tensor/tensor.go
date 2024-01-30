@@ -15,6 +15,9 @@ func makeTensor[T types.TensorType](dataPtr *[]T, shape types.Shape, copy bool) 
 	for _, dim := range shape {
 		shapeProd *= dim
 	}
+	if shapeProd == 0 {
+		panic("Shape cannot have zero dim.")
+	}
 	var data []T
 	if dataPtr == nil {
 		// if nil ptr create an empty slice with size of 'shapeProd'

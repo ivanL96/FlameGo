@@ -151,7 +151,7 @@ func Unite[T types.TensorType](tensors ...*Tensor[T]) *Tensor[T] {
 		}
 	}
 
-	united_shape := make(types.Shape, len(tensors)+1)
+	united_shape := make(types.Shape, len(tensors[0].shape)+1)
 	united_shape[0] = types.Dim(len(tensors))
 	copy(united_shape[1:], tensors[0].shape)
 

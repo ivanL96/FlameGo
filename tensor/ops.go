@@ -265,7 +265,6 @@ func (tensor *Tensor[T]) Dot(other *Tensor[T]) *Tensor[T] {
 	for _, dim := range outer_dims_a {
 		outer_shape_prod *= dim
 	}
-
 	tensors_stack := make([]*Tensor[T], int(outer_shape_prod))
 	shape_iter := iter.CreateIterator(int(outer_shape_prod), outer_dims_a)
 	for shape_iter.Iterate() {

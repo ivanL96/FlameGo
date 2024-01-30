@@ -32,7 +32,7 @@ func BenchmarkAdd(b *testing.B) {
 // avx + inplace
 // BenchmarkBigAdd-12          8274            141875 ns/op            2728 B/op         26 allocs/op
 // BenchmarkBigAdd-12          7477            142808 ns/op            2831 B/op         26 allocs/op
-// axv + goroutines
+// avx + goroutines
 // BenchmarkBigAdd-12         10390            108.364 ns/op            2925 B/op         26 allocs/op
 // BenchmarkBigAdd-12          9687            107.917 ns/op            3008 B/op         26 allocs/op
 // BenchmarkBigAdd-12          9469            105.879 ns/op            3037 B/op         26 allocs/op
