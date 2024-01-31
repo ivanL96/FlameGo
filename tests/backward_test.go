@@ -11,9 +11,9 @@ import (
 // go test -run TestNewPerson -v
 // go test '-run=^TestMyTest$'
 func TestGradAdd(t *testing.T) {
-	a := grad.Variable[float32](tensor.CreateTensor[float32](
+	a := grad.Variable[float32](tensor.CreateTensor(
 		[]float32{4}, types.Shape{1, 1}))
-	b := grad.Variable[float32](tensor.CreateTensor[float32](
+	b := grad.Variable[float32](tensor.CreateTensor(
 		[]float32{5}, types.Shape{1, 1}))
 	z := a.Add(b)
 	assertEqualSlices(t, z.Value.Data(), []float32{9})
@@ -29,9 +29,9 @@ func TestGradAdd(t *testing.T) {
 }
 
 func TestGradSub(t *testing.T) {
-	a := grad.Variable[float32](tensor.CreateTensor[float32](
+	a := grad.Variable[float32](tensor.CreateTensor(
 		[]float32{4}, types.Shape{1, 1}))
-	b := grad.Variable[float32](tensor.CreateTensor[float32](
+	b := grad.Variable[float32](tensor.CreateTensor(
 		[]float32{5}, types.Shape{1, 1}))
 	z := a.Sub(b)
 	assertEqualSlices(t, z.Value.Data(), []float32{-1})
@@ -47,9 +47,9 @@ func TestGradSub(t *testing.T) {
 }
 
 func TestGradMul(t *testing.T) {
-	a := grad.Variable[float32](tensor.CreateTensor[float32](
+	a := grad.Variable[float32](tensor.CreateTensor(
 		[]float32{4}, types.Shape{1, 1}))
-	b := grad.Variable[float32](tensor.CreateTensor[float32](
+	b := grad.Variable[float32](tensor.CreateTensor(
 		[]float32{5}, types.Shape{1, 1}))
 	z := a.Mul(b)
 	assertEqualSlices(t, z.Value.Data(), []float32{20})
@@ -94,7 +94,7 @@ func TestGradMatMulMean(t *testing.T) {
 		0.5, 1.75, 0.50, 1.75, 0.5, 1.75, 0.5, 1.75})
 	assertEqualSlices(t, a.Grad.Shape(), types.Shape{4, 2})
 	assert(t, b.Grad.IsAllClose(
-		tensor.CreateTensor[float32]([]float32{0.6, 0.6, 0.6, 0.6, 0.6, 0.8, 0.8, 0.8, 0.8, 0.8}, types.Shape{2, 5}),
+		tensor.CreateTensor([]float32{0.6, 0.6, 0.6, 0.6, 0.6, 0.8, 0.8, 0.8, 0.8, 0.8}, types.Shape{2, 5}),
 		0.00001,
 	))
 	assertEqualSlices(t, b.Grad.Shape(), types.Shape{2, 5})
@@ -115,7 +115,7 @@ func TestGradMatMulMSE(t *testing.T) {
 
 func TestGradReluMean(t *testing.T) {
 	a := grad.Variable[float32](
-		tensor.CreateTensor[float32]([]float32{-1., 0., 4., -2.}, types.Shape{4}),
+		tensor.CreateTensor([]float32{-1., 0., 4., -2.}, types.Shape{4}),
 	)
 	b := a.Relu()
 	c := b.Mean()
