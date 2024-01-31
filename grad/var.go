@@ -210,7 +210,7 @@ func (this *Var[T]) Relu() *Var[T] {
 				}
 				return 0
 			}
-			return out.Grad.Mul(out.Value.Mask(expr))
+			return out.Grad.Mul(out.Value.ApplyFunc(expr))
 		}
 	}
 	return out

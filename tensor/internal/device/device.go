@@ -139,8 +139,8 @@ func Relu[T types.TensorType](i Implementation, a, c []T) {
 }
 
 // masking
-func Mask[T types.TensorType](i Implementation, a []T, expr func(T) T, out []T) {
-	matrix.MaskMatx(a, expr, out)
+func ApplyFunc[T types.TensorType](i Implementation, a []T, expr func(T) T, out []T) {
+	matrix.ApplyFuncMatx(a, expr, out)
 }
 
 // reduce

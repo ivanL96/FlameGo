@@ -35,7 +35,7 @@ func TestMask1(t *testing.T) {
 	expr := func(a float32) float32 {
 		return -a
 	}
-	s := a.Mask(expr)
+	s := a.ApplyFunc(expr)
 	assertEqualSlices(t, s.Shape(), types.Shape{2, 3})
 	assertEqualSlices(t, s.Data(), []float32{0, -1, -2, -3, -4, -5})
 }
@@ -48,7 +48,7 @@ func TestMask2(t *testing.T) {
 		}
 		return 0
 	}
-	s := a.Mask(expr)
+	s := a.ApplyFunc(expr)
 	assertEqualSlices(t, s.Shape(), types.Shape{2, 3})
 	assertEqualSlices(t, s.Data(), []float32{0, 0, 0, 0, 1, 1})
 }

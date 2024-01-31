@@ -192,13 +192,13 @@ func ReluMatx[T types.TensorType](a, out []T) {
 	MatxParallel[T](relu_chunk, a, nil, makeOutMat(out, len(a)))
 }
 
-func MaskMatx[T types.TensorType](a []T, expr_fn func(T) T, out []T) {
-	masking_chunk := func(start, end int, a, dummy, out []T) {
+func ApplyFuncMatx[T types.TensorType](a []T, expr_fn func(T) T, out []T) {
+	_chunk := func(start, end int, a, dummy, out []T) {
 		for i := start; i < end; i++ {
 			out[i] = expr_fn(a[i])
 		}
 	}
-	MatxParallel[T](masking_chunk, a, nil, makeOutMat(out, len(a)))
+	MatxParallel[T](_chunk, a, nil, makeOutMat(out, len(a)))
 }
 
 func SumMatx[T types.TensorType](a, out []T) {

@@ -152,7 +152,7 @@ func BaseBinElementwiseOp[T types.TensorType](
 
 func unaryElementwiseRoutine[T types.TensorType](
 	tensor *Tensor[T],
-	op UnaryOp[T],
+	op *UnaryOp[T],
 	out *Tensor[T],
 ) *Tensor[T] {
 	unaryScalarOp, unaryVecOp := op.scalar, op.vector
@@ -225,7 +225,7 @@ func (tensor *Tensor[T]) Neg(out ...*Tensor[T]) *Tensor[T] {
 		scalar: ops.NegAtomic[T],
 		vector: device.Neg[T],
 	}
-	return unaryElementwiseRoutine(tensor, neg, get_param(out...))
+	return unaryElementwiseRoutine(tensor, &neg, get_param(out...))
 }
 
 func (tensor *Tensor[T]) Sigmoid(out ...*Tensor[T]) *Tensor[T] {
@@ -233,14 +233,14 @@ func (tensor *Tensor[T]) Sigmoid(out ...*Tensor[T]) *Tensor[T] {
 		scalar: ops.SigmoidAtomic[T],
 		vector: device.Sigmoid[T],
 	}
-	return unaryElementwiseRoutine(tensor, sigma, get_param(out...))
+	return unaryElementwiseRoutine(tensor, &sigma, get_param(out...))
 }
 
 func (tensor *Tensor[T]) Ln(out ...*Tensor[T]) *Tensor[T] {
 	ln := UnaryOp[T]{
 		scalar: ops.LnAtomic[T],
 	}
-	return unaryElementwiseRoutine(tensor, ln, get_param(out...))
+	return unaryElementwiseRoutine(tensor, &ln, get_param(out...))
 }
 
 func (tensor *Tensor[T]) Relu(out ...*Tensor[T]) *Tensor[T] {
@@ -248,7 +248,7 @@ func (tensor *Tensor[T]) Relu(out ...*Tensor[T]) *Tensor[T] {
 		scalar: ops.ReluAtomic[T],
 		vector: device.Relu[T],
 	}
-	return unaryElementwiseRoutine(tensor, relu, get_param(out...))
+	return unaryElementwiseRoutine(tensor, &relu, get_param(out...))
 }
 
 //
@@ -337,7 +337,7 @@ func (tensor *Tensor[T]) MatMul(other *Tensor[T]) *Tensor[T] {
 		out_shape.GetStrides(),
 		64,
 	)
-	return CreateTensor[T](any(out_data).([]T), out_shape)
+	return CreateTensor(any(out_data).([]T), out_shape)
 }
 
 func SplitTensor[T types.TensorType](
