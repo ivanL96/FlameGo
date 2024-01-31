@@ -112,3 +112,14 @@ func TestGradMatMulMSE(t *testing.T) {
 	assertEqualSlices(t, w.Grad.Data(), []float32{-5.7})
 	assertEqualSlices(t, b.Grad.Data(), []float32{-9})
 }
+
+func TestGradReluMean(t *testing.T) {
+	a := grad.Variable[float32](
+		tensor.CreateTensor[float32]([]float32{-1., 0., 4., -2.}, types.Shape{4}),
+	)
+	b := a.Relu()
+	c := b.Mean()
+	c.Backward(nil)
+	assertEqualSlices(t, a.Grad.Data(), []float32{0, 0, 0.25, 0})
+	assertEqualSlices(t, a.Grad.Shape(), types.Shape{4})
+}

@@ -200,6 +200,22 @@ func (this *Var[T]) Sigmoid() *Var[T] {
 	return out
 }
 
+func (this *Var[T]) Relu() *Var[T] {
+	out := Variable(this.Value.Relu(), this)
+	if this.Requires_grad {
+		this.backward_fn = func() *tensor.Tensor[T] {
+			expr := func(a T) T {
+				if a > 0 {
+					return 1
+				}
+				return 0
+			}
+			return out.Grad.Mul(out.Value.Mask(expr))
+		}
+	}
+	return out
+}
+
 func (this *Var[T]) Mean() *Var[T] {
 	out := Variable(this.Value.Mean(false), this)
 	if this.Requires_grad {
