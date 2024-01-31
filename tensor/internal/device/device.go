@@ -25,7 +25,7 @@ const (
 )
 
 // finds possible accelerations instructions
-func DetectImpl() Implementation {
+func DetectImpl() *Implementation {
 	var impl Implementation
 	impl.impl = Default
 	if cpuid.CPU.Supports(cpuid.AVX512F, cpuid.AVX512DQ) {
@@ -40,17 +40,17 @@ func DetectImpl() Implementation {
 	} else if cpuid.CPU.Supports(cpuid.AVX) {
 		impl.impl = AVX
 	}
-	return impl
+	return &impl
 }
 
-func (i Implementation) ShowDebugInfo() Implementation {
+func (i *Implementation) ShowDebugInfo() *Implementation {
 	if len(i.all_suppored) > 0 {
 		fmt.Println("CPU acceleration:", i.all_suppored, "available.")
 	}
 	return i
 }
 
-func IsImplAvailable(i Implementation) bool {
+func IsImplAvailable(i *Implementation) bool {
 	if i.impl == AVX512 && !cpuid.CPU.Supports(cpuid.AVX512F, cpuid.AVX512DQ) {
 		return false
 	} else if i.impl == AVX && !cpuid.CPU.Supports(cpuid.AVX) {

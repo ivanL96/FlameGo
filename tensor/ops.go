@@ -9,36 +9,31 @@ import (
 	"reflect"
 )
 
-var auto_impl device.Implementation = device.DetectImpl().ShowDebugInfo()
+var AUTO_IMPL device.Implementation = *device.DetectImpl().ShowDebugInfo()
 
 type UnaryOp[T types.TensorType] struct {
 	scalar func(T) T
 	vector func(device.Implementation, []T, []T)
 }
 
-type BinaryOp[T types.TensorType] struct {
-	// required prop, contains function with scalar bin operation
-	scalar func(T, T) T
-	// vector is optional prop used to accelerate applying operation to vectors
-	vector func(device.Implementation, []T, []T, []T)
-	// despite one of the args will be scalar, it's generally unknown which one is exactly.
-	// Therefore let the vector_to_scalar impl define the order of args.
-	vector_to_scalar func(device.Implementation, []T, []T, []T)
-}
-
 // general use Binary operator
 func BaseBinElementwiseOp[T types.TensorType](
 	tensor_a,
 	tensor_b *Tensor[T],
-	op *BinaryOp[T],
+	// contains function with scalar bin operation
+	scalar_impl func(T, T) T,
+	// vector is used to accelerate applying operation to vectors
+	vector_impl func(device.Implementation, []T, []T, []T),
+	// is used to accelerate applying operation between vectors and scalars
+	vector_to_scalar_impl func(device.Implementation, []T, []T, []T),
 	out *Tensor[T],
 ) *Tensor[T] {
 	var outTensor *Tensor[T]
 	// TODO if outTensor equals to a or b,  apply the *_to_const vectorized impl
 	// TODO try to vectorize operations for non continuous tensors. Right now it falls back to scalar impl which is slow
 
-	binScalar, binVec, binVec2Scalar := op.scalar, op.vector, op.vector_to_scalar
-	if binScalar == nil && binVec == nil && binVec2Scalar == nil {
+	scalar, vector, vector_to_scalar := scalar_impl, vector_impl, vector_to_scalar_impl
+	if scalar == nil && vector == nil && vector_to_scalar == nil {
 		panic("No implementation found.")
 	}
 
@@ -52,7 +47,7 @@ func BaseBinElementwiseOp[T types.TensorType](
 		}
 		outTensor = PrepareOutTensor(out, out_shape)
 		// most trivial case (1,) & (1,)
-		outTensor.data()[0] = binScalar(tensor_a.data()[0], tensor_b.data()[0])
+		outTensor.data()[0] = scalar(tensor_a.data()[0], tensor_b.data()[0])
 		return outTensor
 	}
 
@@ -69,14 +64,14 @@ func BaseBinElementwiseOp[T types.TensorType](
 		outTensor = PrepareOutTensor(out, tensor_a.shape)
 		out_data := outTensor.data()
 
-		if are_continuous && binVec != nil { // vec or avx
-			binVec(auto_impl, tensor_a.data(), tensor_b.data(), out_data)
-		} else if !are_continuous || binVec == nil {
+		if are_continuous && vector != nil { // vec or avx
+			vector(AUTO_IMPL, tensor_a.data(), tensor_b.data(), out_data)
+		} else if !are_continuous || vector == nil {
 			iter := tensor_a.CreateIterator()
 			for iter.Iterate() {
 				idx := iter.Next()
 				outIdx := get_flat_idx_fast(outTensor.strides, idx...)
-				out_data[outIdx] = binScalar(tensor_a.Get_fast(idx...), tensor_b.Get_fast(idx...))
+				out_data[outIdx] = scalar(tensor_a.Get_fast(idx...), tensor_b.Get_fast(idx...))
 			}
 		}
 	} else if len(tensor_b.data()) == 1 {
@@ -84,26 +79,26 @@ func BaseBinElementwiseOp[T types.TensorType](
 		// (N, M, ...) & (1,)
 		outTensor = PrepareOutTensor(out, tensor_a.shape)
 		out_data := outTensor.data()
-		if binVec2Scalar == nil {
+		if vector_to_scalar == nil {
 			value := tensor_b.data()[0]
 			for i, val := range tensor_a.data() {
-				out_data[i] = binScalar(val, value)
+				out_data[i] = scalar(val, value)
 			}
 		} else {
-			binVec2Scalar(auto_impl, tensor_a.data(), tensor_b.data(), out_data)
+			vector_to_scalar(AUTO_IMPL, tensor_a.data(), tensor_b.data(), out_data)
 		}
 	} else if len(tensor_a.data()) == 1 {
 		// tensor_a is scalar
 		// (1,) & (N, M, ...)
 		outTensor = PrepareOutTensor(out, tensor_b.shape)
 		out_data := outTensor.data()
-		if binVec2Scalar == nil {
+		if vector_to_scalar == nil {
 			value := tensor_a.data()[0]
 			for i, val := range tensor_b.data() {
-				out_data[i] = binScalar(value, val)
+				out_data[i] = scalar(value, val)
 			}
 		} else {
-			binVec2Scalar(auto_impl, tensor_b.data(), tensor_a.data(), out_data)
+			vector_to_scalar(AUTO_IMPL, tensor_b.data(), tensor_a.data(), out_data)
 		}
 	} else {
 		// both tensors are not scalar but have completely different shapes
@@ -135,14 +130,14 @@ func BaseBinElementwiseOp[T types.TensorType](
 		if broadcasted_tensor_b == nil {
 			broadcasted_tensor_b = tensor_b
 		}
-		if binVec != nil && are_continuous {
-			binVec(auto_impl, broadcasted_tensor_a.data(), broadcasted_tensor_b.data(), out_data)
-		} else if binVec == nil || !are_continuous {
+		if vector != nil && are_continuous {
+			vector(AUTO_IMPL, broadcasted_tensor_a.data(), broadcasted_tensor_b.data(), out_data)
+		} else if vector == nil || !are_continuous {
 			iter := broadcasted_tensor_a.CreateIterator()
 			for iter.Iterate() {
 				dataIndex := iter.Index()
 				idx := iter.Next()
-				out_data[dataIndex] = binScalar(
+				out_data[dataIndex] = scalar(
 					broadcasted_tensor_a.Get_fast(idx...), broadcasted_tensor_b.Get_fast(idx...))
 			}
 		}
@@ -169,7 +164,7 @@ func unaryElementwiseRoutine[T types.TensorType](
 			outTensor.data()[i] = unaryScalarOp(val)
 		}
 	} else {
-		unaryVecOp(auto_impl, tensor.data(), outTensor.data())
+		unaryVecOp(AUTO_IMPL, tensor.data(), outTensor.data())
 	}
 	return outTensor
 }
@@ -179,44 +174,23 @@ func unaryElementwiseRoutine[T types.TensorType](
 //
 
 func (tensor *Tensor[T]) Add(other_tensor *Tensor[T], out ...*Tensor[T]) *Tensor[T] {
-	add := BinaryOp[T]{
-		scalar: ops.AddAtomic[T],
-		vector: device.Add[T],
-	}
-	return BaseBinElementwiseOp(tensor, other_tensor, &add, get_param(out...))
+	return BaseBinElementwiseOp(tensor, other_tensor, ops.AddAtomic[T], device.Add[T], nil, get_param(out...))
 }
 
 func (tensor *Tensor[T]) Sub(other_tensor *Tensor[T], out ...*Tensor[T]) *Tensor[T] {
-	sub := BinaryOp[T]{
-		scalar: ops.SubAtomic[T],
-		vector: device.Sub[T],
-	}
-	return BaseBinElementwiseOp(tensor, other_tensor, &sub, get_param(out...))
+	return BaseBinElementwiseOp(tensor, other_tensor, ops.SubAtomic[T], device.Sub[T], nil, get_param(out...))
 }
 
 func (tensor *Tensor[T]) Mul(other_tensor *Tensor[T], out ...*Tensor[T]) *Tensor[T] {
-	mul := BinaryOp[T]{
-		scalar:           ops.MulAtomic[T],
-		vector:           device.Mul[T],
-		vector_to_scalar: device.MulToConst[T],
-	}
-	return BaseBinElementwiseOp(tensor, other_tensor, &mul, get_param(out...))
+	return BaseBinElementwiseOp(tensor, other_tensor, ops.MulAtomic[T], device.Mul[T], device.MulToConst[T], get_param(out...))
 }
 
 func (tensor *Tensor[T]) Div(other_tensor *Tensor[T], out ...*Tensor[T]) *Tensor[T] {
-	div := BinaryOp[T]{
-		scalar: ops.DivAtomic[T],
-		vector: device.Div[T],
-	}
-	return BaseBinElementwiseOp(tensor, other_tensor, &div, get_param(out...))
+	return BaseBinElementwiseOp(tensor, other_tensor, ops.DivAtomic[T], device.Div[T], nil, get_param(out...))
 }
 
 func (tensor *Tensor[T]) Pow(other_tensor *Tensor[T], out ...*Tensor[T]) *Tensor[T] {
-	pow := BinaryOp[T]{
-		scalar: ops.PowAtomic[T],
-		vector: device.Pow[T],
-	}
-	return BaseBinElementwiseOp(tensor, other_tensor, &pow, get_param(out...))
+	return BaseBinElementwiseOp(tensor, other_tensor, ops.PowAtomic[T], device.Pow[T], nil, get_param(out...))
 }
 
 // unary
@@ -326,7 +300,7 @@ func (tensor *Tensor[T]) MatMul(other *Tensor[T]) *Tensor[T] {
 	}
 
 	ops.MatMulImpl(
-		auto_impl,
+		AUTO_IMPL,
 		any(tensor.data()).([]float32),
 		any(other.data()).([]float32),
 		tensor.shape,

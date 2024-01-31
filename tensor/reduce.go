@@ -53,13 +53,13 @@ func (tensor *Tensor[T]) SumAlongAxis(
 
 func (tensor *Tensor[T]) Sum(keep_dims bool) *Tensor[T] {
 	sum := []T{0}
-	device.Sum(auto_impl, tensor.data(), sum)
+	device.Sum(AUTO_IMPL, tensor.data(), sum)
 	return reduce_shape(tensor, sum[0], keep_dims)
 }
 
 func (tensor *Tensor[T]) Mean(keep_dims bool) *Tensor[T] {
 	sum := []T{0}
-	device.Sum(auto_impl, tensor.data(), sum)
+	device.Sum(AUTO_IMPL, tensor.data(), sum)
 
 	size := len(tensor.data())
 	_mean := T(float64(sum[0]) / float64(size))
@@ -68,6 +68,6 @@ func (tensor *Tensor[T]) Mean(keep_dims bool) *Tensor[T] {
 
 func (tensor *Tensor[T]) Max(keep_dims bool) *Tensor[T] {
 	max := []T{tensor.data()[0]}
-	device.Max(auto_impl, tensor.data(), max)
+	device.Max(AUTO_IMPL, tensor.data(), max)
 	return reduce_shape(tensor, max[0], keep_dims)
 }

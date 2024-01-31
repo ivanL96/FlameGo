@@ -189,6 +189,7 @@ func (this *Var[T]) MatMul(other *Var[T]) *Var[T] {
 	return out
 }
 
+// activations
 func (this *Var[T]) Sigmoid() *Var[T] {
 	out := Variable(this.Value.Sigmoid(), this)
 	if this.Requires_grad {
@@ -216,6 +217,7 @@ func (this *Var[T]) Relu() *Var[T] {
 	return out
 }
 
+// reduce
 func (this *Var[T]) Mean() *Var[T] {
 	out := Variable(this.Value.Mean(false), this)
 	if this.Requires_grad {
