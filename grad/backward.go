@@ -1,6 +1,7 @@
 package grad
 
 import (
+	"fmt"
 	"gograd/tensor"
 	"gograd/tensor/types"
 )
@@ -42,7 +43,15 @@ func (this *Var[T]) Backward(gradient *tensor.Tensor[T]) {
 
 	// gradient w.r.t the current variable is ones tensor
 	if gradient == nil {
-		this.Grad = tensor.Ones[T](this.Value.Shape()...)
+		if this.Value.Shape().IsScalarLike() {
+			this.Grad = tensor.Ones[T](this.Value.Shape()...)
+		} else {
+			panic(
+				fmt.Sprintf("The result value is not scalar and has shape (%v). Initial gradient should be set explicitly",
+					this.Value.Shape(),
+				),
+			)
+		}
 	} else {
 		this.Grad = gradient
 	}
