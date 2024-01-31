@@ -19,14 +19,8 @@ func reduce_shape[T types.TensorType](
 		for i := range ones {
 			ones[i] = 1
 		}
-		return CreateTensor[T]([]T{value}, ones)
+		return CreateTensor([]T{value}, ones)
 	}
-}
-
-func (tensor *Tensor[T]) Sum(keep_dims bool) *Tensor[T] {
-	sum := []T{0}
-	device.Sum(auto_impl, tensor.data(), sum)
-	return reduce_shape(tensor, sum[0], keep_dims)
 }
 
 // Example:
@@ -57,12 +51,17 @@ func (tensor *Tensor[T]) SumAlongAxis(
 	return reduced
 }
 
+func (tensor *Tensor[T]) Sum(keep_dims bool) *Tensor[T] {
+	sum := []T{0}
+	device.Sum(auto_impl, tensor.data(), sum)
+	return reduce_shape(tensor, sum[0], keep_dims)
+}
+
 func (tensor *Tensor[T]) Mean(keep_dims bool) *Tensor[T] {
-	var sum T = 0
-	for _, val := range tensor.data() {
-		sum += val
-	}
-	size := T(len(tensor.data()))
-	_mean := T(float64(sum) / float64(size))
+	sum := []T{0}
+	device.Sum(auto_impl, tensor.data(), sum)
+
+	size := len(tensor.data())
+	_mean := T(float64(sum[0]) / float64(size))
 	return reduce_shape(tensor, _mean, keep_dims)
 }

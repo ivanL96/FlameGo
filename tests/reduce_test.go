@@ -29,3 +29,10 @@ func TestSum3(t *testing.T) {
 	assertEqualSlices(t, b.Shape(), types.Shape{1, 1, 1})
 	assertEqualSlices(t, b.Data(), []int32{1 + 2 + 3 + 4 + 5})
 }
+
+func TestMean(t *testing.T) {
+	a := tensor.Range[float32](10).Reshape(1, 2, 5)
+	b := a.Mean(true)
+	assertEqualSlices(t, b.Shape(), types.Shape{1, 1, 1})
+	assertEqualSlices(t, b.Data(), []float32{4.5})
+}
