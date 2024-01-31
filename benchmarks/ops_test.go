@@ -19,23 +19,24 @@ func BenchmarkAdd(b *testing.B) {
 // pkg: gograd/benchmarks
 // cpu: 11th Gen Intel(R) Core(TM) i5-11400H @ 2.70GHz
 // scalar
-// BenchmarkBigAdd-12           199           5888470 ns/op           60408 B/op          1 allocs/op
+// BenchmarkBigAdd-12           199          5.888.470 ns/op           60408 B/op          1 allocs/op
 // vectorized
-// BenchmarkBigAdd-12          1946            523187 ns/op            6175 B/op          0 allocs/op
-// BenchmarkBigAdd-12          1957            529357 ns/op            6141 B/op          0 allocs/op
+// BenchmarkBigAdd-12          1946            523.187 ns/op            6175 B/op          0 allocs/op
+// BenchmarkBigAdd-12          1957            529.357 ns/op            6141 B/op          0 allocs/op
 // vec + goroutines
-// BenchmarkBigAdd-12          7246            158306 ns/op            3212 B/op         25 allocs/op
-// BenchmarkBigAdd-12          6296            199704 ns/op            3460 B/op         25 allocs/op
+// BenchmarkBigAdd-12          7246            158.306 ns/op            3212 B/op         25 allocs/op
+// BenchmarkBigAdd-12          6296            199.704 ns/op            3460 B/op         25 allocs/op
 // avx
-// BenchmarkBigAdd-12          6844            171370 ns/op            3517 B/op         26 allocs/op
-// BenchmarkBigAdd-12          5796            175902 ns/op            3833 B/op         26 allocs/op
+// BenchmarkBigAdd-12          6844            171.370 ns/op            3517 B/op         26 allocs/op
+// BenchmarkBigAdd-12          5796            175.902 ns/op            3833 B/op         26 allocs/op
 // avx + inplace
-// BenchmarkBigAdd-12          8274            141875 ns/op            2728 B/op         26 allocs/op
-// BenchmarkBigAdd-12          7477            142808 ns/op            2831 B/op         26 allocs/op
+// BenchmarkBigAdd-12          8274            141.875 ns/op            2728 B/op         26 allocs/op
+// BenchmarkBigAdd-12          7477            142.808 ns/op            2831 B/op         26 allocs/op
 // avx + goroutines
 // BenchmarkBigAdd-12         10390            108.364 ns/op            2925 B/op         26 allocs/op
 // BenchmarkBigAdd-12          9687            107.917 ns/op            3008 B/op         26 allocs/op
 // BenchmarkBigAdd-12          9469            105.879 ns/op            3037 B/op         26 allocs/op
+// numpy 									 2.412.390 ns/op
 
 func BenchmarkBigAdd(b *testing.B) {
 	a1 := tensor.Range[float32](1000000).Reshape(1000, 1000) //.Fill(1)
