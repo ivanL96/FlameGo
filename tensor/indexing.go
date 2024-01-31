@@ -146,9 +146,10 @@ func Axis() *idxRange {
 	return &idxRange{0, -1}
 }
 
-func ISlc(start, end uint) *idxRange {
-	return &idxRange{int(start), int(end)}
-}
+// TODO Implement index slices
+// func ISlc(start, end uint) *idxRange {
+// 	return &idxRange{int(start), int(end)}
+// }
 
 func parse_indexes(expr string) []*idxRange {
 	if len(expr) == 0 {

@@ -267,7 +267,7 @@ func (tensor *Tensor[T]) MatMul(other *Tensor[T]) *Tensor[T] {
 		return tensor.Mul(other)
 	}
 	adim0, bdim1 := tensor.shape[0], other.shape[1]
-	out_data := make([]float32, int(adim0*bdim1))
+	out_data := make([]T, int(adim0*bdim1))
 	out_shape := types.Shape{adim0, bdim1}
 
 	// isVec2Scalar := adim0 == 1 && bdim1 == 1
@@ -280,19 +280,18 @@ func (tensor *Tensor[T]) MatMul(other *Tensor[T]) *Tensor[T] {
 		other = other.TrC()
 	}
 
-	ops.MatMulImpl(
+	device.MatMul(
 		AUTO_IMPL,
-		any(tensor.data()).([]float32),
-		any(other.data()).([]float32),
+		tensor.data(),
+		other.data(),
+		out_data,
 		tensor.shape,
 		other.shape,
 		tensor.strides,
 		other.strides,
-		out_data,
 		out_shape.GetStrides(),
-		64,
 	)
-	return CreateTensor(any(out_data).([]T), out_shape)
+	return CreateTensor(out_data, out_shape)
 }
 
 func SplitTensor[T types.TensorType](

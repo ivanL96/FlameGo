@@ -222,9 +222,7 @@ func (this *Var[T]) Mean() *Var[T] {
 	out := Variable(this.Value.Mean(false), this)
 	if this.Requires_grad {
 		this.backward_fn = func() *tensor.Tensor[T] {
-			filler := tensor.Zeros[T](this.Value.Shape()...).Fill(
-				T(1. / float32(this.Value.Size())),
-			)
+			filler := tensor.Scalar[T](T(1. / float32(this.Value.Size())))
 			return out.Grad.Mul(filler)
 		}
 	}

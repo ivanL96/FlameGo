@@ -44,6 +44,7 @@ func (shape Shape) AddDim(axis uint) Shape {
 	return newShape
 }
 
+// Compares two Shapes. If each dimension is equal to other shape dimension at the same position
 func (shape Shape) Equals(other_shape Shape) bool {
 	if len(shape) != len(other_shape) {
 		return false

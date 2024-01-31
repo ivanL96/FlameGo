@@ -31,10 +31,10 @@ func TestSum3(t *testing.T) {
 }
 
 func TestMean(t *testing.T) {
-	a := tensor.Range[float32](10).Reshape(1, 2, 5)
+	a := tensor.Range[float32](1000).Reshape(100, 2, 5)
 	b := a.Mean(true)
 	assertEqualSlices(t, b.Shape(), types.Shape{1, 1, 1})
-	assertEqualSlices(t, b.Data(), []float32{4.5})
+	assertEqualSlices(t, b.Data(), []float32{499.5})
 }
 
 func TestMax(t *testing.T) {

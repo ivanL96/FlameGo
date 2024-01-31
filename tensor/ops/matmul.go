@@ -1,10 +1,8 @@
 package ops
 
 import (
-	"gograd/tensor/internal/device"
 	"gograd/tensor/types"
 	"runtime"
-	"sync"
 )
 
 var numCPU int = runtime.NumCPU()
@@ -48,90 +46,44 @@ func MatMulNaiveImpl[T types.TensorType](
 	}
 }
 
-func MatMulImpl(
-	impl device.Implementation,
-	a_data, b_data []float32,
-	a_shape, b_shape types.Shape,
-	a_strides, b_strides []int,
-	out_data []float32,
-	out_strides []int,
-	block_size int,
-) {
-	a_dim0 := int(a_shape[0])
-	b_dim0 := int(b_shape[0])
-	out_stride0 := out_strides[0]
-	a_stride0 := a_strides[0]
-	b_stride0 := b_strides[0]
+// func MatMulNaiveImpl_GEN(
+// 	impl device.Implementation,
+// 	a_data,
+// 	b_data []float32,
+// 	a_shape,
+// 	b_shape types.Shape,
+// 	a_strides []int,
+// 	b_strides []int,
+// 	out_data []float32,
+// 	out_strides []int,
+// ) {
+// 	a_dim0 := int(a_shape[0])
+// 	b_dim0 := int(b_shape[0])
+// 	out_stride0 := out_strides[0]
+// 	a_stride0 := a_strides[0]
+// 	b_stride0 := b_strides[0]
 
-	runtime.GOMAXPROCS(numCPU)
+// 	runtime.GOMAXPROCS(numCPU)
 
-	var wg sync.WaitGroup
+// 	var wg sync.WaitGroup
+// 	for i := 0; i < a_dim0; i++ {
+// 		wg.Add(1)
+// 		go func(i int) {
+// 			defer wg.Done()
+// 			// Set affinity to a specific CPU core
+// 			runtime.LockOSThread()
+// 			defer runtime.UnlockOSThread()
 
-	for i := 0; i < a_dim0; i += block_size {
-		for j := 0; j < b_dim0; j += block_size {
-			wg.Add(1)
-			go func(i, j int) {
-				defer wg.Done()
-				runtime.LockOSThread()
-				defer runtime.UnlockOSThread()
-
-				for bi := 0; bi < block_size; bi++ {
-					for bj := 0; bj < block_size; bj++ {
-						row := i + bi
-						col := j + bj
-						if row >= a_dim0 || col >= b_dim0 {
-							continue
-						}
-						a := a_data[a_stride0*row : a_stride0*(row+1)]
-						b := b_data[b_stride0*col : b_stride0*(col+1)]
-
-						out_data[out_stride0*row+col] = device.Dot(impl, a, b)
-					}
-				}
-			}(i, j)
-		}
-	}
-	wg.Wait()
-}
-
-func MatMulNaiveImpl_GEN(
-	impl device.Implementation,
-	a_data,
-	b_data []float32,
-	a_shape,
-	b_shape types.Shape,
-	a_strides []int,
-	b_strides []int,
-	out_data []float32,
-	out_strides []int,
-) {
-	a_dim0 := int(a_shape[0])
-	b_dim0 := int(b_shape[0])
-	out_stride0 := out_strides[0]
-	a_stride0 := a_strides[0]
-	b_stride0 := b_strides[0]
-
-	runtime.GOMAXPROCS(numCPU)
-
-	var wg sync.WaitGroup
-	for i := 0; i < a_dim0; i++ {
-		wg.Add(1)
-		go func(i int) {
-			defer wg.Done()
-			// Set affinity to a specific CPU core
-			runtime.LockOSThread()
-			defer runtime.UnlockOSThread()
-
-			out_stride0_i := out_stride0 * i
-			_a := a_data[a_stride0*i : a_stride0*(i+1)]
-			for j := 0; j < b_dim0; j++ {
-				_b := b_data[b_stride0*j : b_stride0*(j+1)]
-				out_data[out_stride0_i+j] = device.Dot(impl, _a, _b)
-			}
-		}(i)
-	}
-	wg.Wait()
-}
+// 			out_stride0_i := out_stride0 * i
+// 			_a := a_data[a_stride0*i : a_stride0*(i+1)]
+// 			for j := 0; j < b_dim0; j++ {
+// 				_b := b_data[b_stride0*j : b_stride0*(j+1)]
+// 				out_data[out_stride0_i+j] = device.Dot(impl, _a, _b)
+// 			}
+// 		}(i)
+// 	}
+// 	wg.Wait()
+// }
 
 // matMul for square matrices with the same shape: (N,N)
 func MatMulSquareNaiveImpl[T types.TensorType](

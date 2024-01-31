@@ -39,8 +39,11 @@ func (tensor *Tensor[T]) SumAlongAxis(
 		args = append(args, ":")
 	}
 	args[axis] = "0"
+
+	// get sub tensor by axis
 	reduced := tensor.IndexAdv(strings.Join(args, ","))
 	dim := int(tensor.Shape()[axis])
+	// iterate over remaining subtensors along axis and sum them
 	for i := 1; i < dim; i++ {
 		args[axis] = strconv.Itoa(i)
 		reduced.Add(tensor.IndexAdv(strings.Join(args, ",")), reduced)

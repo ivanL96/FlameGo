@@ -45,6 +45,8 @@ func MatxParallel[T types.TensorType](
 
 		go func(start, end int) {
 			defer wg.Done()
+			runtime.LockOSThread()
+			defer runtime.UnlockOSThread()
 			f(start, end, a, b, out)
 		}(start, end)
 	}
@@ -109,7 +111,8 @@ func SubMatx[T types.TensorType](a, b, out []T) {
 	MatxParallel(sub_chunk, a, b, makeOutMat(out, len(a)))
 }
 
-func Dot[T types.TensorType](a, b []T, c T) T {
+func Dot[T types.TensorType](a, b []float32) float32 {
+	var c float32
 	for i := 0; i < len(a); i++ {
 		c += a[i] * b[i]
 	}
@@ -237,4 +240,63 @@ func MaxMatx[T types.TensorType](a, out []T) {
 		}
 	}
 	MatxParallel(max_chunk, a, nil, makeOutMat(out, len(a)))
+}
+
+func MatMulMatx(
+	a_data, b_data, out_data []float32,
+	a_shape, b_shape types.Shape,
+	a_strides, b_strides, out_strides []int,
+	dot_impl func([]float32, []float32) float32,
+) {
+	a_dim0 := int(a_shape[0])
+	b_dim0 := int(b_shape[0])
+	out_stride0 := out_strides[0]
+	a_stride0 := a_strides[0]
+	b_stride0 := b_strides[0]
+
+	block_size := 64
+
+	runtime.GOMAXPROCS(numCPU)
+
+	var wg sync.WaitGroup
+	// wg.Add(numCPU)
+	// chunk_size := (a_dim0 + numCPU - 1) / numCPU
+
+	// for ii := 0; ii < numCPU; ii++ {
+	// 	start := ii * chunk_size
+	// 	end := (ii + 1) * chunk_size
+	// 	if end > a_dim0 {
+	// 		end = a_dim0
+	// 	}
+
+	// 	go func(start, end int) {
+	// 		defer wg.Done()
+	for i := 0; i < a_dim0; i += block_size {
+		// for i := start; i < end; i += block_size {
+		for j := 0; j < b_dim0; j += block_size {
+			wg.Add(1)
+
+			// runtime.LockOSThread()
+			// defer runtime.UnlockOSThread()
+
+			go func(i, j int) {
+				defer wg.Done()
+				for bi := 0; bi < block_size; bi++ {
+					for bj := 0; bj < block_size; bj++ {
+						row := i + bi
+						col := j + bj
+						if row >= a_dim0 || col >= b_dim0 {
+							continue
+						}
+						a := a_data[a_stride0*row : a_stride0*(row+1)]
+						b := b_data[b_stride0*col : b_stride0*(col+1)]
+
+						out_data[out_stride0*row+col] = dot_impl(a, b)
+					}
+				}
+			}(i, j)
+		}
+	} //(start, end)
+	// }
+	wg.Wait()
 }

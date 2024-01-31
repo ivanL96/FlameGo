@@ -62,19 +62,20 @@ func IsImplAvailable(i *Implementation) bool {
 }
 
 // binary
-func Dot(i Implementation, a, b []float32) float32 {
+func MatMul[T types.TensorType](
+	i Implementation,
+	a, b, out []T,
+	a_shape, b_shape types.Shape,
+	a_strides, b_strides, out_strides []int,
+) {
+	af, bf, outf := types.Input_to_float32(a, b, out)
 	switch i.impl {
 	case AVX:
-		var c float32
-		amd64.Dot_mm256(a, b, &c)
-		return c
+		matrix.MatMulMatx(af, bf, outf, a_shape, b_shape, a_strides, b_strides, out_strides, amd64.Dot_mm256)
 	case AVX512:
-		var c float32
-		amd64.Dot_mm512(a, b, &c)
-		return c
+		matrix.MatMulMatx(af, bf, outf, a_shape, b_shape, a_strides, b_strides, out_strides, amd64.Dot_mm512)
 	default:
-		var c float32
-		return matrix.Dot(a, b, c)
+		matrix.MatMulMatx(af, bf, outf, a_shape, b_shape, a_strides, b_strides, out_strides, matrix.Dot[T])
 	}
 }
 
@@ -91,11 +92,11 @@ func Mul[T types.TensorType](i Implementation, a, b, c []T) {
 }
 
 func MulToConst[T types.TensorType](i Implementation, a, b, c []T) {
-	afl, _, _ := types.Input_b_scalar_to_float32(a, b[0], c)
-	switch {
-	case i.impl == AVX && afl != nil:
+	// afl, _, _ := types.Input_b_scalar_to_float32(a, b[0], c)
+	switch i.impl {
+	case AVX:
 		matrix.MulMatxToConst(a, b, c, amd64.Mul_to_const_mm256)
-	case i.impl == AVX512 && afl != nil:
+	case AVX512:
 		matrix.MulMatxToConst(a, b, c, amd64.Mul_to_const_mm256)
 	default:
 		matrix.MulMatxToConst(a, b, c, nil)

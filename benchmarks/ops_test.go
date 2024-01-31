@@ -39,8 +39,8 @@ func BenchmarkAdd(b *testing.B) {
 // numpy 									 2.412.390 ns/op
 
 func BenchmarkBigAdd(b *testing.B) {
-	a1 := tensor.Range[float32](1000000).Reshape(1000, 1000) //.Fill(1)
-	a2 := tensor.Range[float32](1000000).Reshape(1000, 1000) //.Fill(1)
+	a1 := tensor.Range[float32](1000000).Reshape(1000, 1000)
+	a2 := tensor.Range[float32](1000000).Reshape(1000, 1000)
 	out := tensor.CreateEmptyTensor[float32](1000, 1000)
 	for i := 0; i < b.N; i++ {
 		a1.Add(a2, out)
@@ -70,6 +70,7 @@ func BenchmarkBigAdd(b *testing.B) {
 // BenchmarkBigMul-12         10958            106.339 ns/op            3596 B/op         26 allocs/op
 // BenchmarkBigMul-12         11272            108.102 ns/op            3545 B/op         26 allocs/op
 // BenchmarkBigMul-12         11263            106.109 ns/op            3547 B/op         26 allocs/op
+// numpy ref 								 2.712.392 ns/op
 // shape 1000x1000
 func BenchmarkBigMul(b *testing.B) {
 	rng := tensor.NewRNG(0)

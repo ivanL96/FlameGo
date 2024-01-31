@@ -33,32 +33,17 @@ func TestLinear(t *testing.T) {
 	b.Alias = "B"
 
 	epochs := 1000
-	history := make([]float32, 0)
+	var history float32
 	for i := 0; i < epochs; i++ {
 		y_pred := (x.MatMul(w)).Add(b)
 		loss := y_pred.MSE(y)
 		loss.Backward(nil)
 		if (i+1)%100 == 0 {
-			history = append(history, loss.Value.Data()...)
+			history = loss.Value.Data()[0]
 		}
 		optim.Step(w, b)
 		optim.ZeroGrads()
 	}
-	loss_history := []float32{
-		14.10375,
-		6.4046683,
-		2.919373,
-		1.3408439,
-		0.6251891,
-		0.30006462,
-		0.15173683,
-		0.08349221,
-		0.051564693,
-		0.0361432}
 
-	for i := 0; i < len(history); i++ {
-		a := history[i]
-		b := loss_history[i]
-		assert(t, math.Abs(float64(a-b)) <= 0.01)
-	}
+	assert(t, math.Abs(float64(history-0.0361432)) <= 0.0001)
 }

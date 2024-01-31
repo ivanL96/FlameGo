@@ -94,14 +94,15 @@ func BenchmarkMatMulUnite(b *testing.B) {
 // BenchmarkMatMul-12           100          11.420.477 ns/op        12450394 B/op       4015 allocs/op
 // BenchmarkMatMul-12           102          11.561.105 ns/op        12447245 B/op       4015 allocs/op
 // BenchmarkMatMul-12           102          11.648.135 ns/op        12447252 B/op       4015 allocs/op
-// removed extra copy of data, reduced mem
-// BenchmarkMatMul-12            98          11.766.727 ns/op         8479747 B/op       4014 allocs/op
-// blocks
+// splitted by blocks, improved cache locality
 // BenchmarkMatMul-12           102          10.851.742 ns/op        12308552 B/op       2144 allocs/op
 // BenchmarkMatMul-12           109          10.775.502 ns/op        12298450 B/op       2144 allocs/op
 // BenchmarkMatMul-12           105          11.092.542 ns/op        12304045 B/op       2144 allocs/op
 //
 // numpy matmul ref                          10.645.914 ns/op
+// 10000x10000
+// mine 54.563.731.700
+// numpy 7.661.700.820
 //
 // go test -benchmem -run=^$ -bench ^BenchmarkMatMul$ gograd/benchmarks -benchmem -v -count=5
 func BenchmarkMatMul(b *testing.B) {
@@ -111,6 +112,7 @@ func BenchmarkMatMul(b *testing.B) {
 	// b1 := tensor.Range[float32](int(size*size)).Reshape(size, size)
 	a1 := rng.RandomFloat32(size, size)
 	b1 := rng.RandomFloat32(size, size)
+	a1.MatMul(b1)
 	for i := 0; i < b.N; i++ {
 		a1.MatMul(b1)
 	}
