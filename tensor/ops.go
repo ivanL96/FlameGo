@@ -11,11 +11,6 @@ import (
 
 var AUTO_IMPL device.Implementation = *device.DetectImpl().ShowDebugInfo()
 
-type UnaryOp[T types.TensorType] struct {
-	scalar func(T) T
-	vector func(device.Implementation, []T, []T)
-}
-
 // general use Binary operator
 func BaseBinElementwiseOp[T types.TensorType](
 	tensor_a,
@@ -24,7 +19,7 @@ func BaseBinElementwiseOp[T types.TensorType](
 	scalar_impl func(T, T) T,
 	// vector is used to accelerate applying operation to vectors
 	vector_impl func(device.Implementation, []T, []T, []T),
-	// is used to accelerate applying operation between vectors and scalars
+	// vector_to_scalar_impl is used to accelerate applying operation between vectors and scalars.
 	vector_to_scalar_impl func(device.Implementation, []T, []T, []T),
 	out *Tensor[T],
 ) *Tensor[T] {
@@ -147,10 +142,11 @@ func BaseBinElementwiseOp[T types.TensorType](
 
 func unaryElementwiseRoutine[T types.TensorType](
 	tensor *Tensor[T],
-	op *UnaryOp[T],
+	scalar_impl func(T) T,
+	vector_impl func(device.Implementation, []T, []T),
 	out *Tensor[T],
 ) *Tensor[T] {
-	unaryScalarOp, unaryVecOp := op.scalar, op.vector
+	unaryScalarOp, unaryVecOp := scalar_impl, vector_impl
 	outTensor := PrepareOutTensor(out, tensor.Shape())
 	if tensor.shape.IsScalarLike() {
 		outTensor.data()[0] = unaryScalarOp(tensor.data()[0])
@@ -195,34 +191,19 @@ func (tensor *Tensor[T]) Pow(other_tensor *Tensor[T], out ...*Tensor[T]) *Tensor
 
 // unary
 func (tensor *Tensor[T]) Neg(out ...*Tensor[T]) *Tensor[T] {
-	neg := UnaryOp[T]{
-		scalar: ops.NegAtomic[T],
-		vector: device.Neg[T],
-	}
-	return unaryElementwiseRoutine(tensor, &neg, get_param(out...))
+	return unaryElementwiseRoutine(tensor, ops.NegAtomic[T], device.Neg[T], get_param(out...))
 }
 
 func (tensor *Tensor[T]) Sigmoid(out ...*Tensor[T]) *Tensor[T] {
-	sigma := UnaryOp[T]{
-		scalar: ops.SigmoidAtomic[T],
-		vector: device.Sigmoid[T],
-	}
-	return unaryElementwiseRoutine(tensor, &sigma, get_param(out...))
+	return unaryElementwiseRoutine(tensor, ops.SigmoidAtomic[T], device.Sigmoid[T], get_param(out...))
 }
 
 func (tensor *Tensor[T]) Ln(out ...*Tensor[T]) *Tensor[T] {
-	ln := UnaryOp[T]{
-		scalar: ops.LnAtomic[T],
-	}
-	return unaryElementwiseRoutine(tensor, &ln, get_param(out...))
+	return unaryElementwiseRoutine(tensor, ops.LnAtomic[T], nil, get_param(out...))
 }
 
 func (tensor *Tensor[T]) Relu(out ...*Tensor[T]) *Tensor[T] {
-	relu := UnaryOp[T]{
-		scalar: ops.ReluAtomic[T],
-		vector: device.Relu[T],
-	}
-	return unaryElementwiseRoutine(tensor, &relu, get_param(out...))
+	return unaryElementwiseRoutine(tensor, ops.ReluAtomic[T], device.Relu[T], get_param(out...))
 }
 
 //
