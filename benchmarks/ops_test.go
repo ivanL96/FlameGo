@@ -81,12 +81,22 @@ func BenchmarkBigMul(b *testing.B) {
 	// fmt.Println(out.Get(999, 999))
 }
 
+// goos: windows
+// goarch: amd64
+// pkg: gograd/benchmarks
+// cpu: 11th Gen Intel(R) Core(TM) i5-11400H @ 2.70GHz
 // avx
-// BenchmarkMulToConst-12              6510            171877 ns/op            1854 B/op          1 allocs/op
-// BenchmarkMulToConst-12              6363            185830 ns/op            1897 B/op          1 allocs/op
-// BenchmarkMulToConst-12              6712            179904 ns/op            1799 B/op          1 allocs/op
-// BenchmarkMulToConst-12              6818            184437 ns/op            1771 B/op          1 allocs/op
-// BenchmarkMulToConst-12              6506            180120 ns/op            1856 B/op          1 allocs/op
+// BenchmarkMulToConst-12              6510            171.877 ns/op            1854 B/op          1 allocs/op
+// BenchmarkMulToConst-12              6363            185.830 ns/op            1897 B/op          1 allocs/op
+// BenchmarkMulToConst-12              6712            179.904 ns/op            1799 B/op          1 allocs/op
+// BenchmarkMulToConst-12              6818            184.437 ns/op            1771 B/op          1 allocs/op
+// BenchmarkMulToConst-12              6506            180.120 ns/op            1856 B/op          1 allocs/op
+// avx & goroutines
+// BenchmarkMulToConst-12             18710             61.010 ns/op            2419 B/op         27 allocs/op
+// BenchmarkMulToConst-12             19654             60.755 ns/op            2389 B/op         27 allocs/op
+// BenchmarkMulToConst-12             19437             60.904 ns/op            2394 B/op         27 allocs/op
+// BenchmarkMulToConst-12             19581             60.698 ns/op            2390 B/op         27 allocs/op
+// BenchmarkMulToConst-12             19366             60.783 ns/op            2396 B/op         27 allocs/op
 func BenchmarkMulToConst(b *testing.B) {
 	rng := tensor.NewRNG(0)
 	a1 := rng.RandomFloat32(1000, 1000)

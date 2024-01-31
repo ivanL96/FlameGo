@@ -133,11 +133,22 @@ func MulMatx[T types.TensorType](a, b, out []T, impl func([]float32, []float32, 
 	MatxParallel(mul_chunk, a, b, makeOutMat(out, len(a)))
 }
 
-func MulMatxToConst[T types.TensorType](a []T, b T, out []T) {
-	out_ := makeOutMat(out, len(a))
-	for i, val := range a {
-		out_[i] = val * b
+func MulMatxToConst[T types.TensorType](a, b, out []T, impl func([]float32, float32, []float32)) {
+	mulconst_chunk := func(start, end int, a, b, out []T) {
+		if start >= end {
+			return
+		}
+		af, bf, cf := types.Input_b_scalar_to_float32(a[start:end], b[0], out[start:end])
+		if impl == nil || af == nil {
+			_const := b[0]
+			for i := start; i < end; i++ {
+				out[i] = a[i] * _const
+			}
+		} else {
+			impl(af, bf, cf)
+		}
 	}
+	MatxParallel(mulconst_chunk, a, b, makeOutMat(out, len(a)))
 }
 
 func DivMatx[T types.TensorType](a, b, out []T) {

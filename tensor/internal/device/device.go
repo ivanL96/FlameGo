@@ -90,15 +90,15 @@ func Mul[T types.TensorType](i Implementation, a, b, c []T) {
 	}
 }
 
-func MulToConst[T types.TensorType](i Implementation, a []T, b []T, c []T) {
-	afl, bfl, cfl := types.Input_b_scalar_to_float32(a, b[0], c)
+func MulToConst[T types.TensorType](i Implementation, a, b, c []T) {
+	afl, _, _ := types.Input_b_scalar_to_float32(a, b[0], c)
 	switch {
 	case i.impl == AVX && afl != nil:
-		amd64.Mul_to_const_mm256(afl, bfl, cfl)
+		matrix.MulMatxToConst(a, b, c, amd64.Mul_to_const_mm256)
 	case i.impl == AVX512 && afl != nil:
-		amd64.Mul_to_const_mm256(afl, bfl, cfl)
+		matrix.MulMatxToConst(a, b, c, amd64.Mul_to_const_mm256)
 	default:
-		matrix.MulMatxToConst(a, b[0], c)
+		matrix.MulMatxToConst(a, b, c, nil)
 	}
 }
 
