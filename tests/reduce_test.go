@@ -36,3 +36,10 @@ func TestMean(t *testing.T) {
 	assertEqualSlices(t, b.Shape(), types.Shape{1, 1, 1})
 	assertEqualSlices(t, b.Data(), []float32{4.5})
 }
+
+func TestMax(t *testing.T) {
+	a := tensor.Range[float32](100).Reshape(10, 10)
+	b := a.Max(true)
+	assertEqualSlices(t, b.Shape(), types.Shape{1, 1})
+	assertEqualSlices(t, b.Data(), []float32{99})
+}

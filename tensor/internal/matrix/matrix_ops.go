@@ -211,3 +211,19 @@ func SumMatx[T types.TensorType](a, out []T) {
 	}
 	MatxParallel(sum_chunk, a, nil, makeOutMat(out, len(a)))
 }
+
+func MaxMatx[T types.TensorType](a, out []T) {
+	max_chunk := func(start, end int, a, dummy, out []T) {
+		var _max T = a[0]
+		for i := start; i < end; i++ {
+			v := a[i]
+			if v > _max {
+				_max = v
+			}
+		}
+		if _max > out[0] {
+			out[0] = _max
+		}
+	}
+	MatxParallel(max_chunk, a, nil, makeOutMat(out, len(a)))
+}

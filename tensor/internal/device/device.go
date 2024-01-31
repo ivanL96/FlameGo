@@ -92,11 +92,12 @@ func Mul[T types.TensorType](i Implementation, a, b, c []T) {
 
 func MulToConst[T types.TensorType](i Implementation, a []T, b []T, c []T) {
 	afl, bfl, cfl := types.Input_b_scalar_to_float32(a, b[0], c)
-	if i.impl == AVX && afl != nil {
+	switch {
+	case i.impl == AVX && afl != nil:
 		amd64.Mul_to_const_mm256(afl, bfl, cfl)
-	} else if i.impl == AVX512 && afl != nil {
+	case i.impl == AVX512 && afl != nil:
 		amd64.Mul_to_const_mm256(afl, bfl, cfl)
-	} else {
+	default:
 		matrix.MulMatxToConst(a, b[0], c)
 	}
 }
@@ -153,4 +154,8 @@ func Sum[T types.TensorType](i Implementation, a, c []T) {
 	// } else {
 	matrix.SumMatx(a, c)
 	// }
+}
+
+func Max[T types.TensorType](i Implementation, a, c []T) {
+	matrix.MaxMatx(a, c)
 }
