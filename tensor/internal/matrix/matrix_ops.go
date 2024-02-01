@@ -34,6 +34,7 @@ func MatxParallel[T types.TensorType](
 	chunk_size := (la + numCPU - 1) / numCPU
 
 	var wg sync.WaitGroup
+	var mu sync.Mutex
 	wg.Add(numCPU)
 
 	for i := 0; i < numCPU; i++ {
@@ -48,6 +49,8 @@ func MatxParallel[T types.TensorType](
 			runtime.LockOSThread()
 			defer runtime.UnlockOSThread()
 			f(start, end, a, b, out)
+			mu.Lock()
+			defer mu.Unlock()
 		}(start, end)
 	}
 	wg.Wait()
