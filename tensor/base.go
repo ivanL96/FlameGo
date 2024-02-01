@@ -47,3 +47,10 @@ func (tensor *Tensor[T]) data() []T {
 func (tensor *Tensor[T]) DType() reflect.Type {
 	return getTypeArray(tensor.data())
 }
+
+func (tensor *Tensor[T]) MustReveal() *Tensor[T] {
+	if tensor.Err != nil {
+		panic(tensor.Err)
+	}
+	return tensor
+}
