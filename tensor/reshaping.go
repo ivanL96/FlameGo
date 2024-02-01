@@ -10,6 +10,9 @@ import (
 // set of operations for shaping routines
 
 func (tensor *Tensor[T]) Flatten(out *Tensor[T]) *Tensor[T] {
+	if tensor.Err != nil {
+		return tensor
+	}
 	if len(tensor.shape) == 1 {
 		return tensor
 	}
@@ -24,6 +27,9 @@ func (tensor *Tensor[T]) Flatten(out *Tensor[T]) *Tensor[T] {
 }
 
 func (tensor *Tensor[T]) Squeeze(out *Tensor[T]) *Tensor[T] {
+	if tensor.Err != nil {
+		return tensor
+	}
 	if tensor.shape.IsScalarLike() {
 		return tensor
 	}
@@ -38,6 +44,9 @@ func (tensor *Tensor[T]) Squeeze(out *Tensor[T]) *Tensor[T] {
 }
 
 func (tensor *Tensor[T]) Unsqueeze(axis uint, out *Tensor[T]) *Tensor[T] {
+	if tensor.Err != nil {
+		return tensor
+	}
 	outTensor := PrepareOutTensor(out, tensor.shape)
 	if tensor != outTensor {
 		outTensor.SetData(tensor.data())

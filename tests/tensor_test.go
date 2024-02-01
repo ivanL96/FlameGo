@@ -33,14 +33,22 @@ func TestCompare(t *testing.T) {
 	b := tensor.CreateTensor([]int32{1, 2, 3}, types.Shape{1, 3})
 	c := tensor.CreateTensor([]int32{1, 2, 3, 4}, types.Shape{1, 4})
 	d := tensor.CreateTensor([]int32{1, 2, 3}, types.Shape{1, 3})
-	assert(t, !a.IsEqual(b))
-	assert(t, !a.IsEqual(c))
-	assert(t, b.IsEqual(d))
+	ab, err := a.IsEqual(b)
+	assert(t, !ab)
+	assert(t, err == nil)
+	ac, err2 := a.IsEqual(c)
+	assert(t, !ac)
+	assert(t, err2 == nil)
+	bd, err3 := b.IsEqual(d)
+	assert(t, bd)
+	assert(t, err3 == nil)
 
 	// IsEqual is dim order aware
 	a1 := tensor.Range[int32](4).Reshape(2, 2).T()
 	a2 := a1.AsContinuous()
-	assert(t, a1.IsEqual(a2))
+	a1a2, err4 := a1.IsEqual(a2)
+	assert(t, a1a2)
+	assert(t, err4 == nil)
 }
 
 func TestRange(t *testing.T) {

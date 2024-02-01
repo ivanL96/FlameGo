@@ -93,10 +93,12 @@ func TestGradMatMulMean(t *testing.T) {
 	assertEqualSlices(t, a.Grad.Data(), []float32{
 		0.5, 1.75, 0.50, 1.75, 0.5, 1.75, 0.5, 1.75})
 	assertEqualSlices(t, a.Grad.Shape(), types.Shape{4, 2})
-	assert(t, b.Grad.IsAllClose(
+	is_close, err := b.Grad.IsAllClose(
 		tensor.CreateTensor([]float32{0.6, 0.6, 0.6, 0.6, 0.6, 0.8, 0.8, 0.8, 0.8, 0.8}, types.Shape{2, 5}),
 		0.00001,
-	))
+	)
+	assert(t, is_close)
+	assert(t, err == nil)
 	assertEqualSlices(t, b.Grad.Shape(), types.Shape{2, 5})
 }
 

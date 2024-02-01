@@ -182,7 +182,14 @@ func (tensor *Tensor[T]) SetData(value []T) *Tensor[T] {
 
 // set scalar to specific index
 func (tensor *Tensor[T]) Set(indexes []int, value T) {
-	flatIndex := tensor.getFlatIndex(indexes...)
+	if tensor.Err != nil {
+		return
+	}
+	flatIndex, err := tensor.getFlatIndex(indexes...)
+	if err != nil {
+		tensor.Err = err
+		return
+	}
 	tensor.data()[flatIndex] = value
 }
 
@@ -192,36 +199,42 @@ func (tensor *Tensor[T]) CreateIterator() *iter.TensorIterator {
 
 // Compares shapes and data:
 // iterates over two tensors and compares elementwise
-func (tensor *Tensor[T]) IsEqual(other *Tensor[T]) bool {
+func (tensor *Tensor[T]) IsEqual(other *Tensor[T]) (bool, error) {
+	if tensor.Err != nil {
+		return false, tensor.Err
+	}
+	if other.Err != nil {
+		return false, other.Err
+	}
 	if !tensor.shape.Equals(other.shape) {
-		return false
+		return false, nil
 	}
 	if tensor.IsContinuous() && other.IsContinuous() {
-		return EqualSlices[T](tensor.data(), other.data())
+		return EqualSlices[T](tensor.data(), other.data()), nil
 	}
 
 	it := tensor.CreateIterator()
 	for it.Iterate() {
 		idx := it.Next()
 		if tensor.Get_fast(idx...) != other.Get_fast(idx...) {
-			return false
+			return false, nil
 		}
 	}
-	return true
+	return true, nil
 }
 
-func (tensor *Tensor[T]) IsAllClose(tensor_or_scalar *Tensor[T], tol float64) bool {
+func (tensor *Tensor[T]) IsAllClose(tensor_or_scalar *Tensor[T], tol float64) (bool, error) {
 	if tensor.Err != nil {
-		panic(tensor.Err)
+		return false, tensor.Err
 	}
 	if tensor_or_scalar.Err != nil {
-		panic(tensor_or_scalar.Err)
+		return false, tensor_or_scalar.Err
 	}
 	if tensor_or_scalar.Shape().IsScalarLike() {
 		other_val := tensor_or_scalar.data()[0]
 		for _, val := range tensor.data() {
 			if math.Abs(float64(val-other_val)) > tol {
-				return false
+				return false, nil
 			}
 		}
 	} else if tensor_or_scalar.Shape().Equals(tensor.Shape()) {
@@ -231,11 +244,11 @@ func (tensor *Tensor[T]) IsAllClose(tensor_or_scalar *Tensor[T], tol float64) bo
 			a := tensor.Get_fast(idx...)
 			b := tensor_or_scalar.Get_fast(idx...)
 			if math.Abs(float64(a-b)) > tol {
-				return false
+				return false, nil
 			}
 		}
 	} else {
-		panic("Other argument must be either tensor with the same shape or scalar.")
+		return false, errors.New("other argument must be either tensor with the same shape or scalar")
 	}
-	return true
+	return true, nil
 }

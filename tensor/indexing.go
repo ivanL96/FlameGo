@@ -9,7 +9,7 @@ import (
 	"sync"
 )
 
-func (tensor *Tensor[T]) getFlatIndex(indices ...int) int {
+func (tensor *Tensor[T]) getFlatIndex(indices ...int) (int, error) {
 	flatIndex := 0
 	for i, ind := range indices {
 		dim := int(tensor.shape[i])
@@ -17,22 +17,21 @@ func (tensor *Tensor[T]) getFlatIndex(indices ...int) int {
 		if ind < 0 {
 			norm_ind := dim + ind
 			if norm_ind < 0 {
-				panic(fmt.Sprintf("Index %v is out of bounds", ind))
+				return 0, fmt.Errorf("index %v is out of bounds", ind)
 			}
 			ind = norm_ind
 		}
 		// bound check
 		if ind >= dim {
-			panic(fmt.Sprintf("Index %v is out of bounds for dim %v", ind, dim))
+			return 0, fmt.Errorf("index %v is out of bounds for dim %v", ind, dim)
 		}
 		flatIndex += tensor.strides[i] * ind
 	}
-	return flatIndex
+	return flatIndex, nil
 }
 
 func get_flat_idx_fast(strides []int, indices ...int) int {
-	idxlen := len(indices)
-	switch idxlen {
+	switch len(indices) {
 	case 1:
 		return strides[0] * indices[0]
 	case 2:
@@ -59,7 +58,10 @@ func (tensor *Tensor[T]) Get(indices ...int) (T, error) {
 		return 0, fmt.Errorf(
 			"incorrect number of indices. Must be %v got %v", len(tensor.shape), len(indices))
 	}
-	flatIndex := tensor.getFlatIndex(indices...)
+	flatIndex, err := tensor.getFlatIndex(indices...)
+	if err != nil {
+		return 0, err
+	}
 	return tensor.data()[flatIndex], nil
 }
 
@@ -80,7 +82,11 @@ func (tensor *Tensor[T]) Index(indices ...int) *Tensor[T] {
 	}
 
 	// index of the first elem in the sub tensor
-	flatIndex := tensor.getFlatIndex(indices...)
+	flatIndex, err := tensor.getFlatIndex(indices...)
+	if err != nil {
+		tensor.Err = err
+		return tensor
+	}
 	if n_indices == n_dims {
 		return Scalar[T](tensor.data()[flatIndex])
 	}
