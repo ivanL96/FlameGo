@@ -1,6 +1,7 @@
 package tensor
 
 import (
+	"errors"
 	"fmt"
 	types "gograd/tensor/types"
 	"sync"
@@ -42,15 +43,20 @@ func (tensor *Tensor[T]) Unsqueeze(axis uint, out *Tensor[T]) *Tensor[T] {
 }
 
 func (tensor *Tensor[T]) Reshape(newShape ...types.Dim) *Tensor[T] {
+	if tensor.Err != nil {
+		return tensor
+	}
 	var new_shape_prod types.Dim = 1
 	for _, dim := range newShape {
 		new_shape_prod *= dim
 	}
 	if new_shape_prod == 0 {
-		panic("Shape cannot have 0 dim size.")
+		tensor.Err = errors.New("shape cannot have 0 dim size")
+		return tensor
 	}
 	if len(tensor.data()) != int(new_shape_prod) {
-		panic(fmt.Sprintf("Cannot reshape tensor with size %v to shape %v", len(tensor.data()), newShape))
+		tensor.Err = fmt.Errorf("cannot reshape tensor with size %v to shape %v", len(tensor.data()), newShape)
+		return tensor
 	}
 	sh := types.Shape(newShape)
 	tensor.shape = newShape
@@ -61,6 +67,9 @@ func (tensor *Tensor[T]) Reshape(newShape ...types.Dim) *Tensor[T] {
 
 // Transposes tensor to given axes. If no axes are set, default transposing applied
 func (tensor *Tensor[T]) T(axes ...uint) *Tensor[T] {
+	if tensor.Err != nil {
+		return tensor
+	}
 	n_dims := len(tensor.shape)
 	if n_dims == 1 {
 		return tensor
@@ -75,16 +84,19 @@ func (tensor *Tensor[T]) T(axes ...uint) *Tensor[T] {
 		unique_axes := make(map[uint]bool)
 		for _, a := range axes {
 			if unique_axes[a] {
-				panic("Repeatable axis in transpose")
+				tensor.Err = errors.New("repeatable axis in transpose")
+				return tensor
 			} else {
 				unique_axes[a] = true
 			}
 		}
 	} else {
 		if len(axes) < n_dims {
-			panic(fmt.Sprintf("Too few axes provided. Expected %v, got %v", n_dims, len(axes)))
+			tensor.Err = fmt.Errorf("too few axes provided. Expected %v, got %v", n_dims, len(axes))
+			return tensor
 		} else if len(axes) > n_dims {
-			panic(fmt.Sprintf("Too many axes provided. Expected %v, got %v", n_dims, len(axes)))
+			tensor.Err = fmt.Errorf("too many axes provided. Expected %v, got %v", n_dims, len(axes))
+			return tensor
 		}
 	}
 
@@ -106,11 +118,16 @@ func (tensor *Tensor[T]) TrC(axes ...uint) *Tensor[T] {
 // TrC for 2D matrix
 // [1,2,3][4,5,6] => [1,4][2,5][3,6]
 func (tensor *Tensor[T]) TrC2D() *Tensor[T] {
+	if tensor.Err != nil {
+		return tensor
+	}
 	if len(tensor.Shape()) != 2 {
-		panic("Tensor must be 2D")
+		tensor.Err = errors.New("tensor must be 2D")
+		return tensor
 	}
 	if !tensor.IsContinuous() {
-		panic("Tensor must be continuous")
+		tensor.Err = errors.New("tensor must be continuous")
+		return tensor
 	}
 	sh := tensor.shape
 	rows := int(sh[0])
@@ -134,9 +151,9 @@ func (tensor *Tensor[T]) TrC2D() *Tensor[T] {
 }
 
 // stacks tensors together. All tensors should have the same shape
-func Stack[T types.TensorType](tensors ...*Tensor[T]) *Tensor[T] {
+func Stack[T types.TensorType](tensors ...*Tensor[T]) (*Tensor[T], error) {
 	if len(tensors) < 2 {
-		panic("At least 2 tensors is required.")
+		return nil, errors.New("at least 2 tensors is required")
 	}
 
 	// validate shapes
@@ -147,7 +164,7 @@ func Stack[T types.TensorType](tensors ...*Tensor[T]) *Tensor[T] {
 			continue
 		}
 		if !tensor.shape.Equals(prev_shape) {
-			panic("All shapes must be equal.")
+			return nil, errors.New("all shapes must be equal")
 		}
 	}
 
@@ -167,5 +184,5 @@ func Stack[T types.TensorType](tensors ...*Tensor[T]) *Tensor[T] {
 		}(i)
 	}
 	wg.Wait()
-	return united
+	return united, nil
 }

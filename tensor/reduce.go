@@ -33,6 +33,9 @@ func (tensor *Tensor[T]) SumAlongAxis(
 	axis uint,
 	keep_dims bool,
 ) *Tensor[T] {
+	if tensor.Err != nil {
+		return tensor
+	}
 	// create args for IndexAdv. Initially [":",":",..."0",...]
 	args := make([]string, 0, len(tensor.Shape()))
 	for i := 0; i < len(tensor.Shape()); i++ {
@@ -55,12 +58,18 @@ func (tensor *Tensor[T]) SumAlongAxis(
 }
 
 func (tensor *Tensor[T]) Sum(keep_dims bool) *Tensor[T] {
+	if tensor.Err != nil {
+		return tensor
+	}
 	sum := []T{0}
 	device.Sum(AUTO_IMPL, tensor.data(), sum)
 	return reduce_shape(tensor, sum[0], keep_dims)
 }
 
 func (tensor *Tensor[T]) Mean(keep_dims bool) *Tensor[T] {
+	if tensor.Err != nil {
+		return tensor
+	}
 	sum := []T{0}
 	device.Sum(AUTO_IMPL, tensor.data(), sum)
 
@@ -70,6 +79,9 @@ func (tensor *Tensor[T]) Mean(keep_dims bool) *Tensor[T] {
 }
 
 func (tensor *Tensor[T]) Max(keep_dims bool) *Tensor[T] {
+	if tensor.Err != nil {
+		return tensor
+	}
 	max := []T{tensor.data()[0]}
 	device.Max(AUTO_IMPL, tensor.data(), max)
 	return reduce_shape(tensor, max[0], keep_dims)

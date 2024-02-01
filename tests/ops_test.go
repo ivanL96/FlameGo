@@ -178,6 +178,7 @@ func TestDivInplace(t *testing.T) {
 	a2 := tensor.Range[float32](1, 4)
 	b2 := tensor.CreateTensor[float32]([]float32{2, 2, 2}, types.Shape{3})
 	a2.Div(b2, a2)
+	// fmt.Println(a2.Err, b2.Err)
 	assertEqualSlices(t, a2.Data(), []float32{0.5, 1, 1.5})
 	assertEqualSlices(t, a2.Shape(), types.Shape{3})
 }

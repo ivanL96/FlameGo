@@ -11,6 +11,7 @@ type Tensor[T types.TensorType] struct {
 	shape     types.Shape
 	strides   []int
 	dim_order []uint16
+	Err       error
 }
 
 type TensorList[T types.TensorType] []*Tensor[T]

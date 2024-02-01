@@ -6,6 +6,9 @@ import (
 
 // tries to broadcast the shape and replicate the data accordingly
 func (tensor *Tensor[T]) Broadcast(shape ...types.Dim) *Tensor[T] {
+	if tensor.Err != nil {
+		return tensor
+	}
 	// TODO test with transpose
 	if tensor.shape.Equals(shape) {
 		return tensor

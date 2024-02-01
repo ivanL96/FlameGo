@@ -1,6 +1,7 @@
 package tensor
 
 import (
+	"errors"
 	"fmt"
 	"gograd/tensor/iter"
 	types "gograd/tensor/types"
@@ -15,8 +16,12 @@ func makeTensor[T types.TensorType](dataPtr *[]T, shape types.Shape, copy bool) 
 	for _, dim := range shape {
 		shapeProd *= dim
 	}
+
+	var tensor Tensor[T]
+
 	if shapeProd == 0 {
-		panic("Shape cannot have zero dim.")
+		tensor.Err = errors.New("shape cannot have zero dim")
+		return &tensor
 	}
 	var data []T
 	if dataPtr == nil {
@@ -31,16 +36,15 @@ func makeTensor[T types.TensorType](dataPtr *[]T, shape types.Shape, copy bool) 
 		}
 	}
 	if len(shape) == 0 || int(shapeProd) != len(data) {
-		panic(fmt.Sprintf("makeTensor: Value length %v cannot have shape %v", len(data), shape))
-	}
-	tensor := &Tensor[T]{
-		shape:     append(types.Shape(nil), shape...),
-		strides:   shape.GetStrides(),
-		data_buff: data,
-		dim_order: shape.InitDimOrder(),
+		tensor.Err = fmt.Errorf("makeTensor: Value length %v cannot have shape %v", len(data), shape)
+		return &tensor
 	}
 
-	return tensor
+	tensor.shape = append(types.Shape(nil), shape...)
+	tensor.strides = shape.GetStrides()
+	tensor.data_buff = data
+	tensor.dim_order = shape.InitDimOrder()
+	return &tensor
 }
 
 // inits a tensor with data
@@ -91,6 +95,9 @@ func AsType[OLD_T types.TensorType, NEW_T types.TensorType](tensor *Tensor[OLD_T
 }
 
 func (tensor *Tensor[T]) Copy() *Tensor[T] {
+	if tensor.Err != nil {
+		return tensor
+	}
 	newData := make([]T, len(tensor.data()))
 	copy(newData, tensor.data())
 	newTensor := CreateTensorNoCopy(newData, tensor.shape)
@@ -103,7 +110,7 @@ func (tensor *Tensor[T]) Copy() *Tensor[T] {
 // limits: min 1 and max 3 arguments. Start, End, Step
 func Range[T types.TensorType](limits ...int) *Tensor[T] {
 	if len(limits) == 0 {
-		panic("Range requires at least one argument")
+		panic("range requires at least one argument")
 	}
 	start, end, step := 0, 0, 1
 	if len(limits) == 1 {
@@ -201,6 +208,12 @@ func (tensor *Tensor[T]) IsEqual(other *Tensor[T]) bool {
 }
 
 func (tensor *Tensor[T]) IsAllClose(tensor_or_scalar *Tensor[T], tol float64) bool {
+	if tensor.Err != nil {
+		panic(tensor.Err)
+	}
+	if tensor_or_scalar.Err != nil {
+		panic(tensor_or_scalar.Err)
+	}
 	if tensor_or_scalar.Shape().IsScalarLike() {
 		other_val := tensor_or_scalar.data()[0]
 		for _, val := range tensor.data() {

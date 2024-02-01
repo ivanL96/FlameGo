@@ -1,6 +1,7 @@
 package tensor
 
 import (
+	"errors"
 	"fmt"
 	"gograd/tensor/internal/device"
 	ops "gograd/tensor/internal/ops"
@@ -23,6 +24,13 @@ func BaseBinElementwiseOp[T types.TensorType](
 	vector_to_scalar_impl func(device.Implementation, []T, []T, []T),
 	out *Tensor[T],
 ) *Tensor[T] {
+	if tensor_a.Err != nil {
+		return tensor_a
+	}
+	if tensor_b.Err != nil {
+		return tensor_b
+	}
+
 	var outTensor *Tensor[T]
 	// TODO if outTensor equals to a or b,  apply the *_to_const vectorized impl
 	// TODO try to vectorize operations for non continuous tensors. Right now it falls back to scalar impl which is slow
@@ -50,9 +58,8 @@ func BaseBinElementwiseOp[T types.TensorType](
 
 	// tensors should have equal shapes or at least one of them should be scalar-like
 	if !tensor_a.shape.AreBroadcastable(tensor_b.shape) {
-		panic(
-			fmt.Sprintf("Shapes: %x, %x are not broadcastable", tensor_a.shape, tensor_b.shape),
-		)
+		tensor_a.Err = fmt.Errorf("shapes: %x, %x are not broadcastable", tensor_a.shape, tensor_b.shape)
+		return tensor_a
 	}
 	if len(tensor_a.data()) == len(tensor_b.data()) {
 		// same broadcastable shapes (N,M) & (N,M)
@@ -146,6 +153,9 @@ func unaryElementwiseRoutine[T types.TensorType](
 	vector_impl func(device.Implementation, []T, []T),
 	out *Tensor[T],
 ) *Tensor[T] {
+	if tensor.Err != nil {
+		return tensor
+	}
 	unaryScalarOp, unaryVecOp := scalar_impl, vector_impl
 	outTensor := PrepareOutTensor(out, tensor.Shape())
 	if tensor.shape.IsScalarLike() {
@@ -211,8 +221,15 @@ func (tensor *Tensor[T]) Relu(out ...*Tensor[T]) *Tensor[T] {
 //
 
 func (tensor *Tensor[T]) Dot(other *Tensor[T]) *Tensor[T] {
+	if tensor.Err != nil {
+		return tensor
+	}
+	if other.Err != nil {
+		return other
+	}
 	if len(tensor.shape) != len(other.shape) {
-		panic("Tensors must have equal number of dims.")
+		tensor.Err = errors.New("tensors must have equal number of dims")
+		return tensor
 	}
 
 	if len(tensor.shape) == 2 {
@@ -222,7 +239,8 @@ func (tensor *Tensor[T]) Dot(other *Tensor[T]) *Tensor[T] {
 	outer_dims_a := tensor.shape[:len(tensor.shape)-2]
 	outer_dims_b := other.shape[:len(tensor.shape)-2]
 	if !outer_dims_a.Equals(outer_dims_b) {
-		panic("Tensors must have equal outer dims. ")
+		tensor.Err = errors.New("tensors must have equal outer dims")
+		return tensor
 	}
 	var outer_shape_prod types.Dim = 1
 	for _, dim := range outer_dims_a {
@@ -240,7 +258,11 @@ func (tensor *Tensor[T]) Dot(other *Tensor[T]) *Tensor[T] {
 		tensors_stack[i] = out
 	}
 
-	out := Stack(tensors_stack...)
+	out, err := Stack(tensors_stack...)
+	if err != nil {
+		tensor.Err = err
+		return tensor
+	}
 
 	out_shape := make(types.Shape, len(tensor.shape))
 	copy(out_shape[:len(outer_dims_a)], outer_dims_a)
@@ -251,16 +273,25 @@ func (tensor *Tensor[T]) Dot(other *Tensor[T]) *Tensor[T] {
 }
 
 func (tensor *Tensor[T]) MatMul(other *Tensor[T]) *Tensor[T] {
+	if tensor.Err != nil {
+		return tensor
+	}
+	if other.Err != nil {
+		return other
+	}
 	if tensor.DType().Kind() != reflect.Float32 {
-		panic("MatMul() only supports tensors of type []float32")
+		tensor.Err = errors.New("matMul() only supports tensors of type []float32")
+		return tensor
 	}
 	if len(tensor.shape) != 2 || len(other.shape) != 2 {
-		panic("Tensors must be two-dim.")
+		tensor.Err = errors.New("tensors must be two-dim")
+		return tensor
 	}
 	if tensor.shape[1] != other.shape[0] {
-		panic(fmt.Sprintf(
-			"Tensors inner shapes are different. %v != %v", tensor.shape[1], other.shape[0],
-		))
+		tensor.Err = fmt.Errorf(
+			"tensors inner shapes are different. %v != %v", tensor.shape[1], other.shape[0],
+		)
+		return tensor
 	}
 	// if one of tensors is scalar, matmul converges to Mul()
 	if tensor.shape.IsScalarLike() || other.shape.IsScalarLike() {

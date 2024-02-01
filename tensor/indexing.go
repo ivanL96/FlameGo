@@ -1,6 +1,7 @@
 package tensor
 
 import (
+	"errors"
 	"fmt"
 	types "gograd/tensor/types"
 	"strconv"
@@ -50,24 +51,32 @@ func (tensor *Tensor[T]) Get_fast(indices ...int) T {
 	return tensor.data()[get_flat_idx_fast(tensor.strides, indices...)]
 }
 
-func (tensor *Tensor[T]) Get(indices ...int) T {
+func (tensor *Tensor[T]) Get(indices ...int) (T, error) {
+	if tensor.Err != nil {
+		return 0, tensor.Err
+	}
 	if len(indices) != len(tensor.shape) {
-		panic(fmt.Sprintf(
-			"Incorrect number of indices. Must be %v got %v", len(tensor.shape), len(indices)))
+		return 0, fmt.Errorf(
+			"incorrect number of indices. Must be %v got %v", len(tensor.shape), len(indices))
 	}
 	flatIndex := tensor.getFlatIndex(indices...)
-	return tensor.data()[flatIndex]
+	return tensor.data()[flatIndex], nil
 }
 
 // returns sub data for given indices.
 func (tensor *Tensor[T]) Index(indices ...int) *Tensor[T] {
+	if tensor.Err != nil {
+		return tensor
+	}
 	n_indices := len(indices)
 	n_dims := len(tensor.shape)
 	if n_indices == 0 {
-		panic("At leat one index is required in Index()")
+		tensor.Err = errors.New("at leat one index is required in Index()")
+		return tensor
 	}
 	if n_indices > n_dims {
-		panic("Too many indices")
+		tensor.Err = errors.New("too many indices")
+		return tensor
 	}
 
 	// index of the first elem in the sub tensor
@@ -151,9 +160,9 @@ func Axis() *idxRange {
 // 	return &idxRange{int(start), int(end)}
 // }
 
-func parse_indexes(expr string) []*idxRange {
+func parse_indexes(expr string) ([]*idxRange, error) {
 	if len(expr) == 0 {
-		panic("Arguments cannot be empty.")
+		return nil, errors.New("arguments cannot be empty")
 	}
 	symbols := strings.Split(expr, ",")
 	indices := make([]*idxRange, 0, len(symbols))
@@ -164,16 +173,16 @@ func parse_indexes(expr string) []*idxRange {
 		} else if floatVal, err := strconv.ParseFloat(el, 64); err == nil {
 			indices = append(indices, I(int(floatVal)))
 		} else if el == "" {
-			panic(fmt.Sprintf(
-				"Invalid expression: '%v'. Arguments should be numeric or ':' and separated by ','", expr,
-			))
+			return nil, fmt.Errorf(
+				"invalid expression: '%v'. Arguments should be numeric or ':' and separated by ','", expr,
+			)
 		} else {
-			panic(fmt.Sprintf(
-				"Found unknown symbol in expression: '%v'", el,
-			))
+			return nil, fmt.Errorf(
+				"found unknown symbol in expression: '%v'", el,
+			)
 		}
 	}
-	return indices
+	return indices, nil
 }
 
 // Advanced indexing allows to specify index ranges.
@@ -189,13 +198,22 @@ func parse_indexes(expr string) []*idxRange {
 // tensor.IndexAdv(":,0") ==> [1,4]
 // tensor.IndexAdv(":,1") ==> [2,5]
 func (tensor *Tensor[T]) IndexAdv(expr string) *Tensor[T] {
-	indices := parse_indexes(expr)
+	if tensor.Err != nil {
+		return tensor
+	}
+	indices, err := parse_indexes(expr)
+	if err != nil {
+		tensor.Err = err
+		return tensor
+	}
 
 	if len(indices) == 0 {
-		panic("At least one index is required")
+		tensor.Err = errors.New("at least one index is required")
+		return tensor
 	}
 	if len(indices) > len(tensor.shape) {
-		panic("Too many indices")
+		tensor.Err = errors.New("too many indices")
+		return tensor
 	}
 	// remove trailing axis-wide idx
 	// for example: [I(),Axis(),I(),Axis(),Axis()] => [I(),Axis(),I()]
@@ -287,6 +305,9 @@ func (tensor *Tensor[T]) IsContinuous() bool {
 // reorders data layout to continuous format.
 // it is useful for optimizing indexing/iterating for transposed & other non-continuous tensors
 func (tensor *Tensor[T]) AsContinuous() *Tensor[T] {
+	if tensor.Err != nil {
+		return tensor
+	}
 	if tensor.IsContinuous() {
 		return tensor
 	}
