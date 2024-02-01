@@ -3,8 +3,8 @@ package tensor
 import (
 	"fmt"
 	"gograd/tensor/internal/device"
+	ops "gograd/tensor/internal/ops"
 	"gograd/tensor/iter"
-	ops "gograd/tensor/ops"
 	types "gograd/tensor/types"
 	"reflect"
 )
