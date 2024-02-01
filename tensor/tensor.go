@@ -161,16 +161,19 @@ func Eye[T types.TensorType](x, y types.Dim) *Tensor[T] {
 
 // sets new value of the same shape
 func (tensor *Tensor[T]) SetData(value []T) *Tensor[T] {
+	if tensor.Err != nil {
+		return tensor
+	}
 	length := uint(len(value))
 	var prod uint = 1
 	for _, dim := range tensor.shape {
 		prod = uint(dim) * prod
 	}
 	if prod != length {
-		panic(fmt.Sprintf(
+		tensor.Err = fmt.Errorf(
 			"Shape %v cannot fit the number of elements %v. Change the shape first",
-			tensor.shape, length),
-		)
+			tensor.shape, length)
+		return tensor
 	}
 	// TODO avoid data_buff
 	tensor.data_buff = value
