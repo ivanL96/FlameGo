@@ -3,7 +3,7 @@ package device
 import (
 	"fmt"
 	"gograd/tensor/internal/intrinsics/amd64"
-	"gograd/tensor/internal/matrix"
+	"gograd/tensor/internal/ops"
 	"gograd/tensor/types"
 
 	"github.com/klauspost/cpuid/v2"
@@ -33,6 +33,9 @@ func DetectImpl() *Implementation {
 	}
 	if cpuid.CPU.Supports(cpuid.AVX) {
 		impl.all_suppored = append(impl.all_suppored, "AVX")
+	}
+	if cpuid.CPU.Supports(cpuid.AVX512VNNI) {
+		impl.all_suppored = append(impl.all_suppored, "AVX512VNNI")
 	}
 	// select the best cpu impl
 	if cpuid.CPU.Supports(cpuid.AVX512F, cpuid.AVX512DQ) {
@@ -71,11 +74,11 @@ func MatMul[T types.TensorType](
 	af, bf, outf := types.Input_to_float32(a, b, out)
 	switch i.impl {
 	case AVX:
-		matrix.MatMulMatx(af, bf, outf, a_shape, b_shape, a_strides, b_strides, out_strides, amd64.Dot_mm256)
+		ops.MatMulMatx(af, bf, outf, a_shape, b_shape, a_strides, b_strides, out_strides, amd64.Dot_mm256)
 	case AVX512:
-		matrix.MatMulMatx(af, bf, outf, a_shape, b_shape, a_strides, b_strides, out_strides, amd64.Dot_mm512)
+		ops.MatMulMatx(af, bf, outf, a_shape, b_shape, a_strides, b_strides, out_strides, amd64.Dot_mm512)
 	default:
-		matrix.MatMulMatx(af, bf, outf, a_shape, b_shape, a_strides, b_strides, out_strides, matrix.Dot[T])
+		ops.MatMulMatx(af, bf, outf, a_shape, b_shape, a_strides, b_strides, out_strides, ops.Dot[T])
 	}
 }
 
@@ -83,11 +86,11 @@ func Mul[T types.TensorType](i Implementation, a, b, c []T) {
 	// afl, _, _ := types.Input_to_float32(a, b, c)
 	switch i.impl {
 	case AVX:
-		matrix.MulMatx(a, b, c, amd64.Mul_mm256)
+		ops.MulMatx(a, b, c, amd64.Mul_mm256)
 	case AVX512:
-		matrix.MulMatx(a, b, c, amd64.Mul_mm256)
+		ops.MulMatx(a, b, c, amd64.Mul_mm256)
 	default:
-		matrix.MulMatx(a, b, c, nil)
+		ops.MulMatx(a, b, c, nil)
 	}
 }
 
@@ -95,54 +98,54 @@ func MulToConst[T types.TensorType](i Implementation, a, b, c []T) {
 	// afl, _, _ := types.Input_b_scalar_to_float32(a, b[0], c)
 	switch i.impl {
 	case AVX:
-		matrix.MulMatxToConst(a, b, c, amd64.Mul_to_const_mm256)
+		ops.MulMatxToConst(a, b, c, amd64.Mul_to_const_mm256)
 	case AVX512:
-		matrix.MulMatxToConst(a, b, c, amd64.Mul_to_const_mm256)
+		ops.MulMatxToConst(a, b, c, amd64.Mul_to_const_mm256)
 	default:
-		matrix.MulMatxToConst(a, b, c, nil)
+		ops.MulMatxToConst(a, b, c, nil)
 	}
 }
 
 func Div[T types.TensorType](i Implementation, a, b, c []T) {
-	matrix.DivMatx(a, b, c)
+	ops.DivMatx(a, b, c)
 }
 
 func Add[T types.TensorType](i Implementation, a, b, c []T) {
 	// afl, _, _ := types.Input_to_float32(a, b, c)
 	switch i.impl {
 	case AVX:
-		matrix.AddMatx(a, b, c, amd64.Add_mm256)
+		ops.AddMatx(a, b, c, amd64.Add_mm256)
 	case AVX512:
-		matrix.AddMatx(a, b, c, amd64.Add_mm256)
+		ops.AddMatx(a, b, c, amd64.Add_mm256)
 	default:
-		matrix.AddMatx(a, b, c, nil)
+		ops.AddMatx(a, b, c, nil)
 	}
 }
 
 func Sub[T types.TensorType](i Implementation, a, b, c []T) {
-	matrix.SubMatx(a, b, c)
+	ops.SubMatx(a, b, c)
 }
 
 func Pow[T types.TensorType](i Implementation, a, b, c []T) {
-	matrix.PowMatx(a, b, c)
+	ops.PowMatx(a, b, c)
 }
 
 // unary
 func Sigmoid[T types.TensorType](i Implementation, a, c []T) {
-	matrix.SigmoidMatx(a, c)
+	ops.SigmoidMatx(a, c)
 }
 
 func Neg[T types.TensorType](i Implementation, a, c []T) {
-	matrix.NegMatx(a, c)
+	ops.NegMatx(a, c)
 }
 
 func Relu[T types.TensorType](i Implementation, a, c []T) {
-	matrix.ReluMatx(a, c)
+	ops.ReluMatx(a, c)
 }
 
 // masking
 func ApplyFunc[T types.TensorType](i Implementation, a []T, expr func(T) T, out []T) {
-	matrix.ApplyFuncMatx(a, expr, out)
+	ops.ApplyFuncMatx(a, expr, out)
 }
 
 // reduce
@@ -153,10 +156,10 @@ func Sum[T types.TensorType](i Implementation, a, c []T) {
 	// } else if i.impl == AVX512 && afl != nil {
 	// 	amd64.Sum_mm256(afl, cfl)
 	// } else {
-	matrix.SumMatx(a, c)
+	ops.SumMatx(a, c)
 	// }
 }
 
 func Max[T types.TensorType](i Implementation, a, c []T) {
-	matrix.MaxMatx(a, c)
+	ops.MaxMatx(a, c)
 }

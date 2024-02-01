@@ -1,4 +1,4 @@
-package matrix
+package ops
 
 import (
 	"gograd/tensor/types"

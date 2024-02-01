@@ -72,9 +72,9 @@ func BenchmarkTensorCreate(b *testing.B) {
 
 func BenchmarkIndexFast(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		a := tensor.Range[int32](50).Reshape(10, 5)
-		// a.Get_fast(6, 1)
-		a.Get(6, 1)
+		a := tensor.Range[int32](1000).Reshape(1, 1, 10, 10, 10, 1, 1, 1)
+		// a.Get_fast(0, 0, 6, 6, 6, 0, 0, 0)
+		a.Get(0, 0, 6, 6, 6, 0, 0, 0)
 	}
 }
 

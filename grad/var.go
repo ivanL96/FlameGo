@@ -33,6 +33,7 @@ func Variable[T types.TensorType](
 	tensor_val *tensor.Tensor[T],
 	children ...*Var[T],
 ) *Var[T] {
+	tensor_val.MustAssert()
 	v := &Var[T]{
 		Value:         tensor_val,
 		Grad:          tensor.Zeros[T](tensor_val.Shape()...),
@@ -222,7 +223,7 @@ func (this *Var[T]) Mean() *Var[T] {
 	out := Variable(this.Value.Mean(false), this)
 	if this.Requires_grad {
 		this.backward_fn = func() *tensor.Tensor[T] {
-			filler := tensor.Scalar[T](T(1. / float32(this.Value.Size())))
+			filler := tensor.Scalar(T(1. / float32(this.Value.Size())))
 			return out.Grad.Mul(filler)
 		}
 	}
