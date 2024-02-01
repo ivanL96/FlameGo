@@ -7,11 +7,11 @@ import (
 
 // fieldalignment -fix gograd/tensor
 type Tensor[T types.TensorType] struct {
+	Err       error
 	data_buff []T
 	shape     types.Shape
 	strides   []int
 	dim_order []uint16
-	Err       error
 }
 
 type TensorList[T types.TensorType] []*Tensor[T]

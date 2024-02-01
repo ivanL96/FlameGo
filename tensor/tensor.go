@@ -141,9 +141,10 @@ func (tensor *Tensor[T]) Fill(value T) *Tensor[T] {
 	if tensor.Err != nil {
 		return tensor
 	}
-	data := tensor.data()
 	var wg sync.WaitGroup
 	wg.Add(numCPU)
+
+	data := tensor.data()
 	chunk_size := (len(data) + numCPU - 1) / numCPU
 
 	for i := 0; i < numCPU; i++ {
