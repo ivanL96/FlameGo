@@ -77,3 +77,27 @@ func BenchmarkIndexFast(b *testing.B) {
 		a.Get(6, 1)
 	}
 }
+
+// goos: windows
+// goarch: amd64
+// pkg: gograd/benchmarks
+// cpu: 11th Gen Intel(R) Core(TM) i5-11400H @ 2.70GHz
+// single thread
+// BenchmarkFill-12            4172            251.399 ns/op             960 B/op          0 allocs/op
+// BenchmarkFill-12            4581            252.454 ns/op             874 B/op          0 allocs/op
+// BenchmarkFill-12            4402            250.280 ns/op             910 B/op          0 allocs/op
+// goroutines
+// BenchmarkFill-12           13357             88.549 ns/op            1468 B/op         25 allocs/op
+// BenchmarkFill-12           13587             89.687 ns/op            1462 B/op         25 allocs/op
+// BenchmarkFill-12           13484             88.113 ns/op            1465 B/op         25 allocs/op
+// goroutines + loop unroll
+// BenchmarkFill-12           18165             65.875 ns/op            1388 B/op         25 allocs/op
+// BenchmarkFill-12           18028             66.873 ns/op            1390 B/op         25 allocs/op
+// BenchmarkFill-12           18024             65.246 ns/op            1390 B/op         25 allocs/op
+func BenchmarkFill(b *testing.B) {
+	a := tensor.CreateEmptyTensor[float32](1000, 1000)
+	for i := 0; i < b.N; i++ {
+		a.Fill(float32(i))
+	}
+	a.MustAssert()
+}

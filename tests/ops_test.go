@@ -9,7 +9,6 @@ import (
 func TestAdd(t *testing.T) {
 	a := tensor.CreateEmptyTensor[float32](3, 2).Fill(2)
 	b := tensor.CreateEmptyTensor[float32](3, 1).Fill(3)
-	// fmt.Println(a.ToString(), b.ToString())
 	ab := a.Add(b, nil)
 	assertEqualSlices(t, ab.Data(), []float32{5, 5, 5, 5, 5, 5})
 	assertEqualSlices(t, ab.Shape(), types.Shape{3, 2})

@@ -64,16 +64,20 @@ func enumerate(n uint) []int {
 }
 
 // sets specific value to []T buffer using loop unrolling opt.
-// Don't use for buffer with less than 4 elements
-func fill_data_unroll4[T types.TensorType](
-	buffer *[]T, value T) {
-	data := *buffer
-	for i := 0; i < len(data); i += 4 {
-		bb := (*[4]T)(unsafe.Pointer(&data[i]))
-		bb[0] = value
-		bb[1] = value
-		bb[2] = value
-		bb[3] = value
+func fill_data_unroll4[T types.TensorType](buffer []T, value T) {
+	lb := len(buffer)
+	if lb < 4 {
+		for i := 0; i < lb; i++ {
+			buffer[i] = value
+		}
+	} else {
+		for i := 0; i < lb; i += 4 {
+			bb := (*[4]T)(unsafe.Pointer(&buffer[i]))
+			bb[0] = value
+			bb[1] = value
+			bb[2] = value
+			bb[3] = value
+		}
 	}
 }
 

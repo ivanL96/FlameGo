@@ -6,6 +6,8 @@ import (
 	"gograd/tensor/iter"
 	types "gograd/tensor/types"
 	"math"
+	"runtime"
+	"sync"
 )
 
 // set of primitive common tensor methods
@@ -132,16 +134,39 @@ func Range[T types.TensorType](limits ...int) *Tensor[T] {
 	return tensor
 }
 
+var numCPU int = runtime.NumCPU()
+
 // Fills tensor with same value
 func (tensor *Tensor[T]) Fill(value T) *Tensor[T] {
-	data := tensor.data()
-	if len(data) >= 12 {
-		fill_data_unroll4(&data, value)
-	} else {
-		for i := range data {
-			data[i] = value
-		}
+	if tensor.Err != nil {
+		return tensor
 	}
+	data := tensor.data()
+	var wg sync.WaitGroup
+	wg.Add(numCPU)
+	chunk_size := (len(data) + numCPU - 1) / numCPU
+
+	for i := 0; i < numCPU; i++ {
+		start := i * chunk_size
+		end := (i + 1) * chunk_size
+		if end > len(data) {
+			end = len(data)
+		}
+
+		go func(start, end int) {
+			defer wg.Done()
+			if start >= end {
+				return
+			}
+			switch end {
+			case len(data):
+				fill_data_unroll4(data[start:], value)
+			default:
+				fill_data_unroll4(data[start:end], value)
+			}
+		}(start, end)
+	}
+	wg.Wait()
 	return tensor
 }
 

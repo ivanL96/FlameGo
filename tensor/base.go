@@ -48,7 +48,7 @@ func (tensor *Tensor[T]) DType() reflect.Type {
 	return getTypeArray(tensor.data())
 }
 
-func (tensor *Tensor[T]) MustReveal() *Tensor[T] {
+func (tensor *Tensor[T]) MustAssert() *Tensor[T] {
 	if tensor.Err != nil {
 		panic(tensor.Err)
 	}
