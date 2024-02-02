@@ -293,10 +293,10 @@ func MatMulMatx(
 						if row >= a_dim0 || col >= b_dim0 {
 							continue
 						}
-						a := a_data[a_stride0*row : a_stride0*(row+1)]
-						b := b_data[b_stride0*col : b_stride0*(col+1)]
-
-						out_data[out_stride0*row+col] = dot_impl(a, b)
+						out_data[out_stride0*row+col] = dot_impl(
+							a_data[a_stride0*row:a_stride0*(row+1)],
+							b_data[b_stride0*col:b_stride0*(col+1)],
+						)
 					}
 				}
 			}(i, j)

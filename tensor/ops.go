@@ -30,8 +30,12 @@ func BaseBinElementwiseOp[T types.TensorType](
 	if tensor_b.Err != nil {
 		return tensor_b
 	}
-
+	if out != nil && out.Err != nil {
+		return out
+	}
 	var outTensor *Tensor[T]
+	var err error
+
 	// TODO if outTensor equals to a or b,  apply the *_to_const vectorized impl
 	// TODO try to vectorize operations for non continuous tensors. Right now it falls back to scalar impl which is slow
 
@@ -41,13 +45,15 @@ func BaseBinElementwiseOp[T types.TensorType](
 
 	if tensor_a.shape.IsScalarLike() && tensor_b.shape.IsScalarLike() {
 		// sometimes it's important to keep dims for scalar like tensors
-		var out_shape types.Shape
+		out_shape := tensor_b.shape
 		if len(tensor_a.shape) > len(tensor_b.shape) {
 			out_shape = tensor_a.shape
-		} else {
-			out_shape = tensor_b.shape
 		}
-		outTensor = PrepareOutTensor(out, out_shape)
+		outTensor, err = PrepareOutTensor(out, out_shape)
+		if err != nil {
+			tensor_a.Err = err
+			return tensor_a
+		}
 		// most trivial case (1,) & (1,)
 		outTensor.data()[0] = scalar_impl(tensor_a.data()[0], tensor_b.data()[0])
 		return outTensor
@@ -62,7 +68,11 @@ func BaseBinElementwiseOp[T types.TensorType](
 	}
 	if len(tensor_a.data()) == len(tensor_b.data()) {
 		// same broadcastable shapes (N,M) & (N,M)
-		outTensor = PrepareOutTensor(out, tensor_a.shape)
+		outTensor, err = PrepareOutTensor(out, tensor_a.shape)
+		if err != nil {
+			tensor_a.Err = err
+			return tensor_a
+		}
 		out_data := outTensor.data()
 
 		if are_continuous && vector_impl != nil { // vec or avx
@@ -78,7 +88,11 @@ func BaseBinElementwiseOp[T types.TensorType](
 	} else if len(tensor_b.data()) == 1 {
 		// tensor_b is scalar
 		// (N, M, ...) & (1,)
-		outTensor = PrepareOutTensor(out, tensor_a.shape)
+		outTensor, err = PrepareOutTensor(out, tensor_a.shape)
+		if err != nil {
+			tensor_a.Err = err
+			return tensor_a
+		}
 		out_data := outTensor.data()
 		if vector_to_scalar_impl == nil {
 			value := tensor_b.data()[0]
@@ -91,7 +105,11 @@ func BaseBinElementwiseOp[T types.TensorType](
 	} else if len(tensor_a.data()) == 1 {
 		// tensor_a is scalar
 		// (1,) & (N, M, ...)
-		outTensor = PrepareOutTensor(out, tensor_b.shape)
+		outTensor, err = PrepareOutTensor(out, tensor_b.shape)
+		if err != nil {
+			tensor_a.Err = err
+			return tensor_a
+		}
 		out_data := outTensor.data()
 		if vector_to_scalar_impl == nil {
 			value := tensor_a.data()[0]
@@ -123,7 +141,11 @@ func BaseBinElementwiseOp[T types.TensorType](
 				broadcasted_tensor_b = tensor_b.Broadcast(broadcasted_shape...)
 			}
 		}
-		outTensor = PrepareOutTensor(out, broadcasted_shape)
+		outTensor, err = PrepareOutTensor(out, broadcasted_shape)
+		if err != nil {
+			tensor_a.Err = err
+			return tensor_a
+		}
 		out_data := outTensor.data()
 		if broadcasted_tensor_a == nil {
 			broadcasted_tensor_a = tensor_a
@@ -155,7 +177,11 @@ func unaryElementwiseRoutine[T types.TensorType](
 	if tensor.Err != nil {
 		return tensor
 	}
-	outTensor := PrepareOutTensor(out, tensor.Shape())
+	outTensor, err := PrepareOutTensor(out, tensor.Shape())
+	if err != nil {
+		tensor.Err = err
+		return tensor
+	}
 	if tensor.shape.IsScalarLike() {
 		outTensor.data()[0] = scalar_impl(tensor.data()[0])
 		return outTensor
@@ -335,16 +361,36 @@ func SplitTensor[T types.TensorType](
 	if nrows%2 != 0 {
 		rowright = types.Dim(nrows) - rowleft
 	}
-	a = PrepareOutTensor(outA, types.Shape{rowleft, rowleft})
-	b = PrepareOutTensor(outB, types.Shape{rowleft, rowright})
-	c = PrepareOutTensor(outC, types.Shape{rowright, rowleft})
-	d = PrepareOutTensor(outD, types.Shape{rowright, rowright})
+	var err error
+	a, err = PrepareOutTensor(outA, types.Shape{rowleft, rowleft})
+	if err != nil {
+		a.Err = err
+		return
+	}
+	b, err = PrepareOutTensor(outB, types.Shape{rowleft, rowright})
+	if err != nil {
+		b.Err = err
+		return
+	}
+	c, err = PrepareOutTensor(outC, types.Shape{rowright, rowleft})
+	if err != nil {
+		c.Err = err
+		return
+	}
+	d, err = PrepareOutTensor(outD, types.Shape{rowright, rowright})
+	if err != nil {
+		d.Err = err
+		return
+	}
 	ops.SplitTensorImpl(tensor.data(), nrows, a.data(), b.data(), c.data(), d.data())
 	return
 }
 
 func UniteTensors[T types.TensorType](a, b, c, d, out *Tensor[T]) *Tensor[T] {
-	out_tensor := PrepareOutTensor(out, types.Shape{a.shape[0] * 2, a.shape[0] * 2})
+	out_tensor, err := PrepareOutTensor(out, types.Shape{a.shape[0] * 2, a.shape[0] * 2})
+	if err != nil {
+		panic(err)
+	}
 	ops.UniteTensors(int(a.shape[0]), a.strides[0], a.data(), b.data(), c.data(), d.data(), out_tensor.data())
 	return out_tensor
 }

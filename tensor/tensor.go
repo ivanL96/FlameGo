@@ -90,7 +90,7 @@ func Scalar[T types.TensorType](value T) *Tensor[T] {
 // Example:
 //
 // AsType(int32, float64)(int_tensor) ==> float64 tensor
-func AsType[OLD_T types.TensorType, NEW_T types.TensorType](tensor *Tensor[OLD_T]) *Tensor[NEW_T] {
+func AsType[OLD_T, NEW_T types.TensorType](tensor *Tensor[OLD_T]) *Tensor[NEW_T] {
 	if tensor.Err != nil {
 		ret := Scalar[NEW_T](0)
 		ret.Err = tensor.Err

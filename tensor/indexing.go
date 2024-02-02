@@ -174,15 +174,18 @@ func parse_indexes(expr string) ([]*idxRange, error) {
 	indices := make([]*idxRange, 0, len(symbols))
 	for _, el := range symbols {
 		el = strings.TrimSpace(el)
-		if el == ":" {
+		switch el {
+		case ":":
 			indices = append(indices, Axis())
-		} else if floatVal, err := strconv.ParseFloat(el, 64); err == nil {
-			indices = append(indices, I(int(floatVal)))
-		} else if el == "" {
+		case "":
 			return nil, fmt.Errorf(
 				"invalid expression: '%v'. Arguments should be numeric or ':' and separated by ','", expr,
 			)
-		} else {
+		default:
+			if floatVal, err := strconv.ParseFloat(el, 64); err == nil {
+				indices = append(indices, I(int(floatVal)))
+				continue
+			}
 			return nil, fmt.Errorf(
 				"found unknown symbol in expression: '%v'", el,
 			)
@@ -203,6 +206,9 @@ func parse_indexes(expr string) ([]*idxRange, error) {
 // should return
 // tensor.IndexAdv(":,0") ==> [1,4]
 // tensor.IndexAdv(":,1") ==> [2,5]
+//
+// Getting a sub tensor by axis is similar to:
+// a.TrC(2, 0, 1, 3, 4).Index(n) == a.IndexAdv(":,:,n,:,:")
 func (tensor *Tensor[T]) IndexAdv(expr string) *Tensor[T] {
 	if tensor.Err != nil {
 		return tensor

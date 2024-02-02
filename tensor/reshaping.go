@@ -16,7 +16,11 @@ func (tensor *Tensor[T]) Flatten(out *Tensor[T]) *Tensor[T] {
 	if len(tensor.shape) == 1 {
 		return tensor
 	}
-	outTensor := PrepareOutTensor(out, tensor.shape)
+	outTensor, err := PrepareOutTensor(out, tensor.shape)
+	if err != nil {
+		tensor.Err = err
+		return tensor
+	}
 	if tensor != outTensor {
 		outTensor.SetData(tensor.data())
 	}
@@ -33,7 +37,11 @@ func (tensor *Tensor[T]) Squeeze(out *Tensor[T]) *Tensor[T] {
 	if tensor.shape.IsScalarLike() {
 		return tensor
 	}
-	outTensor := PrepareOutTensor(out, tensor.shape)
+	outTensor, err := PrepareOutTensor(out, tensor.shape)
+	if err != nil {
+		tensor.Err = err
+		return tensor
+	}
 	if tensor != outTensor {
 		outTensor.SetData(tensor.data())
 	}
@@ -47,7 +55,11 @@ func (tensor *Tensor[T]) Unsqueeze(axis uint, out *Tensor[T]) *Tensor[T] {
 	if tensor.Err != nil {
 		return tensor
 	}
-	outTensor := PrepareOutTensor(out, tensor.shape)
+	outTensor, err := PrepareOutTensor(out, tensor.shape)
+	if err != nil {
+		tensor.Err = err
+		return tensor
+	}
 	if tensor != outTensor {
 		outTensor.SetData(tensor.data())
 	}
