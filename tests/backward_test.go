@@ -26,6 +26,9 @@ func TestGradAdd(t *testing.T) {
 	}
 	deriv := grad.NumericDeriv(grad.EPSILON, 4, _add)
 	assert(t, math.Abs(1-deriv) <= 0.0001)
+	a.Value.MustAssert()
+	b.Value.MustAssert()
+	z.Value.MustAssert()
 }
 
 func TestGradSub(t *testing.T) {
@@ -38,6 +41,9 @@ func TestGradSub(t *testing.T) {
 	z.Backward(nil)
 	assertEqualSlices(t, a.Grad.Data(), []float32{1})
 	assertEqualSlices(t, b.Grad.Data(), []float32{-1})
+	a.Value.MustAssert()
+	b.Value.MustAssert()
+	z.Value.MustAssert()
 
 	_sub := func(x float64) float64 {
 		return x - 5
@@ -56,6 +62,9 @@ func TestGradMul(t *testing.T) {
 	z.Backward(nil)
 	assertEqualSlices(t, a.Grad.Data(), []float32{5})
 	assertEqualSlices(t, b.Grad.Data(), []float32{4})
+	a.Value.MustAssert()
+	b.Value.MustAssert()
+	z.Value.MustAssert()
 
 	_mul := func(x float64) float64 {
 		return x * 5
@@ -71,8 +80,8 @@ func TestGradMul(t *testing.T) {
 }
 
 func TestGradMatMul(t *testing.T) {
-	a := grad.Variable[float32](tensor.Range[float32](5).Reshape(1, 5))
-	b := grad.Variable[float32](tensor.Range[float32](5).Reshape(5, 1))
+	a := grad.Variable(tensor.Range[float32](5).Reshape(1, 5))
+	b := grad.Variable(tensor.Range[float32](5).Reshape(5, 1))
 	z := a.MatMul(b)
 	z.Backward(nil)
 	assertEqualSlices(t, z.Value.Shape(), types.Shape{1, 1})
@@ -84,8 +93,8 @@ func TestGradMatMul(t *testing.T) {
 }
 
 func TestGradMatMulMean(t *testing.T) {
-	a := grad.Variable[float32](tensor.Range[float32](8).Reshape(4, 2))
-	b := grad.Variable[float32](tensor.Range[float32](10).Reshape(2, 5))
+	a := grad.Variable(tensor.Range[float32](8).Reshape(4, 2))
+	b := grad.Variable(tensor.Range[float32](10).Reshape(2, 5))
 	z := a.MatMul(b).Mean()
 	z.Backward(nil)
 	assertEqualSlices(t, z.Value.Shape(), types.Shape{1})

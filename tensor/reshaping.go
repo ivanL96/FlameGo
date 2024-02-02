@@ -90,12 +90,13 @@ func (tensor *Tensor[T]) T(axes ...uint) *Tensor[T] {
 		return tensor
 	}
 
-	if len(axes) == 0 {
+	switch len(axes) {
+	case 0:
 		axes = make([]uint, n_dims)
 		for i := range axes {
 			axes[i] = uint(len(axes) - i - 1)
 		}
-	} else if len(axes) > 1 {
+	default:
 		unique_axes := make(map[uint]bool)
 		for _, a := range axes {
 			if unique_axes[a] {
@@ -105,7 +106,7 @@ func (tensor *Tensor[T]) T(axes ...uint) *Tensor[T] {
 				unique_axes[a] = true
 			}
 		}
-	} else {
+
 		if len(axes) < n_dims {
 			tensor.Err = fmt.Errorf("too few axes provided. Expected %v, got %v", n_dims, len(axes))
 			return tensor
@@ -155,10 +156,7 @@ func (tensor *Tensor[T]) TrC2D() *Tensor[T] {
 		wg.Add(1)
 		go func(i int) {
 			defer wg.Done()
-			i_cols := i * cols
-			for j := 0; j < cols; j++ {
-				transposed[j*rows+i] = data[i_cols+j]
-			}
+			transpose_cont2D_loop(data, transposed, i, cols, rows)
 		}(i)
 	}
 	wg.Wait()

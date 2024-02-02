@@ -26,7 +26,7 @@ func makeOutMat[T types.TensorType](out []T, size int) []T {
 
 var numCPU int = runtime.NumCPU()
 
-func MatxParallel[T types.TensorType](
+func parallel[T types.TensorType](
 	f func(int, int, []T, []T, []T, *sync.Mutex),
 	a, b, out []T,
 ) {
@@ -46,8 +46,8 @@ func MatxParallel[T types.TensorType](
 
 		go func(start, end int) {
 			defer wg.Done()
-			runtime.LockOSThread()
-			defer runtime.UnlockOSThread()
+			// runtime.LockOSThread()
+			// defer runtime.UnlockOSThread()
 			f(start, end, a, b, out, &mu)
 		}(start, end)
 	}
@@ -85,7 +85,7 @@ func AddMatx[T types.TensorType](a, b, out []T, impl func([]float32, []float32, 
 			}
 		}
 	}
-	MatxParallel(add_chunk, a, b, makeOutMat(out, len(a)))
+	parallel(add_chunk, a, b, makeOutMat(out, len(a)))
 }
 
 func SubMatx[T types.TensorType](a, b, out []T) {
@@ -109,7 +109,7 @@ func SubMatx[T types.TensorType](a, b, out []T) {
 			}
 		}
 	}
-	MatxParallel(sub_chunk, a, b, makeOutMat(out, len(a)))
+	parallel(sub_chunk, a, b, makeOutMat(out, len(a)))
 }
 
 func Dot[T types.TensorType](a, b []float32) float32 {
@@ -134,7 +134,7 @@ func MulMatx[T types.TensorType](a, b, out []T, impl func([]float32, []float32, 
 			impl(af, bf, cf)
 		}
 	}
-	MatxParallel(mul_chunk, a, b, makeOutMat(out, len(a)))
+	parallel(mul_chunk, a, b, makeOutMat(out, len(a)))
 }
 
 func MulMatxToConst[T types.TensorType](a, b, out []T, impl func([]float32, float32, []float32)) {
@@ -152,7 +152,7 @@ func MulMatxToConst[T types.TensorType](a, b, out []T, impl func([]float32, floa
 			impl(af, bf, cf)
 		}
 	}
-	MatxParallel(mulconst_chunk, a, b, makeOutMat(out, len(a)))
+	parallel(mulconst_chunk, a, b, makeOutMat(out, len(a)))
 }
 
 func DivMatx[T types.TensorType](a, b, out []T) {
@@ -161,7 +161,7 @@ func DivMatx[T types.TensorType](a, b, out []T) {
 			out[i] = a[i] / b[i]
 		}
 	}
-	MatxParallel(div_chunk, a, b, makeOutMat(out, len(a)))
+	parallel(div_chunk, a, b, makeOutMat(out, len(a)))
 }
 
 func PowMatx[T types.TensorType](a, b, out []T) {
@@ -170,7 +170,7 @@ func PowMatx[T types.TensorType](a, b, out []T) {
 			out[i] = T(math.Pow(float64(a[i]), float64(b[i])))
 		}
 	}
-	MatxParallel(pow_chunk, a, b, makeOutMat(out, len(a)))
+	parallel(pow_chunk, a, b, makeOutMat(out, len(a)))
 }
 
 func SigmoidMatx[T types.TensorType](a, out []T) {
@@ -181,7 +181,7 @@ func SigmoidMatx[T types.TensorType](a, out []T) {
 			out[i] = T(1. / (1. + math.Pow(math.E, float64(-a[i]))))
 		}
 	}
-	MatxParallel(sigm_chunk, a, nil, makeOutMat(out, len(a)))
+	parallel(sigm_chunk, a, nil, makeOutMat(out, len(a)))
 }
 
 func NegMatx[T types.TensorType](a, out []T) {
@@ -190,7 +190,7 @@ func NegMatx[T types.TensorType](a, out []T) {
 			out[i] = -a[i]
 		}
 	}
-	MatxParallel(neg_chunk, a, nil, makeOutMat(out, len(a)))
+	parallel(neg_chunk, a, nil, makeOutMat(out, len(a)))
 }
 
 func ReluMatx[T types.TensorType](a, out []T) {
@@ -204,7 +204,7 @@ func ReluMatx[T types.TensorType](a, out []T) {
 			out[i] = 0
 		}
 	}
-	MatxParallel(relu_chunk, a, nil, makeOutMat(out, len(a)))
+	parallel(relu_chunk, a, nil, makeOutMat(out, len(a)))
 }
 
 func ApplyFuncMatx[T types.TensorType](a []T, expr_fn func(T) T, out []T) {
@@ -213,7 +213,7 @@ func ApplyFuncMatx[T types.TensorType](a []T, expr_fn func(T) T, out []T) {
 			out[i] = expr_fn(a[i])
 		}
 	}
-	MatxParallel(_chunk, a, nil, makeOutMat(out, len(a)))
+	parallel(_chunk, a, nil, makeOutMat(out, len(a)))
 }
 
 func SumMatx[T types.TensorType](a, out []T) {
@@ -226,7 +226,7 @@ func SumMatx[T types.TensorType](a, out []T) {
 		defer mu.Unlock()
 		out[0] += chunk_sum
 	}
-	MatxParallel(sum_chunk, a, nil, makeOutMat(out, len(a)))
+	parallel(sum_chunk, a, nil, makeOutMat(out, len(a)))
 }
 
 func MaxMatx[T types.TensorType](a, out []T) {
@@ -244,7 +244,7 @@ func MaxMatx[T types.TensorType](a, out []T) {
 			out[0] = _max
 		}
 	}
-	MatxParallel(max_chunk, a, nil, makeOutMat(out, len(a)))
+	parallel(max_chunk, a, nil, makeOutMat(out, len(a)))
 }
 
 func MatMulMatx(

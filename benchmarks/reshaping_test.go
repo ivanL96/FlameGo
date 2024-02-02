@@ -55,6 +55,7 @@ func BenchmarkToString(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		a.ToString()
 	}
+	a.MustAssert()
 }
 
 // goos: windows
@@ -77,4 +78,24 @@ func BenchmarkAsContinuous(b *testing.B) {
 		a = a.T()
 		a.AsContinuous()
 	}
+	a.MustAssert()
+}
+
+// goarch: amd64
+// pkg: gograd/benchmarks
+// cpu: 11th Gen Intel(R) Core(TM) i5-11400H @ 2.70GHz
+// default
+// BenchmarkTrC2D-12          22525             53.875 ns/op           53131 B/op        207 allocs/op
+// BenchmarkTrC2D-12          22410             54.940 ns/op           53131 B/op        207 allocs/op
+// BenchmarkTrC2D-12          21188             55.510 ns/op           53131 B/op        207 allocs/op
+// unroll
+// BenchmarkTrC2D-12          28478             41.330 ns/op           53130 B/op        207 allocs/op
+// BenchmarkTrC2D-12          28988             41.902 ns/op           53130 B/op        207 allocs/op
+// BenchmarkTrC2D-12          29118             43.685 ns/op           53131 B/op        207 allocs/op
+func BenchmarkTrC2D(b *testing.B) {
+	a := tensor.Range[float32](10000).Reshape(100, 100)
+	for i := 0; i < b.N; i++ {
+		a.TrC2D()
+	}
+	a.MustAssert()
 }
