@@ -66,7 +66,7 @@ func BenchmarkLoopUnroll(b *testing.B) {
 
 func BenchmarkTensorCreate(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		tensor.CreateEmptyTensor[float64](100, 100, 10)
+		tensor.CreateEmptyTensor[float64](100)
 	}
 }
 

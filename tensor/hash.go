@@ -1,28 +1,32 @@
 package tensor
 
-import "gograd/tensor/types"
+import (
+	"crypto/md5"
+	"encoding/hex"
+)
 
 // https://golangprojectstructure.com/hash-functions-go-code/
 
-func djb2[T types.TensorType](data []T) uint64 {
-	hash := uint64(5381)
-
-	for _, b := range data {
-		hash += uint64(b) + hash + hash<<5
+// returns unique hash based on tensors data, shape and dim order
+func (tensor *Tensor[T]) Id() (string, error) {
+	if tensor.Err != nil {
+		return "", tensor.Err
 	}
-	return hash
-}
+	data := tensor.data()
+	shape := tensor.Shape()
+	dimord := tensor.dim_order
 
-func sdbmHash[T types.TensorType](data []T) uint64 {
-	var hash uint64
-
-	for _, b := range data {
-		hash = uint64(b) + (hash << 6) + (hash << 16) - hash
+	input := make([]byte, len(data)+len(shape)+len(dimord))
+	for i := 0; i < len(data); i++ {
+		input[i] = byte(data[i])
 	}
-
-	return hash
-}
-
-func (tensor *Tensor[T]) Hash() uint64 {
-	return djb2(tensor.data())
+	for i, v := range shape {
+		input[len(data)+i] = byte(v)
+	}
+	for i, v := range dimord {
+		input[len(data)+len(dimord)+i] = byte(v)
+	}
+	hash := md5.Sum(input)
+	str := hex.EncodeToString(hash[:])
+	return str, nil
 }

@@ -1,4 +1,4 @@
-package ops
+package internal
 
 import "gograd/tensor/types"
 

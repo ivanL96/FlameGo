@@ -25,11 +25,13 @@ func makeTensor[T types.TensorType](dataPtr *[]T, shape types.Shape, copy bool) 
 		tensor.Err = errors.New("shape cannot have zero dim")
 		return &tensor
 	}
+
 	var data []T
-	if dataPtr == nil {
+	switch dataPtr {
+	case nil:
 		// if nil ptr create an empty slice with size of 'shapeProd'
 		data = make([]T, shapeProd)
-	} else {
+	default:
 		if copy {
 			// copies data
 			data = append([]T(nil), (*dataPtr)...)
