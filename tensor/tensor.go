@@ -91,11 +91,47 @@ func Scalar[T types.TensorType](value T) *Tensor[T] {
 //
 // AsType(int32, float64)(int_tensor) ==> float64 tensor
 func AsType[OLD_T types.TensorType, NEW_T types.TensorType](tensor *Tensor[OLD_T]) *Tensor[NEW_T] {
-	data := make([]NEW_T, len(tensor.data()))
-	for i, val := range tensor.data() {
-		data[i] = NEW_T(val)
+	if tensor.Err != nil {
+		ret := Scalar[NEW_T](0)
+		ret.Err = tensor.Err
+		return ret
 	}
-	return CreateTensorNoCopy(data, tensor.shape)
+
+	out_data := make([]NEW_T, len(tensor.data()))
+	out_tensor := CreateTensorNoCopy(out_data, tensor.shape)
+
+	var wg sync.WaitGroup
+	wg.Add(numCPU)
+
+	chunk_size := (len(out_data) + numCPU - 1) / numCPU
+
+	for i := 0; i < numCPU; i++ {
+		start := i * chunk_size
+		end := (i + 1) * chunk_size
+		if end > len(out_data) {
+			end = len(out_data)
+		}
+
+		go func(start, end int) {
+			defer wg.Done()
+			if start >= end {
+				return
+			}
+			var out_batch []NEW_T
+			var in_batch []OLD_T
+			switch end {
+			case len(out_data):
+				out_batch = out_data[start:end]
+				in_batch = tensor.data()[start:end]
+			default:
+				out_batch = out_data[start:]
+				in_batch = tensor.data()[start:]
+			}
+			convert_type_loop[OLD_T, NEW_T](in_batch, out_batch)
+		}(start, end)
+	}
+	wg.Wait()
+	return out_tensor
 }
 
 func (tensor *Tensor[T]) Copy() *Tensor[T] {
@@ -161,12 +197,14 @@ func (tensor *Tensor[T]) Fill(value T) *Tensor[T] {
 			if start >= end {
 				return
 			}
+			var batch []T
 			switch end {
 			case len(data):
-				fill_data_unroll4(data[start:], value)
+				batch = data[start:]
 			default:
-				fill_data_unroll4(data[start:end], value)
+				batch = data[start:end]
 			}
+			fill_data_loop(batch, value)
 		}(start, end)
 	}
 	wg.Wait()

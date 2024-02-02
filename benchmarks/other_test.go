@@ -90,14 +90,34 @@ func BenchmarkIndexFast(b *testing.B) {
 // BenchmarkFill-12           13357             88.549 ns/op            1468 B/op         25 allocs/op
 // BenchmarkFill-12           13587             89.687 ns/op            1462 B/op         25 allocs/op
 // BenchmarkFill-12           13484             88.113 ns/op            1465 B/op         25 allocs/op
-// goroutines + loop unroll
-// BenchmarkFill-12           18165             65.875 ns/op            1388 B/op         25 allocs/op
-// BenchmarkFill-12           18028             66.873 ns/op            1390 B/op         25 allocs/op
-// BenchmarkFill-12           18024             65.246 ns/op            1390 B/op         25 allocs/op
+// goroutines + unroll 8
+// BenchmarkFill-12           52269             20.747 ns/op            1245 B/op         25 allocs/op
+// BenchmarkFill-12           59397             20.690 ns/op            1235 B/op         25 allocs/op
+// BenchmarkFill-12           55560             20.324 ns/op            1240 B/op         25 allocs/op
 func BenchmarkFill(b *testing.B) {
-	a := tensor.CreateEmptyTensor[float32](1000, 1000)
+	a := tensor.CreateEmptyTensor[float32](1003, 1001)
 	for i := 0; i < b.N; i++ {
 		a.Fill(float32(i))
+	}
+	a.MustAssert()
+}
+
+// goos: windows
+// goarch: amd64
+// pkg: gograd/benchmarks
+// cpu: 11th Gen Intel(R) Core(TM) i5-11400H @ 2.70GHz
+// BenchmarkAsType
+// BenchmarkAsType-12          1395            735.043 ns/op         4008906 B/op          5 allocs/op
+// BenchmarkAsType-12          1539            776.848 ns/op         4008639 B/op          5 allocs/op
+// BenchmarkAsType-12          1610            753.102 ns/op         4008522 B/op          5 allocs/op
+// unroll
+// BenchmarkAsType-12          2344            483.109 ns/op         4008920 B/op         30 allocs/op
+// BenchmarkAsType-12          2524            469.145 ns/op         4008800 B/op         30 allocs/op
+// BenchmarkAsType-12          2090            485.649 ns/op         4009133 B/op         30 allocs/op
+func BenchmarkAsType(b *testing.B) {
+	a := tensor.CreateEmptyTensor[float32](1003, 1001)
+	for i := 0; i < b.N; i++ {
+		tensor.AsType[float32, int32](a)
 	}
 	a.MustAssert()
 }

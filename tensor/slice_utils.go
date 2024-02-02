@@ -63,24 +63,6 @@ func enumerate(n uint) []int {
 	return slice
 }
 
-// sets specific value to []T buffer using loop unrolling opt.
-func fill_data_unroll4[T types.TensorType](buffer []T, value T) {
-	lb := len(buffer)
-	if lb < 4 {
-		for i := 0; i < lb; i++ {
-			buffer[i] = value
-		}
-	} else {
-		for i := 0; i < lb; i += 4 {
-			bb := (*[4]T)(unsafe.Pointer(&buffer[i]))
-			bb[0] = value
-			bb[1] = value
-			bb[2] = value
-			bb[3] = value
-		}
-	}
-}
-
 func get_param[T types.TensorType](params ...*Tensor[T]) *Tensor[T] {
 	if len(params) == 1 {
 		return params[0]
@@ -89,4 +71,41 @@ func get_param[T types.TensorType](params ...*Tensor[T]) *Tensor[T] {
 		panic("Only one out tensor is allowed")
 	}
 	return nil
+}
+
+// sets specific value to []T buffer using loop unrolling opt.
+func fill_data_loop[T types.TensorType](buffer []T, value T) {
+	lb := len(buffer)
+	n := 8
+	for i := 0; i < lb/n; i += n {
+		buffer[i] = value
+		buffer[i+1] = value
+		buffer[i+2] = value
+		buffer[i+3] = value
+		buffer[i+4] = value
+		buffer[i+5] = value
+		buffer[i+6] = value
+		buffer[i+7] = value
+	}
+	for i := lb - lb%n; i < lb; i++ {
+		buffer[i] = value
+	}
+}
+
+func convert_type_loop[OLD_T, NEW_T types.TensorType](data []OLD_T, out_data []NEW_T) {
+	lb := len(data)
+	n := 8
+	for i := 0; i < lb/n; i += n {
+		out_data[i] = NEW_T(data[i])
+		out_data[i+1] = NEW_T(data[i+1])
+		out_data[i+2] = NEW_T(data[i+2])
+		out_data[i+3] = NEW_T(data[i+3])
+		out_data[i+4] = NEW_T(data[i+4])
+		out_data[i+5] = NEW_T(data[i+5])
+		out_data[i+6] = NEW_T(data[i+6])
+		out_data[i+7] = NEW_T(data[i+7])
+	}
+	for i := lb - lb%n; i < lb; i++ {
+		out_data[i] = NEW_T(data[i])
+	}
 }
