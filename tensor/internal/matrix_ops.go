@@ -27,7 +27,7 @@ func makeOutMat[T types.TensorType](out []T, size int) []T {
 var numCPU int = runtime.NumCPU()
 
 func MatxParallel[T types.TensorType](
-	f func(int, int, []T, []T, []T),
+	f func(int, int, []T, []T, []T, *sync.Mutex),
 	a, b, out []T,
 ) {
 	la := len(a)
@@ -48,9 +48,7 @@ func MatxParallel[T types.TensorType](
 			defer wg.Done()
 			runtime.LockOSThread()
 			defer runtime.UnlockOSThread()
-			f(start, end, a, b, out)
-			mu.Lock()
-			defer mu.Unlock()
+			f(start, end, a, b, out, &mu)
 		}(start, end)
 	}
 	wg.Wait()
@@ -59,21 +57,21 @@ func MatxParallel[T types.TensorType](
 // here's the logic of elementwise addition between matrices.
 // The "impl" argument can contain an implementation to accelerate inner loop using avx,etc
 func AddMatx[T types.TensorType](a, b, out []T, impl func([]float32, []float32, []float32)) {
-	var add_chunk func(int, int, []T, []T, []T)
+	var add_chunk func(int, int, []T, []T, []T, *sync.Mutex)
 	if identical(a, out) {
-		add_chunk = func(start, end int, a, b, out []T) {
+		add_chunk = func(start, end int, a, b, out []T, mu *sync.Mutex) {
 			for i := start; i < end; i++ {
 				out[i] += b[i]
 			}
 		}
 	} else if identical(b, out) {
-		add_chunk = func(start, end int, a, b, out []T) {
+		add_chunk = func(start, end int, a, b, out []T, mu *sync.Mutex) {
 			for i := start; i < end; i++ {
 				out[i] += a[i]
 			}
 		}
 	} else {
-		add_chunk = func(start, end int, a, b, out []T) {
+		add_chunk = func(start, end int, a, b, out []T, mu *sync.Mutex) {
 			if start >= end {
 				return
 			}
@@ -91,21 +89,21 @@ func AddMatx[T types.TensorType](a, b, out []T, impl func([]float32, []float32, 
 }
 
 func SubMatx[T types.TensorType](a, b, out []T) {
-	var sub_chunk func(int, int, []T, []T, []T)
+	var sub_chunk func(int, int, []T, []T, []T, *sync.Mutex)
 	if identical(a, out) {
-		sub_chunk = func(start, end int, a, b, out []T) {
+		sub_chunk = func(start, end int, a, b, out []T, mu *sync.Mutex) {
 			for i := start; i < end; i++ {
 				out[i] -= b[i]
 			}
 		}
 	} else if identical(b, out) {
-		sub_chunk = func(start, end int, a, b, out []T) {
+		sub_chunk = func(start, end int, a, b, out []T, mu *sync.Mutex) {
 			for i := start; i < end; i++ {
 				out[i] -= a[i]
 			}
 		}
 	} else {
-		sub_chunk = func(start, end int, a, b, out []T) {
+		sub_chunk = func(start, end int, a, b, out []T, mu *sync.Mutex) {
 			for i := start; i < end; i++ {
 				out[i] = a[i] - b[i]
 			}
@@ -123,7 +121,7 @@ func Dot[T types.TensorType](a, b []float32) float32 {
 }
 
 func MulMatx[T types.TensorType](a, b, out []T, impl func([]float32, []float32, []float32)) {
-	mul_chunk := func(start, end int, a, b, out []T) {
+	mul_chunk := func(start, end int, a, b, out []T, mu *sync.Mutex) {
 		if start >= end {
 			return
 		}
@@ -140,7 +138,7 @@ func MulMatx[T types.TensorType](a, b, out []T, impl func([]float32, []float32, 
 }
 
 func MulMatxToConst[T types.TensorType](a, b, out []T, impl func([]float32, float32, []float32)) {
-	mulconst_chunk := func(start, end int, a, b, out []T) {
+	mulconst_chunk := func(start, end int, a, b, out []T, mu *sync.Mutex) {
 		if start >= end {
 			return
 		}
@@ -158,7 +156,7 @@ func MulMatxToConst[T types.TensorType](a, b, out []T, impl func([]float32, floa
 }
 
 func DivMatx[T types.TensorType](a, b, out []T) {
-	div_chunk := func(start, end int, a, b, out []T) {
+	div_chunk := func(start, end int, a, b, out []T, mu *sync.Mutex) {
 		for i := start; i < end; i++ {
 			out[i] = a[i] / b[i]
 		}
@@ -167,7 +165,7 @@ func DivMatx[T types.TensorType](a, b, out []T) {
 }
 
 func PowMatx[T types.TensorType](a, b, out []T) {
-	pow_chunk := func(start, end int, a, b, out []T) {
+	pow_chunk := func(start, end int, a, b, out []T, mu *sync.Mutex) {
 		for i := start; i < end; i++ {
 			out[i] = T(math.Pow(float64(a[i]), float64(b[i])))
 		}
@@ -177,7 +175,7 @@ func PowMatx[T types.TensorType](a, b, out []T) {
 
 func SigmoidMatx[T types.TensorType](a, out []T) {
 	// x / (1 + abs(x))
-	sigm_chunk := func(start, end int, a, dummy, out []T) {
+	sigm_chunk := func(start, end int, a, dummy, out []T, mu *sync.Mutex) {
 		for i := start; i < end; i++ {
 			// out[i] = a[i] / (1. + T(math.Abs(float64(a[i]))))
 			out[i] = T(1. / (1. + math.Pow(math.E, float64(-a[i]))))
@@ -187,7 +185,7 @@ func SigmoidMatx[T types.TensorType](a, out []T) {
 }
 
 func NegMatx[T types.TensorType](a, out []T) {
-	neg_chunk := func(start, end int, a, dummy, out []T) {
+	neg_chunk := func(start, end int, a, dummy, out []T, mu *sync.Mutex) {
 		for i := start; i < end; i++ {
 			out[i] = -a[i]
 		}
@@ -196,7 +194,7 @@ func NegMatx[T types.TensorType](a, out []T) {
 }
 
 func ReluMatx[T types.TensorType](a, out []T) {
-	relu_chunk := func(start, end int, a, dummy, out []T) {
+	relu_chunk := func(start, end int, a, dummy, out []T, mu *sync.Mutex) {
 		for i := start; i < end; i++ {
 			el := a[i]
 			if el > 0 {
@@ -210,7 +208,7 @@ func ReluMatx[T types.TensorType](a, out []T) {
 }
 
 func ApplyFuncMatx[T types.TensorType](a []T, expr_fn func(T) T, out []T) {
-	_chunk := func(start, end int, a, dummy, out []T) {
+	_chunk := func(start, end int, a, dummy, out []T, mu *sync.Mutex) {
 		for i := start; i < end; i++ {
 			out[i] = expr_fn(a[i])
 		}
@@ -219,18 +217,20 @@ func ApplyFuncMatx[T types.TensorType](a []T, expr_fn func(T) T, out []T) {
 }
 
 func SumMatx[T types.TensorType](a, out []T) {
-	sum_chunk := func(start, end int, a, dummy, out []T) {
+	sum_chunk := func(start, end int, a, dummy, out []T, mu *sync.Mutex) {
 		var chunk_sum T = 0
 		for i := start; i < end; i++ {
 			chunk_sum += a[i]
 		}
+		mu.Lock()
+		defer mu.Unlock()
 		out[0] += chunk_sum
 	}
 	MatxParallel(sum_chunk, a, nil, makeOutMat(out, len(a)))
 }
 
 func MaxMatx[T types.TensorType](a, out []T) {
-	max_chunk := func(start, end int, a, dummy, out []T) {
+	max_chunk := func(start, end int, a, dummy, out []T, mu *sync.Mutex) {
 		var _max T = a[0]
 		for i := start; i < end; i++ {
 			v := a[i]
@@ -238,6 +238,8 @@ func MaxMatx[T types.TensorType](a, out []T) {
 				_max = v
 			}
 		}
+		mu.Lock()
+		defer mu.Unlock()
 		if _max > out[0] {
 			out[0] = _max
 		}

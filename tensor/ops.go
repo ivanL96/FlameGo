@@ -35,9 +35,8 @@ func BaseBinElementwiseOp[T types.TensorType](
 	// TODO if outTensor equals to a or b,  apply the *_to_const vectorized impl
 	// TODO try to vectorize operations for non continuous tensors. Right now it falls back to scalar impl which is slow
 
-	scalar, vector, vector_to_scalar := scalar_impl, vector_impl, vector_to_scalar_impl
-	if scalar == nil && vector == nil && vector_to_scalar == nil {
-		panic("No implementation found.")
+	if scalar_impl == nil && vector_impl == nil && vector_to_scalar_impl == nil {
+		panic("no implementation found")
 	}
 
 	if tensor_a.shape.IsScalarLike() && tensor_b.shape.IsScalarLike() {
@@ -50,7 +49,7 @@ func BaseBinElementwiseOp[T types.TensorType](
 		}
 		outTensor = PrepareOutTensor(out, out_shape)
 		// most trivial case (1,) & (1,)
-		outTensor.data()[0] = scalar(tensor_a.data()[0], tensor_b.data()[0])
+		outTensor.data()[0] = scalar_impl(tensor_a.data()[0], tensor_b.data()[0])
 		return outTensor
 	}
 
@@ -66,14 +65,14 @@ func BaseBinElementwiseOp[T types.TensorType](
 		outTensor = PrepareOutTensor(out, tensor_a.shape)
 		out_data := outTensor.data()
 
-		if are_continuous && vector != nil { // vec or avx
-			vector(AUTO_IMPL, tensor_a.data(), tensor_b.data(), out_data)
-		} else if !are_continuous || vector == nil {
+		if are_continuous && vector_impl != nil { // vec or avx
+			vector_impl(AUTO_IMPL, tensor_a.data(), tensor_b.data(), out_data)
+		} else if !are_continuous || vector_impl == nil {
 			iter := tensor_a.CreateIterator()
 			for iter.Iterate() {
 				idx := iter.Next()
 				outIdx := get_flat_idx_fast(outTensor.strides, idx...)
-				out_data[outIdx] = scalar(tensor_a.Get_fast(idx...), tensor_b.Get_fast(idx...))
+				out_data[outIdx] = scalar_impl(tensor_a.Get_fast(idx...), tensor_b.Get_fast(idx...))
 			}
 		}
 	} else if len(tensor_b.data()) == 1 {
@@ -81,26 +80,26 @@ func BaseBinElementwiseOp[T types.TensorType](
 		// (N, M, ...) & (1,)
 		outTensor = PrepareOutTensor(out, tensor_a.shape)
 		out_data := outTensor.data()
-		if vector_to_scalar == nil {
+		if vector_to_scalar_impl == nil {
 			value := tensor_b.data()[0]
 			for i, val := range tensor_a.data() {
-				out_data[i] = scalar(val, value)
+				out_data[i] = scalar_impl(val, value)
 			}
 		} else {
-			vector_to_scalar(AUTO_IMPL, tensor_a.data(), tensor_b.data(), out_data)
+			vector_to_scalar_impl(AUTO_IMPL, tensor_a.data(), tensor_b.data(), out_data)
 		}
 	} else if len(tensor_a.data()) == 1 {
 		// tensor_a is scalar
 		// (1,) & (N, M, ...)
 		outTensor = PrepareOutTensor(out, tensor_b.shape)
 		out_data := outTensor.data()
-		if vector_to_scalar == nil {
+		if vector_to_scalar_impl == nil {
 			value := tensor_a.data()[0]
 			for i, val := range tensor_b.data() {
-				out_data[i] = scalar(value, val)
+				out_data[i] = scalar_impl(value, val)
 			}
 		} else {
-			vector_to_scalar(AUTO_IMPL, tensor_b.data(), tensor_a.data(), out_data)
+			vector_to_scalar_impl(AUTO_IMPL, tensor_b.data(), tensor_a.data(), out_data)
 		}
 	} else {
 		// both tensors are not scalar but have completely different shapes
@@ -132,14 +131,14 @@ func BaseBinElementwiseOp[T types.TensorType](
 		if broadcasted_tensor_b == nil {
 			broadcasted_tensor_b = tensor_b
 		}
-		if vector != nil && are_continuous {
-			vector(AUTO_IMPL, broadcasted_tensor_a.data(), broadcasted_tensor_b.data(), out_data)
-		} else if vector == nil || !are_continuous {
+		if vector_impl != nil && are_continuous {
+			vector_impl(AUTO_IMPL, broadcasted_tensor_a.data(), broadcasted_tensor_b.data(), out_data)
+		} else if vector_impl == nil || !are_continuous {
 			iter := broadcasted_tensor_a.CreateIterator()
 			for iter.Iterate() {
 				dataIndex := iter.Index()
 				idx := iter.Next()
-				out_data[dataIndex] = scalar(
+				out_data[dataIndex] = scalar_impl(
 					broadcasted_tensor_a.Get_fast(idx...), broadcasted_tensor_b.Get_fast(idx...))
 			}
 		}
@@ -156,21 +155,20 @@ func unaryElementwiseRoutine[T types.TensorType](
 	if tensor.Err != nil {
 		return tensor
 	}
-	unaryScalarOp, unaryVecOp := scalar_impl, vector_impl
 	outTensor := PrepareOutTensor(out, tensor.Shape())
 	if tensor.shape.IsScalarLike() {
-		outTensor.data()[0] = unaryScalarOp(tensor.data()[0])
+		outTensor.data()[0] = scalar_impl(tensor.data()[0])
 		return outTensor
 	}
-	if unaryScalarOp == nil && unaryVecOp == nil {
-		panic("No implementation found.")
+	if scalar_impl == nil && vector_impl == nil {
+		panic("no implementation found")
 	}
-	if unaryVecOp == nil {
+	if vector_impl == nil {
 		for i, val := range tensor.data() {
-			outTensor.data()[i] = unaryScalarOp(val)
+			outTensor.data()[i] = scalar_impl(val)
 		}
 	} else {
-		unaryVecOp(AUTO_IMPL, tensor.data(), outTensor.data())
+		vector_impl(AUTO_IMPL, tensor.data(), outTensor.data())
 	}
 	return outTensor
 }
