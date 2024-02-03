@@ -95,3 +95,34 @@ func TestAdvIndexing2(t *testing.T) {
 	c = a.IndexAdv("0,1,0,1")
 	assertEqualSlices(t, c.Data(), []int32{5})
 }
+
+func TestIndexMask(t *testing.T) {
+	a := tensor.Range[int32](9).Reshape(3, 3)
+	// 0 1 2
+	// 3 4 5
+	// 6 7 8
+	mask := tensor.CreateTensor([]int32{1, 0, 2}, types.Shape{3})
+	masked := a.IndexMask(mask, false).MustAssert()
+	assertEqualSlices(t, a.Shape(), types.Shape{3, 3})
+	assertEqualSlices(t, masked.Data(), []int32{3, 4, 5, 0, 1, 2, 6, 7, 8})
+	assertEqualSlices(t, masked.Shape(), types.Shape{3, 3})
+
+	mask1 := tensor.CreateTensor([]int32{0, 2, 1, 0, 2, 1}, types.Shape{3, 2})
+	masked1 := a.IndexMask(mask1, false).MustAssert()
+	assertEqualSlices(t, masked1.Data(), []int32{2, 3, 7})
+}
+
+func TestIndexMask2(t *testing.T) {
+	a := tensor.Range[int32](8).Reshape(2, 2, 2)
+	mask := tensor.CreateTensor([]int32{1, 0}, types.Shape{2})
+	masked := a.IndexMask(mask, false).MustAssert()
+	assertEqualSlices(t, masked.Data(), []int32{4, 5, 6, 7, 0, 1, 2, 3})
+	assertEqualSlices(t, masked.Shape(), types.Shape{2, 2, 2})
+}
+
+func TestIndexMask3(t *testing.T) {
+	a := tensor.Range[int32](8).Reshape(2, 4)
+	mask := tensor.CreateTensor([]int32{2, 1}, types.Shape{2})
+	a.SetByIndexMask(mask, true, 77)
+	assertEqualSlices(t, a.Data(), []int32{0, 1, 77, 3, 4, 77, 6, 7})
+}
