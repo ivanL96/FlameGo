@@ -1,6 +1,9 @@
 package types
 
-import "fmt"
+import (
+	"errors"
+	"fmt"
+)
 
 // adds pad value at the beginning of the slice.
 // example: addLeftPadding([1,2,3], 4, 0) ==> [0,0,0,0,1,2,3]
@@ -162,4 +165,30 @@ func (shape Shape) InitDimOrder() []uint16 {
 		dimOrder[i] = uint16(i)
 	}
 	return dimOrder
+}
+
+// stacks shapes together by given axis:
+// Stacked by axis 0 (1,2,3), (2,2,3), (4,2,3) => (7,2,3)
+func StackShapes(axis int, other_shapes ...Shape) (Shape, error) {
+	if len(other_shapes) == 0 {
+		return nil, errors.New("at least 1 shape must be set")
+	}
+	result := make(Shape, len(other_shapes[0]))
+	copy(result, other_shapes[0])
+	prev_shape := other_shapes[0]
+
+	for i := 1; i < len(other_shapes); i++ {
+		sh := other_shapes[i]
+		result[axis] += sh[axis]
+		for j := 0; j < len(sh); j++ {
+			if j == axis {
+				continue
+			}
+			if sh[j] != prev_shape[j] {
+				return nil, fmt.Errorf("shapes %v and %v cannot be stacked together", sh, prev_shape)
+			}
+		}
+		prev_shape = sh
+	}
+	return result, nil
 }

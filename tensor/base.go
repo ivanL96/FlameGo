@@ -14,8 +14,6 @@ type Tensor[T types.TensorType] struct {
 	dim_order []uint16
 }
 
-type TensorList[T types.TensorType] []*Tensor[T]
-
 func (tensor *Tensor[T]) Shape() types.Shape {
 	return tensor.shape
 }

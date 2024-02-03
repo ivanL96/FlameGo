@@ -151,7 +151,10 @@ func TestMatMul6(t *testing.T) {
 func TestDot(t *testing.T) {
 	a2 := tensor.Range[float32](12).Reshape(3, 2, 2)
 	b2 := tensor.Range[float32](12).Reshape(3, 2, 2)
+	a2.MustAssert()
+	b2.MustAssert()
 	c2 := a2.Dot(b2)
+	c2.MustAssert()
 	assertEqualSlices(t, c2.Data(), []float32{2, 3, 6, 11, 46, 55, 66, 79, 154, 171, 190, 211})
 	assertEqualSlices(t, c2.Shape(), types.Shape{3, 2, 2})
 }
