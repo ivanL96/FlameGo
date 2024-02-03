@@ -7,9 +7,9 @@ import (
 )
 
 func toposort[T types.TensorType](
-	topo_sorted *[]*Var[T],
+	topo_sorted *[]*variable[T],
 	visited *VarSet[T],
-	v *Var[T],
+	v *variable[T],
 ) {
 	if visited.Contains(v) {
 		return
@@ -21,7 +21,7 @@ func toposort[T types.TensorType](
 	*topo_sorted = append(*topo_sorted, v)
 }
 
-func reverse_vars_inplace[T types.TensorType](slice []*Var[T]) {
+func reverse_vars_inplace[T types.TensorType](slice []*variable[T]) {
 	l := len(slice)
 	if l <= 1 {
 		return
@@ -34,9 +34,9 @@ func reverse_vars_inplace[T types.TensorType](slice []*Var[T]) {
 
 // This method performs gradient computation for each Variable.
 // Parameter `gradient` is optional and must be set in cases where the result (`this`) Variable is not scalar.
-func (this *Var[T]) Backward(gradient *tensor.Tensor[T]) {
+func (this *variable[T]) Backward(gradient *tensor.Tensor[T]) {
 	// toposort
-	topo_sorted := make([]*Var[T], 0, 8)
+	topo_sorted := make([]*variable[T], 0, 8)
 	visited := CreateVarSet[T]()
 	toposort(&topo_sorted, visited, this)
 	reverse_vars_inplace(topo_sorted)

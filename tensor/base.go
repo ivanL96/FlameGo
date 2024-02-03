@@ -54,3 +54,19 @@ func (tensor *Tensor[T]) MustAssert() *Tensor[T] {
 	}
 	return tensor
 }
+
+func MustAssertAll[T types.TensorType](tensors ...*Tensor[T]) {
+	for _, t := range tensors {
+		t.MustAssert()
+	}
+}
+
+// returns first tensor that has an error
+func AnyErrors[T types.TensorType](tensors ...*Tensor[T]) *Tensor[T] {
+	for _, t := range tensors {
+		if t.Err != nil {
+			return t
+		}
+	}
+	return nil
+}

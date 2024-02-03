@@ -7,7 +7,7 @@ import (
 // MSE impl. mean((y_true-y_pred)**2)
 //
 // 'y_true' is a cosnt by definition
-func (y_pred *Var[T]) MSE(y_true *Var[T]) *Var[T] {
+func (y_pred *variable[T]) MSE(y_true *variable[T]) *variable[T] {
 	squared := tensor.Scalar[T](2)
 	mean := y_true.Value.Sub(y_pred.Value).Pow(squared).Mean(false)
 	out := Variable(mean, y_pred)

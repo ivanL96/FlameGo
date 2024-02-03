@@ -52,3 +52,14 @@ func TestApplyFunc2(t *testing.T) {
 	assertEqualSlices(t, s.Shape(), types.Shape{2, 3})
 	assertEqualSlices(t, s.Data(), []float32{0, 0, 0, 0, 1, 1})
 }
+
+func TestExp(t *testing.T) {
+	a := tensor.Range[float32](10)
+	s := a.Exp()
+	assertEqualSlices(t, s.Data(), []float32{1.0, 2.71828183, 7.38905610, 2.00855369e+01,
+		5.45981500e+01, 1.48413159e+02, 4.03428793e+02, 1.09663316e+03,
+		2.98095799e+03, 8.10308393e+03})
+	assertEqualSlices(t, s.Shape(), types.Shape{10})
+	a.MustAssert()
+	s.MustAssert()
+}

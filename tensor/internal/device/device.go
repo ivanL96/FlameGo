@@ -139,6 +139,10 @@ func Neg[T types.TensorType](i Implementation, a, c []T) {
 	internal.NegMatx(a, c)
 }
 
+func Exp[T types.TensorType](i Implementation, a, c []T) {
+	internal.ExpMatx(a, c)
+}
+
 func Relu[T types.TensorType](i Implementation, a, c []T) {
 	internal.ReluMatx(a, c)
 }

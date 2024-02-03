@@ -116,6 +116,7 @@ func stringRepr[T types.TensorType](sb *strings.Builder, tensor *Tensor[T], ps *
 }
 
 func (tensor *Tensor[T]) ToString() string {
+	tensor.MustAssert()
 	var shape_prod types.Dim = 1
 	for _, dim := range tensor.shape {
 		shape_prod *= dim

@@ -7,7 +7,7 @@ import (
 
 type Optimizer[T types.TensorType] struct {
 	lr     *tensor.Tensor[T]
-	params []*Var[T]
+	params []*variable[T]
 }
 
 func SGD[T types.TensorType](lr float64) *Optimizer[T] {
@@ -16,7 +16,7 @@ func SGD[T types.TensorType](lr float64) *Optimizer[T] {
 	}
 }
 
-func (opt *Optimizer[T]) Step(parameters ...*Var[T]) {
+func (opt *Optimizer[T]) Step(parameters ...*variable[T]) {
 	// new = old - lr*gradient
 	opt.params = parameters
 	for _, param := range parameters {

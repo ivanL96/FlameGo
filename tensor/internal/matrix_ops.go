@@ -207,6 +207,15 @@ func ReluMatx[T types.TensorType](a, out []T) {
 	parallel(relu_chunk, a, nil, makeOutMat(out, len(a)))
 }
 
+func ExpMatx[T types.TensorType](a, out []T) {
+	exp_chunk := func(start, end int, a, dummy, out []T, mu *sync.Mutex) {
+		for i := start; i < end; i++ {
+			out[i] = T(math.Exp(float64(a[i])))
+		}
+	}
+	parallel(exp_chunk, a, nil, makeOutMat(out, len(a)))
+}
+
 func ApplyFuncMatx[T types.TensorType](a []T, expr_fn func(T) T, out []T) {
 	_chunk := func(start, end int, a, dummy, out []T, mu *sync.Mutex) {
 		for i := start; i < end; i++ {
@@ -216,6 +225,7 @@ func ApplyFuncMatx[T types.TensorType](a []T, expr_fn func(T) T, out []T) {
 	parallel(_chunk, a, nil, makeOutMat(out, len(a)))
 }
 
+// reduce
 func SumMatx[T types.TensorType](a, out []T) {
 	sum_chunk := func(start, end int, a, dummy, out []T, mu *sync.Mutex) {
 		var chunk_sum T = 0
@@ -247,6 +257,7 @@ func MaxMatx[T types.TensorType](a, out []T) {
 	parallel(max_chunk, a, nil, makeOutMat(out, len(a)))
 }
 
+// matmul
 func MatMulMatx(
 	a_data, b_data, out_data []float32,
 	a_shape, b_shape types.Shape,

@@ -240,6 +240,10 @@ func (tensor *Tensor[T]) Relu(out ...*Tensor[T]) *Tensor[T] {
 	return unaryElementwiseRoutine(tensor, ops.ReluAtomic[T], device.Relu[T], get_param(out...))
 }
 
+func (tensor *Tensor[T]) Exp(out ...*Tensor[T]) *Tensor[T] {
+	return unaryElementwiseRoutine(tensor, ops.ExpAtomic[T], device.Exp[T], get_param(out...))
+}
+
 //
 // MATRIX OPERATIONS
 //
@@ -363,23 +367,14 @@ func SplitTensor[T types.TensorType](
 	}
 	var err error
 	a, err = PrepareOutTensor(outA, types.Shape{rowleft, rowleft})
-	if err != nil {
-		a.Err = err
-		return
-	}
+	a.Err = err
 	b, err = PrepareOutTensor(outB, types.Shape{rowleft, rowright})
-	if err != nil {
-		b.Err = err
-		return
-	}
+	b.Err = err
 	c, err = PrepareOutTensor(outC, types.Shape{rowright, rowleft})
-	if err != nil {
-		c.Err = err
-		return
-	}
+	c.Err = err
 	d, err = PrepareOutTensor(outD, types.Shape{rowright, rowright})
-	if err != nil {
-		d.Err = err
+	d.Err = err
+	if t := AnyErrors(a, b, c, d); t != nil {
 		return
 	}
 	ops.SplitTensorImpl(tensor.data(), nrows, a.data(), b.data(), c.data(), d.data())

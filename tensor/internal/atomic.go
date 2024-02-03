@@ -45,3 +45,7 @@ func ReluAtomic[T types.TensorType](a T) T {
 	}
 	return 0
 }
+
+func ExpAtomic[T types.TensorType](a T) T {
+	return T(math.Exp(float64(a)))
+}

@@ -39,6 +39,10 @@ func BenchmarkMatMulSplit(b *testing.B) {
 		tensor.SplitTensor(X, a1, b1, c1, d1)
 		// tensor.SplitTensor(X, nil, nil, nil, nil)
 	}
+	t := tensor.AnyErrors(a1, b1, c1, d1)
+	if t != nil {
+		t.MustAssert()
+	}
 }
 
 // goos: windows
