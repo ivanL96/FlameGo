@@ -80,3 +80,14 @@ func TestFill(t *testing.T) {
 	assertEqualSlices(t, a.Shape(), b.Shape())
 	assertNotEqualSlices(t, a.Data(), b.Data())
 }
+
+func TestEye(t *testing.T) {
+	a := tensor.Eye[float32](5, 4)
+	a.MustAssert()
+	for i := 0; i < 4; i++ {
+		a1, err := a.Get(i, i)
+		assert(t, a1 == 1)
+		assert(t, err == nil)
+	}
+	// fmt.Println(a.ToString())
+}

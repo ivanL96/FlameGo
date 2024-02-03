@@ -8,14 +8,14 @@ import (
 )
 
 func reduce_shape[T types.TensorType](
-	init_tensor *Tensor[T],
+	init_dims int,
 	value T,
 	keep_dims bool,
 ) *Tensor[T] {
 	if !keep_dims {
 		return Scalar[T](value)
 	} else {
-		ones := make(types.Shape, len(init_tensor.Shape()))
+		ones := make(types.Shape, init_dims)
 		for i := range ones {
 			ones[i] = 1
 		}
@@ -63,7 +63,7 @@ func (tensor *Tensor[T]) Sum(keep_dims bool) *Tensor[T] {
 	}
 	sum := []T{0}
 	device.Sum(AUTO_IMPL, tensor.data(), sum)
-	return reduce_shape(tensor, sum[0], keep_dims)
+	return reduce_shape(len(tensor.Shape()), sum[0], keep_dims)
 }
 
 func (tensor *Tensor[T]) Mean(keep_dims bool) *Tensor[T] {
@@ -75,7 +75,7 @@ func (tensor *Tensor[T]) Mean(keep_dims bool) *Tensor[T] {
 
 	size := len(tensor.data())
 	_mean := T(float64(sum[0]) / float64(size))
-	return reduce_shape(tensor, _mean, keep_dims)
+	return reduce_shape(len(tensor.Shape()), _mean, keep_dims)
 }
 
 func (tensor *Tensor[T]) Max(keep_dims bool) *Tensor[T] {
@@ -84,5 +84,5 @@ func (tensor *Tensor[T]) Max(keep_dims bool) *Tensor[T] {
 	}
 	max := []T{tensor.data()[0]}
 	device.Max(AUTO_IMPL, tensor.data(), max)
-	return reduce_shape(tensor, max[0], keep_dims)
+	return reduce_shape(len(tensor.Shape()), max[0], keep_dims)
 }

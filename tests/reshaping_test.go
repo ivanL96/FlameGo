@@ -20,3 +20,10 @@ func TestReshape(t *testing.T) {
 	assertEqualSlices(t, a.Reshape(1, 1, 1, 3, 2).Shape(), types.Shape{1, 1, 1, 3, 2})
 	assertEqualSlices(t, a.Reshape(1, 1, 3, 2).Data(), a.Data())
 }
+
+func TestUnsqueeze(t *testing.T) {
+	a := tensor.CreateTensor([]int32{1, 2, 3, 4, 5, 6}, types.Shape{6})
+	a = a.Unsqueeze(1, nil)
+	a.MustAssert()
+	assertEqualSlices(t, a.Shape(), types.Shape{6, 1})
+}

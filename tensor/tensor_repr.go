@@ -30,11 +30,11 @@ func joinData[T types.TensorType](sb *strings.Builder, data []T) {
 		}
 	case reflect.Float32:
 		for i, val := range data {
-			stringData[i] = strconv.FormatFloat(float64(val), 'f', 4, 32)
+			stringData[i] = strconv.FormatFloat(float64(val), 'f', 8, 32)
 		}
 	case reflect.Float64:
 		for i, val := range data {
-			stringData[i] = strconv.FormatFloat(float64(val), 'f', 4, 64)
+			stringData[i] = strconv.FormatFloat(float64(val), 'f', 8, 64)
 		}
 	default:
 		panic("Got unknown type for stringify data")

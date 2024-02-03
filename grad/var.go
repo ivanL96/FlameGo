@@ -222,6 +222,21 @@ func (this *variable[T]) Relu() *variable[T] {
 	return out
 }
 
+func (this *variable[T]) Softmax() *variable[T] {
+	n := types.Dim(len(this.Value.Shape()))
+
+	e := this.Value.Exp()
+	se := e.Sum(false)
+	_softmax := Variable(e.Div(se))
+	if this.Requires_grad {
+		this.backward_fn = func() *tensor.Tensor[T] {
+			ds := _softmax.Value.Mul(tensor.Eye[T](n, n).Sub(_softmax.Value.Unsqueeze(1, nil)))
+			return _softmax.Grad.Mul(ds)
+		}
+	}
+	return _softmax
+}
+
 // reduce
 func (this *variable[T]) Mean() *variable[T] {
 	out := Variable(this.Value.Mean(false), this)
