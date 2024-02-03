@@ -244,6 +244,19 @@ func (tensor *Tensor[T]) Exp(out ...*Tensor[T]) *Tensor[T] {
 	return unaryElementwiseRoutine(tensor, ops.ExpAtomic[T], device.Exp[T], get_param(out...))
 }
 
+func (tensor *Tensor[T]) Clip(min, max float32, out ...*Tensor[T]) *Tensor[T] {
+	clip_fn := func(v T) T {
+		if v < T(min) {
+			return T(min)
+		}
+		if v > T(max) {
+			return T(max)
+		}
+		return v
+	}
+	return tensor.ApplyFunc(clip_fn, out...)
+}
+
 //
 // MATRIX OPERATIONS
 //
