@@ -36,7 +36,7 @@ func reverse_vars_inplace[T types.TensorType](slice []*variable[T]) {
 // Parameter `gradient` is optional and must be set in cases where the result (`this`) Variable is not scalar.
 func (this *variable[T]) Backward(gradient *tensor.Tensor[T]) {
 	// toposort
-	topo_sorted := make([]*variable[T], 0, 8)
+	topo_sorted := make([]*variable[T], 0)
 	visited := CreateVarSet[T]()
 	toposort(&topo_sorted, visited, this)
 	reverse_vars_inplace(topo_sorted)
@@ -47,7 +47,8 @@ func (this *variable[T]) Backward(gradient *tensor.Tensor[T]) {
 			this.Grad = tensor.Ones[T](this.Value.Shape()...)
 		} else {
 			panic(
-				fmt.Sprintf("The result value is not scalar and has shape (%v). Initial gradient should be set explicitly",
+				fmt.Sprintf(
+					"The result value is not scalar and has shape (%v). Initial gradient should be set explicitly",
 					this.Value.Shape(),
 				),
 			)
