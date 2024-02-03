@@ -51,22 +51,14 @@ func (tensor *Tensor[T]) Squeeze(out *Tensor[T]) *Tensor[T] {
 	return outTensor
 }
 
-func (tensor *Tensor[T]) Unsqueeze(axis uint, out *Tensor[T]) *Tensor[T] {
+func (tensor *Tensor[T]) Unsqueeze(axis uint) *Tensor[T] {
 	if tensor.Err != nil {
 		return tensor
 	}
-	outTensor, err := PrepareOutTensor(out, tensor.shape)
-	if err != nil {
-		tensor.Err = err
-		return tensor
-	}
-	if tensor != outTensor {
-		outTensor.SetData(tensor.data())
-	}
-	outTensor.shape = tensor.shape.AddDim(axis)
-	outTensor.strides = outTensor.shape.GetStrides()
-	outTensor.dim_order = outTensor.shape.InitDimOrder()
-	return outTensor
+	tensor.shape = tensor.shape.AddDim(uint(axis))
+	tensor.strides = tensor.shape.GetStrides()
+	tensor.dim_order = tensor.shape.InitDimOrder()
+	return tensor
 }
 
 func (tensor *Tensor[T]) Reshape(newShape ...types.Dim) *Tensor[T] {

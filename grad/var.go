@@ -230,7 +230,7 @@ func (this *variable[T]) Softmax() *variable[T] {
 	_softmax := Variable(e.Div(se))
 	if this.Requires_grad {
 		this.backward_fn = func() *tensor.Tensor[T] {
-			ds := _softmax.Value.Mul(tensor.Eye[T](n, n).Sub(_softmax.Value.Unsqueeze(1, nil)))
+			ds := _softmax.Value.Mul(tensor.Eye[T](n, n).Sub(_softmax.Value.Copy().Unsqueeze(1)))
 			return _softmax.Grad.Mul(ds)
 		}
 	}
