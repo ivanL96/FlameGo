@@ -40,6 +40,15 @@ func TestMean(t *testing.T) {
 func TestMax(t *testing.T) {
 	a := tensor.Range[float32](100).Reshape(10, 10)
 	b := a.Max(true)
+	tensor.MustAssertAll(a, b)
 	assertEqualSlices(t, b.Shape(), types.Shape{1, 1})
 	assertEqualSlices(t, b.Data(), []float32{99})
+}
+
+func TestMin(t *testing.T) {
+	a := tensor.Range[float32](100).Reshape(10, 10)
+	b := a.Min(true)
+	tensor.MustAssertAll(a, b)
+	assertEqualSlices(t, b.Shape(), types.Shape{1, 1})
+	assertEqualSlices(t, b.Data(), []float32{0})
 }

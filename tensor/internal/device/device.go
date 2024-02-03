@@ -167,3 +167,7 @@ func Sum[T types.TensorType](i Implementation, a, c []T) {
 func Max[T types.TensorType](i Implementation, a, c []T) {
 	internal.MaxMatx(a, c)
 }
+
+func Min[T types.TensorType](i Implementation, a, c []T) {
+	internal.MinMatx(a, c)
+}

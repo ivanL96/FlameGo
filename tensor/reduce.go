@@ -86,3 +86,12 @@ func (tensor *Tensor[T]) Max(keep_dims bool) *Tensor[T] {
 	device.Max(AUTO_IMPL, tensor.data(), max)
 	return reduce_shape(len(tensor.Shape()), max[0], keep_dims)
 }
+
+func (tensor *Tensor[T]) Min(keep_dims bool) *Tensor[T] {
+	if tensor.Err != nil {
+		return tensor
+	}
+	min := []T{tensor.data()[0]}
+	device.Min(AUTO_IMPL, tensor.data(), min)
+	return reduce_shape(len(tensor.Shape()), min[0], keep_dims)
+}

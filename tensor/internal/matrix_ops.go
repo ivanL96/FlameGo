@@ -257,6 +257,24 @@ func MaxMatx[T types.TensorType](a, out []T) {
 	parallel(max_chunk, a, nil, makeOutMat(out, len(a)))
 }
 
+func MinMatx[T types.TensorType](a, out []T) {
+	min_chunk := func(start, end int, a, dummy, out []T, mu *sync.Mutex) {
+		var _min T = a[0]
+		for i := start; i < end; i++ {
+			v := a[i]
+			if v < _min {
+				_min = v
+			}
+		}
+		mu.Lock()
+		defer mu.Unlock()
+		if _min < out[0] {
+			out[0] = _min
+		}
+	}
+	parallel(min_chunk, a, nil, makeOutMat(out, len(a)))
+}
+
 // matmul
 func MatMulMatx(
 	a_data, b_data, out_data []float32,
