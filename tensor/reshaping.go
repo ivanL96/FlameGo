@@ -177,37 +177,49 @@ func (tensor *Tensor[T]) TrC2D() *Tensor[T] {
 
 // stacks tensors together. All tensors should have the same shape
 func Stack[T types.TensorType](tensors ...*Tensor[T]) (*Tensor[T], error) {
-	if len(tensors) < 2 {
-		return nil, errors.New("at least 2 tensors is required")
+	if len(tensors) < 1 {
+		return nil, errors.New("at least 1 tensor is required")
+	}
+	if len(tensors) == 1 {
+		return tensors[0], nil
 	}
 
 	// validate shapes
-	var prev_shape types.Shape
-	for _, tensor := range tensors {
-		if prev_shape == nil {
-			prev_shape = tensor.shape
-			continue
-		}
-		if !tensor.shape.Equals(prev_shape) {
-			return nil, errors.New("all shapes must be equal")
-		}
+	other_shapes := make([]types.Shape, len(tensors))
+	for i, tensor := range tensors {
+		other_shapes[i] = tensor.Shape()
 	}
-
-	united_shape := make(types.Shape, len(tensors[0].shape)+1)
-	united_shape[0] = types.Dim(len(tensors))
-	copy(united_shape[1:], tensors[0].shape)
+	united_shape, err := types.StackShapes(0, other_shapes...)
+	if err != nil {
+		return nil, err
+	}
 
 	united := CreateEmptyTensor[T](united_shape...)
-	var wg sync.WaitGroup
+	prev_position := 0
 	for i := 0; i < len(tensors); i++ {
-		wg.Add(1)
-		go func(i int) {
-			defer wg.Done()
-			tensor := tensors[i]
-			size := len(tensor.data())
-			copy(united.data()[size*i:size*(i+1)], tensor.data())
-		}(i)
+		tensor := tensors[i]
+		size := len(tensor.data())
+		copy(united.data()[prev_position:prev_position+size], tensor.data())
+		prev_position += size
 	}
-	wg.Wait()
 	return united, nil
+}
+
+// tensor list logic
+type TensorList[T types.TensorType] struct {
+	StackedTensors *Tensor[T]
+}
+
+func (tlist *TensorList[T]) Append(new_tensor *Tensor[T]) {
+	new_tensor.MustAssert()
+	if tlist.StackedTensors == nil {
+		tlist.StackedTensors = new_tensor.Copy()
+		return
+	}
+	upd, err := Stack[T](tlist.StackedTensors, new_tensor)
+	if err != nil {
+		new_tensor.Err = err
+		return
+	}
+	tlist.StackedTensors = upd
 }
