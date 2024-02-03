@@ -46,6 +46,10 @@ func Variable[T types.TensorType](
 	return v
 }
 
+func VarFrom[T types.TensorType](data []T, shape types.Shape) *variable[T] {
+	return Variable(tensor.CreateTensor[T](data, shape))
+}
+
 func Constant[T types.TensorType](
 	tensor_val *tensor.Tensor[T],
 	children ...*variable[T],
@@ -55,8 +59,9 @@ func Constant[T types.TensorType](
 	return v
 }
 
-func (v *variable[T]) MustAssert() {
+func (v *variable[T]) MustAssert() *variable[T] {
 	v.Value.MustAssert()
+	return v
 }
 
 func (v *variable[T]) ZeroGrad() {
