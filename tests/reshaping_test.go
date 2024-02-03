@@ -23,9 +23,15 @@ func TestReshape(t *testing.T) {
 
 func TestUnsqueeze(t *testing.T) {
 	a := tensor.CreateTensor([]int32{1, 2, 3, 4, 5, 6}, types.Shape{6})
-	a = a.Unsqueeze(1)
+	a.Unsqueeze(1)
 	a.MustAssert()
 	assertEqualSlices(t, a.Shape(), types.Shape{6, 1})
+}
+func TestSqueeze(t *testing.T) {
+	a := tensor.CreateTensor([]int32{1, 2, 3, 4, 5, 6}, types.Shape{1, 6, 1})
+	a = a.Squeeze()
+	a.MustAssert()
+	assertEqualSlices(t, a.Shape(), types.Shape{6})
 }
 
 func TestTensorList(t *testing.T) {

@@ -30,27 +30,25 @@ func (tensor *Tensor[T]) Flatten(out *Tensor[T]) *Tensor[T] {
 	return outTensor
 }
 
-func (tensor *Tensor[T]) Squeeze(out *Tensor[T]) *Tensor[T] {
+// Eliminates all one-sized dims in tensor.
+//
+// inplace operation
+func (tensor *Tensor[T]) Squeeze() *Tensor[T] {
 	if tensor.Err != nil {
 		return tensor
 	}
 	if tensor.shape.IsScalarLike() {
 		return tensor
 	}
-	outTensor, err := PrepareOutTensor(out, tensor.shape)
-	if err != nil {
-		tensor.Err = err
-		return tensor
-	}
-	if tensor != outTensor {
-		outTensor.SetData(tensor.data())
-	}
-	outTensor.shape = tensor.shape.Squeeze()
-	outTensor.strides = outTensor.shape.GetStrides()
-	outTensor.dim_order = outTensor.shape.InitDimOrder()
-	return outTensor
+	tensor.shape = tensor.shape.Squeeze()
+	tensor.strides = tensor.shape.GetStrides()
+	tensor.dim_order = tensor.shape.InitDimOrder()
+	return tensor
 }
 
+// Adds a one-sized dim to tensor.
+//
+// inplace operation
 func (tensor *Tensor[T]) Unsqueeze(axis uint) *Tensor[T] {
 	if tensor.Err != nil {
 		return tensor
@@ -136,6 +134,7 @@ func (tensor *Tensor[T]) TrC(axes ...uint) *Tensor[T] {
 }
 
 // TrC for 2D matrix
+//
 // [1,2,3][4,5,6] => [1,4][2,5][3,6]
 func (tensor *Tensor[T]) TrC2D() *Tensor[T] {
 	if tensor.Err != nil {
