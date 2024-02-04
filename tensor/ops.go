@@ -63,7 +63,7 @@ func BaseBinElementwiseOp[T types.TensorType](
 
 	// tensors should have equal shapes or at least one of them should be scalar-like
 	if !tensor_a.shape.AreBroadcastable(tensor_b.shape) {
-		tensor_a.Err = fmt.Errorf("shapes: %x, %x are not broadcastable", tensor_a.shape, tensor_b.shape)
+		tensor_a.Err = fmt.Errorf("shapes: %v, %v are not broadcastable", tensor_a.shape, tensor_b.shape)
 		return tensor_a
 	}
 	if len(tensor_a.data()) == len(tensor_b.data()) {
