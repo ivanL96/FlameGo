@@ -35,6 +35,7 @@ func reverse_vars_inplace[T types.TensorType](slice []*variable[T]) {
 // This method performs gradient computation for each Variable.
 // Parameter `gradient` is optional and must be set in cases where the result (`this`) Variable is not scalar.
 func (this *variable[T]) Backward(gradient *tensor.Tensor[T]) {
+	this.MustAssert()
 	// toposort
 	topo_sorted := make([]*variable[T], 0)
 	visited := CreateVarSet[T]()
@@ -58,7 +59,12 @@ func (this *variable[T]) Backward(gradient *tensor.Tensor[T]) {
 	}
 	for _, v := range topo_sorted {
 		if v.backward_fn != nil {
-			v.Grad.Add(v.backward_fn(), v.Grad)
+			new_grad := v.backward_fn()
+			if !new_grad.Shape().AreBroadcastable(v.Grad.Shape()) {
+				panic(fmt.Sprintf("Error at '%v' backprop. Old grad Shape is %v but new grad Shape is %v",
+					v.Alias, v.Grad.Shape(), new_grad.Shape()))
+			}
+			v.Grad.Add(new_grad, v.Grad).MustAssert()
 		}
 	}
 }
