@@ -49,9 +49,16 @@ func (tensor *Tensor[T]) Squeeze() *Tensor[T] {
 // Adds a one-sized dim to tensor.
 //
 // inplace operation
-func (tensor *Tensor[T]) Unsqueeze(axis uint) *Tensor[T] {
+func (tensor *Tensor[T]) Unsqueeze(axis int) *Tensor[T] {
 	if tensor.Err != nil {
 		return tensor
+	}
+	if axis < 0 {
+		axis = len(tensor.shape) - axis
+		if axis < 0 {
+			tensor.Err = fmt.Errorf("axis %v is not valid", axis)
+			return tensor
+		}
 	}
 	tensor.shape = tensor.shape.AddDim(uint(axis))
 	tensor.strides = tensor.shape.GetStrides()

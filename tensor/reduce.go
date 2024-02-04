@@ -52,7 +52,7 @@ func (tensor *Tensor[T]) SumAlongAxis(
 		reduced.Add(tensor.IndexAdv(strings.Join(args, ",")), reduced)
 	}
 	if keep_dims {
-		return reduced.Unsqueeze(axis)
+		return reduced.Unsqueeze(int(axis))
 	}
 	return reduced
 }
