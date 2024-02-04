@@ -10,6 +10,8 @@ import (
 	"sync"
 )
 
+var numCPU int = runtime.NumCPU()
+
 // set of primitive common tensor methods
 //tensor initialization-----------------------------------------------------
 
@@ -172,8 +174,6 @@ func Range[T types.TensorType](limits ...int) *Tensor[T] {
 	return tensor
 }
 
-var numCPU int = runtime.NumCPU()
-
 // Fills tensor with same value
 func (tensor *Tensor[T]) Fill(value T) *Tensor[T] {
 	if tensor.Err != nil {
@@ -223,6 +223,23 @@ func Eye[T types.TensorType](x, y types.Dim) *Tensor[T] {
 		}
 	}
 	return eye
+}
+
+func (tensor *Tensor[T]) DiagFlat() *Tensor[T] {
+	if tensor.Err != nil {
+		return tensor
+	}
+	n := types.Dim(tensor.Size())
+	diag := CreateEmptyTensor[T](types.Shape{n, n}...)
+	for i := 0; i < int(n); i++ {
+		for j := 0; j < int(n); j++ {
+			if i == j {
+				fidx := get_flat_idx_fast(diag.strides, i, j)
+				diag.data()[fidx] = tensor.data()[i]
+			}
+		}
+	}
+	return diag
 }
 
 // sets new value of the same shape
