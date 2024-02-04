@@ -36,7 +36,7 @@ func TestLinear(t *testing.T) {
 	var history float32
 	for i := 0; i < epochs; i++ {
 		y_pred := (x.MatMul(w)).Add(b)
-		loss := y_pred.MSE(y)
+		loss := y_pred.MSE(y).MustAssert()
 		loss.Backward(nil)
 		if (i+1)%100 == 0 {
 			history = loss.Value.Data()[0]

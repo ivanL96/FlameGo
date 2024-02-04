@@ -9,7 +9,7 @@ import (
 func TestSigmoid(t *testing.T) {
 	rng := tensor.NewRNG(0)
 	a := rng.RandomFloat32(2, 3)
-	s := a.Sigmoid()
+	s := a.Sigmoid().MustAssert()
 
 	data := []float32{0.7201481, 0.56093687, 0.6583514, 0.5135826, 0.59087586, 0.57186896}
 	assertEqualSlices(t, s.Data(), data)
@@ -18,14 +18,14 @@ func TestSigmoid(t *testing.T) {
 
 func TestNeg(t *testing.T) {
 	a := tensor.Range[float32](10)
-	s := a.Neg()
+	s := a.Neg().MustAssert()
 	assertEqualSlices(t, s.Data(), []float32{0, -1, -2, -3, -4, -5, -6, -7, -8, -9})
 	assertEqualSlices(t, s.Shape(), types.Shape{10})
 }
 
 func TestRelu(t *testing.T) {
 	a := tensor.Range[float32](-3, 7)
-	s := a.Relu()
+	s := a.Relu().MustAssert()
 	assertEqualSlices(t, s.Data(), []float32{0, 0, 0, 0, 1, 2, 3, 4, 5, 6})
 	assertEqualSlices(t, s.Shape(), types.Shape{10})
 }
@@ -35,7 +35,7 @@ func TestApplyFunc1(t *testing.T) {
 	expr := func(a float32) float32 {
 		return -a
 	}
-	s := a.ApplyFunc(expr)
+	s := a.ApplyFunc(expr).MustAssert()
 	assertEqualSlices(t, s.Shape(), types.Shape{2, 3})
 	assertEqualSlices(t, s.Data(), []float32{0, -1, -2, -3, -4, -5})
 }
@@ -48,7 +48,7 @@ func TestApplyFunc2(t *testing.T) {
 		}
 		return 0
 	}
-	s := a.ApplyFunc(expr)
+	s := a.ApplyFunc(expr).MustAssert()
 	assertEqualSlices(t, s.Shape(), types.Shape{2, 3})
 	assertEqualSlices(t, s.Data(), []float32{0, 0, 0, 0, 1, 1})
 }

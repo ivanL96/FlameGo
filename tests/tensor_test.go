@@ -55,17 +55,17 @@ func TestRange(t *testing.T) {
 	var a *tensor.Tensor[int32] = nil
 	var b *tensor.Tensor[int32] = nil
 
-	a = tensor.Range[int32](6)
+	a = tensor.Range[int32](6).MustAssert()
 	b = tensor.CreateTensor([]int32{0, 1, 2, 3, 4, 5}, types.Shape{6})
 	assertEqualSlices(t, a.Data(), b.Data())
 	assertEqualSlices(t, a.Shape(), b.Shape())
 
-	a = tensor.Range[int32](2, 6, 1)
+	a = tensor.Range[int32](2, 6, 1).MustAssert()
 	b = tensor.CreateTensor([]int32{2, 3, 4, 5}, types.Shape{4})
 	assertEqualSlices(t, a.Data(), b.Data())
 	assertEqualSlices(t, a.Shape(), b.Shape())
 
-	a = tensor.Range[int32](1, 6, 2)
+	a = tensor.Range[int32](1, 6, 2).MustAssert()
 	b = tensor.CreateTensor([]int32{1, 3, 5}, types.Shape{3})
 	assertEqualSlices(t, a.Data(), b.Data())
 	assertEqualSlices(t, a.Shape(), b.Shape())
@@ -75,7 +75,7 @@ func TestRange(t *testing.T) {
 func TestFill(t *testing.T) {
 	a := tensor.CreateEmptyTensor[int32](12)
 	b := a.Copy()
-	a.Fill(2)
+	a.Fill(2).MustAssert()
 	// fmt.Println(b.ToString(), a.ToString())
 	assertEqualSlices(t, a.Shape(), b.Shape())
 	assertNotEqualSlices(t, a.Data(), b.Data())

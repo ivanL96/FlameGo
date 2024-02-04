@@ -33,9 +33,8 @@ func Variable[T types.TensorType](
 	tensor_val *tensor.Tensor[T],
 	children ...*variable[T],
 ) *variable[T] {
-	tensor_val.MustAssert()
 	v := &variable[T]{
-		Value:         tensor_val,
+		Value:         tensor_val.MustAssert(),
 		Grad:          tensor.Zeros[T](tensor_val.Shape()...),
 		Children:      children,
 		Requires_grad: true,

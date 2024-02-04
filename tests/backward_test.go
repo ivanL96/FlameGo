@@ -15,7 +15,7 @@ func TestGradAdd(t *testing.T) {
 		[]float32{4}, types.Shape{1, 1}))
 	b := grad.Variable[float32](tensor.CreateTensor(
 		[]float32{5}, types.Shape{1, 1}))
-	z := a.Add(b)
+	z := a.Add(b).MustAssert()
 	assertEqualSlices(t, z.Value.Data(), []float32{9})
 	z.Backward(nil)
 	assertEqualSlices(t, a.Grad.Data(), []float32{1})
@@ -36,7 +36,7 @@ func TestGradSub(t *testing.T) {
 		[]float32{4}, types.Shape{1, 1}))
 	b := grad.Variable[float32](tensor.CreateTensor(
 		[]float32{5}, types.Shape{1, 1}))
-	z := a.Sub(b)
+	z := a.Sub(b).MustAssert()
 	assertEqualSlices(t, z.Value.Data(), []float32{-1})
 	z.Backward(nil)
 	assertEqualSlices(t, a.Grad.Data(), []float32{1})
@@ -57,7 +57,7 @@ func TestGradMul(t *testing.T) {
 		[]float32{4}, types.Shape{1, 1}))
 	b := grad.Variable[float32](tensor.CreateTensor(
 		[]float32{5}, types.Shape{1, 1}))
-	z := a.Mul(b)
+	z := a.Mul(b).MustAssert()
 	assertEqualSlices(t, z.Value.Data(), []float32{20})
 	z.Backward(nil)
 	assertEqualSlices(t, a.Grad.Data(), []float32{5})
@@ -82,7 +82,7 @@ func TestGradMul(t *testing.T) {
 func TestGradMatMul(t *testing.T) {
 	a := grad.Variable(tensor.Range[float32](5).Reshape(1, 5))
 	b := grad.Variable(tensor.Range[float32](5).Reshape(5, 1))
-	z := a.MatMul(b)
+	z := a.MatMul(b).MustAssert()
 	z.Backward(nil)
 	assertEqualSlices(t, z.Value.Shape(), types.Shape{1, 1})
 	assertEqualSlices(t, z.Value.Data(), []float32{30})
@@ -95,7 +95,7 @@ func TestGradMatMul(t *testing.T) {
 func TestGradMatMulMean(t *testing.T) {
 	a := grad.Variable(tensor.Range[float32](8).Reshape(4, 2))
 	b := grad.Variable(tensor.Range[float32](10).Reshape(2, 5))
-	z := a.MatMul(b).Mean()
+	z := a.MatMul(b).Mean().MustAssert()
 	z.Backward(nil)
 	assertEqualSlices(t, z.Value.Shape(), types.Shape{1})
 	assertEqualSlices(t, z.Value.Data(), []float32{34})
@@ -117,7 +117,7 @@ func TestGradMatMulMSE(t *testing.T) {
 	w := grad.Variable[float32](tensor.Range[float32](1).Reshape(1, 1))
 	b := grad.Variable[float32](tensor.Range[float32](1).Reshape(1, 1))
 	yhat := x.MatMul(w).Add(b)
-	loss := yhat.MSE(y)
+	loss := yhat.MSE(y).MustAssert()
 	loss.Backward(nil)
 	assertEqualSlices(t, loss.Value.Data(), []float32{28.5})
 	assertEqualSlices(t, w.Grad.Data(), []float32{-5.7})
@@ -128,9 +128,21 @@ func TestGradReluMean(t *testing.T) {
 	a := grad.Variable[float32](
 		tensor.CreateTensor([]float32{-1., 0., 4., -2.}, types.Shape{4}),
 	)
-	b := a.Relu()
-	c := b.Mean()
+	b := a.Relu().MustAssert()
+	c := b.Mean().MustAssert()
 	c.Backward(nil)
 	assertEqualSlices(t, a.Grad.Data(), []float32{0, 0, 0.25, 0})
 	assertEqualSlices(t, a.Grad.Shape(), types.Shape{4})
 }
+
+// func TestGradCrossEntropy(t *testing.T) {
+// 	xdata := []float32{
+// 		.2, .8,
+// 		.4, .6,
+// 		.1, .9}
+// 	x := grad.VarFrom(xdata, types.Shape{3, 2})
+// 	y := grad.VarFrom([]float32{1, 0, 1}, types.Shape{3})
+// 	out := x.SoftmaxCrossEntropy(y)
+// 	fmt.Println(out.MustAssert().ToString())
+// 	fmt.Println(out.Mean().MustAssert().ToString())
+// }
