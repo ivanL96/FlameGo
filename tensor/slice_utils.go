@@ -72,15 +72,16 @@ func transpose_cont2D_loop[T types.TensorType](data, transposed []T, i, cols, ro
 	i_cols := i * cols
 	n := 8
 	for j := 0; j < cols/n; j += n {
-		transposed[j*rows+i] = data[i_cols+j]
-		transposed[(j+1)*rows+i] = data[i_cols+j+1]
-		transposed[(j+2)*rows+i] = data[i_cols+j+2]
-		transposed[(j+3)*rows+i] = data[i_cols+j+3]
+		i_cols_j := i_cols + j
+		transposed[j*rows+i] = data[i_cols_j]
+		transposed[(j+1)*rows+i] = data[i_cols_j+1]
+		transposed[(j+2)*rows+i] = data[i_cols_j+2]
+		transposed[(j+3)*rows+i] = data[i_cols_j+3]
 
-		transposed[(j+4)*rows+i] = data[i_cols+j+4]
-		transposed[(j+5)*rows+i] = data[i_cols+j+5]
-		transposed[(j+6)*rows+i] = data[i_cols+j+6]
-		transposed[(j+7)*rows+i] = data[i_cols+j+7]
+		transposed[(j+4)*rows+i] = data[i_cols_j+4]
+		transposed[(j+5)*rows+i] = data[i_cols_j+5]
+		transposed[(j+6)*rows+i] = data[i_cols_j+6]
+		transposed[(j+7)*rows+i] = data[i_cols_j+7]
 	}
 	for j := cols - cols%n; j < cols; j++ {
 		transposed[j*rows+i] = data[i_cols+j]
