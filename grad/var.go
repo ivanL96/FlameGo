@@ -29,6 +29,7 @@ type variable[T types.TensorType] struct {
 	Requires_grad bool
 }
 
+// VAR init
 func Variable[T types.TensorType](
 	tensor_val *tensor.Tensor[T],
 	children ...*variable[T],
@@ -55,6 +56,13 @@ func Constant[T types.TensorType](
 ) *variable[T] {
 	v := Variable[T](tensor_val, children...)
 	v.Requires_grad = false
+	return v
+}
+
+// =================
+
+func (v *variable[T]) SetAlias(name string) *variable[T] {
+	v.Alias = name
 	return v
 }
 
@@ -93,8 +101,7 @@ func unbroadcast[T types.TensorType](
 }
 
 func (this *variable[T]) Add(other *variable[T]) *variable[T] {
-	out := Variable(this.Value.Add(other.Value), this, other)
-	out.Alias = "Add"
+	out := Variable(this.Value.Add(other.Value), this, other).SetAlias("Add")
 	if this.Requires_grad {
 		this.backward_fn = func() *tensor.Tensor[T] {
 			return unbroadcast(out.Grad, this.Value)
@@ -109,8 +116,7 @@ func (this *variable[T]) Add(other *variable[T]) *variable[T] {
 }
 
 func (this *variable[T]) Sub(other *variable[T]) *variable[T] {
-	out := Variable(this.Value.Sub(other.Value), this, other)
-	out.Alias = "Sub"
+	out := Variable(this.Value.Sub(other.Value), this, other).SetAlias("Sub")
 	if this.Requires_grad {
 		this.backward_fn = func() *tensor.Tensor[T] {
 			// out.g
@@ -127,8 +133,7 @@ func (this *variable[T]) Sub(other *variable[T]) *variable[T] {
 }
 
 func (this *variable[T]) Mul(other *variable[T]) *variable[T] {
-	out := Variable(this.Value.Mul(other.Value), this, other)
-	out.Alias = "Mul"
+	out := Variable(this.Value.Mul(other.Value), this, other).SetAlias("Mul")
 	if this.Requires_grad {
 		this.backward_fn = func() *tensor.Tensor[T] {
 			grad := other.Value.Mul(out.Grad) // other * out.g
@@ -145,7 +150,7 @@ func (this *variable[T]) Mul(other *variable[T]) *variable[T] {
 }
 
 func (this *variable[T]) Pow(other *variable[T]) *variable[T] {
-	out := Variable(this.Value.Pow(other.Value), this, other)
+	out := Variable(this.Value.Pow(other.Value), this, other).SetAlias("Pow")
 	if this.Requires_grad {
 		this.backward_fn = func() *tensor.Tensor[T] {
 			// out.g * other * this**(other-1)
@@ -168,8 +173,7 @@ func (this *variable[T]) Pow(other *variable[T]) *variable[T] {
 // => d(this): 1/other
 // => d(other): (-this) / (other**2)
 func (this *variable[T]) Div(other *variable[T]) *variable[T] {
-	out := Variable(this.Value.Div(other.Value), this, other)
-	out.Alias = "Div"
+	out := Variable(this.Value.Div(other.Value), this, other).SetAlias("Div")
 	if this.Requires_grad {
 		// one := tensor.Scalar[T](1)
 		this.backward_fn = func() *tensor.Tensor[T] {
@@ -188,8 +192,7 @@ func (this *variable[T]) Div(other *variable[T]) *variable[T] {
 }
 
 func (this *variable[T]) MatMul(other *variable[T]) *variable[T] {
-	out := Variable(this.Value.MatMul(other.Value), this, other)
-	out.Alias = "MatMul"
+	out := Variable(this.Value.MatMul(other.Value), this, other).SetAlias("MatMul")
 	if this.Requires_grad {
 		this.backward_fn = func() *tensor.Tensor[T] {
 			// out.g @ other.T
@@ -207,7 +210,7 @@ func (this *variable[T]) MatMul(other *variable[T]) *variable[T] {
 
 // activations
 func (this *variable[T]) Sigmoid() *variable[T] {
-	out := Variable(this.Value.Sigmoid(), this)
+	out := Variable(this.Value.Sigmoid(), this).SetAlias("Sigmoid")
 	if this.Requires_grad {
 		this.backward_fn = func() *tensor.Tensor[T] {
 			one := tensor.Ones[T](out.Value.Shape()...)
@@ -218,8 +221,7 @@ func (this *variable[T]) Sigmoid() *variable[T] {
 }
 
 func (this *variable[T]) Relu() *variable[T] {
-	out := Variable(this.Value.Relu(), this)
-	out.Alias = "Relu"
+	out := Variable(this.Value.Relu(), this).SetAlias("Relu")
 	if this.Requires_grad {
 		this.backward_fn = func() *tensor.Tensor[T] {
 			expr := func(a T) T {
