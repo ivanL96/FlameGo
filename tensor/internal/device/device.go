@@ -147,6 +147,10 @@ func Relu[T types.TensorType](i Implementation, a, c []T) {
 	internal.ReluMatx(a, c)
 }
 
+func Softmax[T types.TensorType](i Implementation, a, c []T, strides []int) {
+	internal.SoftmaxMatx(a, c, strides)
+}
+
 // masking
 func ApplyFunc[T types.TensorType](i Implementation, a []T, expr func(T) T, out []T) {
 	internal.ApplyFuncMatx(a, expr, out)

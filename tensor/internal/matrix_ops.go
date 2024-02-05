@@ -275,6 +275,38 @@ func MinMatx[T types.TensorType](a, out []T) {
 	parallel(min_chunk, a, nil, makeOutMat(out, len(a)))
 }
 
+func SoftmaxMatx[T types.TensorType](a, out []T, strides []int) {
+	var wg sync.WaitGroup
+
+	c := strides[0]
+	batchsize := len(a) / c
+	for i := 0; i < batchsize; i++ {
+		wg.Add(1)
+		go func(i int) {
+			defer wg.Done()
+			logits_start := c * i
+			logits_end := (i + 1) * c
+			logit_max := a[logits_start]
+			for j := logits_start; j < logits_end; j++ {
+				v := a[j]
+				if v > logit_max {
+					logit_max = v
+				}
+			}
+			var logits_sum T = 0
+			for j := logits_start; j < logits_end; j++ {
+				exp := T(math.Exp(float64(a[j] - logit_max)))
+				out[j] = exp
+				logits_sum += exp
+			}
+			for j := logits_start; j < logits_end; j++ {
+				out[j] /= logits_sum
+			}
+		}(i)
+	}
+	wg.Wait()
+}
+
 // matmul
 func MatMulMatx(
 	a_data, b_data, out_data []float32,

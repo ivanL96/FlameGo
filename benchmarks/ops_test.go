@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"gograd/tensor"
 	"testing"
 )
@@ -232,4 +233,36 @@ func BenchmarkRelu(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		a1.Relu()
 	}
+}
+
+// goos: windows
+// goarch: amd64
+// pkg: gograd/benchmarks
+// cpu: 11th Gen Intel(R) Core(TM) i5-11400H @ 2.70GHz
+// user-level api:
+// e := (x.Sub(x.Max(false))).Exp()
+// out = e.Div(e.SumAlongAxis(1, true))
+// result 0.008303017
+// BenchmarkSoftmax-12           18          60.350.650 ns/op        93.005.034 B/op     205112 allocs/op
+// BenchmarkSoftmax-12           19          62.569.753 ns/op        93.000.535 B/op     205111 allocs/op
+// BenchmarkSoftmax-12           18          59.356.683 ns/op        93.016.951 B/op     205134 allocs/op
+// BenchmarkSoftmax-12           18          60.449.606 ns/op        93.003.615 B/op     205104 allocs/op
+// BenchmarkSoftmax-12           18          61.208.217 ns/op        93.003.496 B/op     205105 allocs/op
+// ad-hoc impl tensor.Softmax(out). 150x speed up
+// result 0.008303015
+// BenchmarkSoftmax-12         2696            385.663 ns/op          104.473 B/op       2001 allocs/op
+// BenchmarkSoftmax-12         3070            381.827 ns/op          104.452 B/op       2001 allocs/op
+// BenchmarkSoftmax-12         3063            379.646 ns/op          104.427 B/op       2001 allocs/op
+// BenchmarkSoftmax-12         3074            382.471 ns/op          104.411 B/op       2001 allocs/op
+// BenchmarkSoftmax-12         3122            384.219 ns/op          104.405 B/op       2001 allocs/op
+func BenchmarkSoftmax(b *testing.B) {
+	rng := tensor.NewRNG(0)
+	x := rng.RandomFloat32(1000, 100)
+	out := tensor.CreateEmptyTensor[float32](1000, 100)
+	for i := 0; i < b.N; i++ {
+		// e := (x.Sub(x.Max(false))).Exp()
+		// out = e.Div(e.SumAlongAxis(1, true))
+		x.Softmax(out)
+	}
+	fmt.Println(out.Data()[777])
 }

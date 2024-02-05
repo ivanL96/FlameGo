@@ -39,7 +39,7 @@ func BaseBinElementwiseOp[T types.TensorType](
 	// TODO if outTensor equals to a or b,  apply the *_to_const vectorized impl
 	// TODO try to vectorize operations for non continuous tensors. Right now it falls back to scalar impl which is slow
 
-	if scalar_impl == nil && vector_impl == nil && vector_to_scalar_impl == nil {
+	if scalar_impl == nil || (vector_impl == nil && vector_to_scalar_impl == nil) {
 		panic("no implementation found")
 	}
 
@@ -177,17 +177,17 @@ func unaryElementwiseRoutine[T types.TensorType](
 	if tensor.Err != nil {
 		return tensor
 	}
+	if scalar_impl == nil && vector_impl == nil {
+		panic("no implementation found")
+	}
 	outTensor, err := PrepareOutTensor(out, tensor.Shape())
 	if err != nil {
 		tensor.Err = err
 		return tensor
 	}
-	if tensor.shape.IsScalarLike() {
+	if tensor.shape.IsScalarLike() && scalar_impl != nil {
 		outTensor.data()[0] = scalar_impl(tensor.data()[0])
 		return outTensor
-	}
-	if scalar_impl == nil && vector_impl == nil {
-		panic("no implementation found")
 	}
 	if vector_impl == nil {
 		for i, val := range tensor.data() {
@@ -255,6 +255,16 @@ func (tensor *Tensor[T]) Clip(min, max float32, out ...*Tensor[T]) *Tensor[T] {
 		return v
 	}
 	return tensor.ApplyFunc(clip_fn, out...)
+}
+
+func (tensor *Tensor[T]) Softmax(out *Tensor[T]) *Tensor[T] {
+	out, err := PrepareOutTensor(out, tensor.shape)
+	if err != nil {
+		return tensor
+	}
+	tensor = tensor.AsContinuous()
+	device.Softmax[T](AUTO_IMPL, tensor.data(), out.data(), tensor.Strides())
+	return out
 }
 
 //

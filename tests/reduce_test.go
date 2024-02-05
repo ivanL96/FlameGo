@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-func TestSum(t *testing.T) {
+func TestSumAlongAxis(t *testing.T) {
 	a := tensor.Range[int32](2*3*4).Reshape(2, 3, 4)
 	b := a.SumAlongAxis(0, true)
 	assertEqualSlices(t, b.Shape(), types.Shape{1, 3, 4})
