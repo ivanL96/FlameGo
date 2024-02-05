@@ -335,3 +335,16 @@ func (tensor *Tensor[T]) IsAllClose(tensor_or_scalar *Tensor[T], tol float64) (b
 	}
 	return true, nil
 }
+
+func (tensor *Tensor[T]) HasNaN() (bool, error) {
+	if tensor.Err != nil {
+		return false, tensor.Err
+	}
+	data := tensor.data()
+	for i := 0; i < len(data); i++ {
+		if math.IsNaN(float64(data[i])) {
+			return true, nil
+		}
+	}
+	return false, nil
+}
