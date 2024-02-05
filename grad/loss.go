@@ -21,3 +21,26 @@ func (y_pred *variable[T]) MSE(y_true *variable[T]) *variable[T] {
 	}
 	return out
 }
+
+func (logits *variable[T]) SoftmaxCrossEntropy(y_true *variable[T]) *variable[T] {
+
+	y_pred := logits.Value.Softmax(nil)
+
+	if hasNaN(y_pred.Data()) {
+		panic(logits.ToString())
+	}
+
+	var epsilon float32 = 1e-15
+	ce := y_pred.IndexMask(y_true.Value, true).Clip(epsilon, 1-epsilon).Ln().Neg()
+	out := Variable(ce, logits)
+	out.Alias = "SoftmaxCrossEntropy"
+	if logits.Requires_grad {
+		n_classes := uint(logits.Value.Shape()[1])
+		y_onehot := y_true.ToOneHot(n_classes)
+		logits.backward_fn = func() *tensor.Tensor[T] {
+			return out.Grad.Mul(y_pred.Sub(y_onehot.Value))
+		}
+	}
+	return out
+}
+

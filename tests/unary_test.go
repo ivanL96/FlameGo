@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"gograd/tensor"
 	types "gograd/tensor/types"
 	"testing"
@@ -78,11 +77,11 @@ func TestSoftmax(t *testing.T) {
 	// e := x.Exp()
 	sum := e.SumAlongAxis(1, true).MustAssert()
 	sf1 := e.Div(sum).MustAssert()
-	fmt.Println(sf1.ToString())
+	// fmt.Println(sf1.ToString())
 	assertEqualSlices(t, sum.Shape(), types.Shape{5, 1})
 
 	sf2 := x.Softmax(nil)
-	fmt.Println(sf2.ToString())
+	// fmt.Println(sf2.ToString())
 	isclose, err := sf1.IsAllClose(sf2, 0.01)
 	assert(t, err == nil)
 	assert(t, isclose)

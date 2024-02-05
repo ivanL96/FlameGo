@@ -58,6 +58,10 @@ func Constant[T types.TensorType](
 	return v
 }
 
+func (v *variable[T]) IsLeaf() bool {
+	return len(v.Children) > 0
+}
+
 func (v *variable[T]) MustAssert() *variable[T] {
 	v.Value.MustAssert()
 	return v
@@ -106,6 +110,7 @@ func (this *variable[T]) Add(other *variable[T]) *variable[T] {
 
 func (this *variable[T]) Sub(other *variable[T]) *variable[T] {
 	out := Variable(this.Value.Sub(other.Value), this, other)
+	out.Alias = "Sub"
 	if this.Requires_grad {
 		this.backward_fn = func() *tensor.Tensor[T] {
 			// out.g
@@ -123,6 +128,7 @@ func (this *variable[T]) Sub(other *variable[T]) *variable[T] {
 
 func (this *variable[T]) Mul(other *variable[T]) *variable[T] {
 	out := Variable(this.Value.Mul(other.Value), this, other)
+	out.Alias = "Mul"
 	if this.Requires_grad {
 		this.backward_fn = func() *tensor.Tensor[T] {
 			grad := other.Value.Mul(out.Grad) // other * out.g
@@ -163,6 +169,7 @@ func (this *variable[T]) Pow(other *variable[T]) *variable[T] {
 // => d(other): (-this) / (other**2)
 func (this *variable[T]) Div(other *variable[T]) *variable[T] {
 	out := Variable(this.Value.Div(other.Value), this, other)
+	out.Alias = "Div"
 	if this.Requires_grad {
 		// one := tensor.Scalar[T](1)
 		this.backward_fn = func() *tensor.Tensor[T] {
@@ -204,7 +211,7 @@ func (this *variable[T]) Sigmoid() *variable[T] {
 	if this.Requires_grad {
 		this.backward_fn = func() *tensor.Tensor[T] {
 			one := tensor.Ones[T](out.Value.Shape()...)
-			return out.Value.Mul(one.Sub(out.Value))
+			return unbroadcast(out.Value.Mul(one.Sub(out.Value)), this.Value)
 		}
 	}
 	return out
@@ -212,6 +219,7 @@ func (this *variable[T]) Sigmoid() *variable[T] {
 
 func (this *variable[T]) Relu() *variable[T] {
 	out := Variable(this.Value.Relu(), this)
+	out.Alias = "Relu"
 	if this.Requires_grad {
 		this.backward_fn = func() *tensor.Tensor[T] {
 			expr := func(a T) T {
@@ -226,16 +234,34 @@ func (this *variable[T]) Relu() *variable[T] {
 	return out
 }
 
+// FIXME derivative of the softmax is Jacobian of shape (class, class).
+//
+// The batched softmax deriv should be (batch, class).
+//
+// TODO treat each i-th row in batch independently and combine each i-th Jacobian using reduce (sum)
 func (this *variable[T]) Softmax() *variable[T] {
-	n := types.Dim(len(this.Value.Shape()))
-
+	panic("To be implemented")
+	nclasses := types.Dim(this.Value.Shape()[1])
 	e := this.Value.Exp()
-	se := e.Sum(false)
-	_softmax := Variable(e.Div(se), this)
+	_softmax := Variable(e.Div(e.Sum(false)), this)
+
+	fmt.Println("this", this.Value.Shape(), "_softmax", _softmax.Value.Shape())
+	_softmax.Alias = "Softmax"
 	if this.Requires_grad {
 		this.backward_fn = func() *tensor.Tensor[T] {
-			ds := _softmax.Value.Mul(tensor.Eye[T](n, n).Sub(_softmax.Value.Copy().Unsqueeze(1)))
-			return _softmax.Grad.Mul(ds)
+			_dot_self := _softmax.Value.MatMul(_softmax.Value.TrC())
+			fmt.Println(_softmax.ToString())
+			diag := tensor.Eye[T](nclasses, nclasses) //_softmax.Value.DiagFlat()
+			fmt.Println(diag.ToString())
+			fmt.Println("diag", diag.Shape(), "_dot_self", _dot_self.Shape())
+			J := diag.Sub(_dot_self).MustAssert()
+			// x := tensor.Eye[T](n, n).Sub(_softmax.Value.Unsqueeze(-1)).MustAssert()
+			// fmt.Println("x", x.Shape(), "sf", _softmax.Value.Shape())
+			// ds := _softmax.Value.Mul(x).MustAssert()
+			// fmt.Println("ds", ds.Shape())
+			// ds = _softmax.Grad.Unsqueeze(-1).Mul(ds).MustAssert()
+			// fmt.Println("ds", ds.Shape())
+			return J
 		}
 	}
 	return _softmax
@@ -244,6 +270,7 @@ func (this *variable[T]) Softmax() *variable[T] {
 // reduce
 func (this *variable[T]) Mean() *variable[T] {
 	out := Variable(this.Value.Mean(false), this)
+	out.Alias = "Mean"
 	if this.Requires_grad {
 		this.backward_fn = func() *tensor.Tensor[T] {
 			filler := tensor.Scalar(T(1. / float32(this.Value.Size())))
