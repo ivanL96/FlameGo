@@ -266,3 +266,11 @@ func BenchmarkSoftmax(b *testing.B) {
 	}
 	fmt.Println(out.Data()[777])
 }
+
+func BenchmarkLnNeg(b *testing.B) {
+	a := tensor.Range[float32](1000)
+	for i := 0; i < b.N; i++ {
+		a.LnNeg(a).MustAssert()
+		// a.Ln().Neg().MustAssert()
+	}
+}

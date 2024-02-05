@@ -236,6 +236,11 @@ func (tensor *Tensor[T]) Ln(out ...*Tensor[T]) *Tensor[T] {
 	return unaryElementwiseRoutine(tensor, ops.LnAtomic[T], nil, get_param(out...))
 }
 
+// combination of Ln().Neg()
+func (tensor *Tensor[T]) LnNeg(out ...*Tensor[T]) *Tensor[T] {
+	return unaryElementwiseRoutine(tensor, ops.LnNegAtomic[T], device.LnNeg[T], get_param(out...))
+}
+
 func (tensor *Tensor[T]) Relu(out ...*Tensor[T]) *Tensor[T] {
 	return unaryElementwiseRoutine(tensor, ops.ReluAtomic[T], device.Relu[T], get_param(out...))
 }

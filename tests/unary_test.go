@@ -86,3 +86,10 @@ func TestSoftmax(t *testing.T) {
 	assert(t, err == nil)
 	assert(t, isclose)
 }
+
+func TestLnNeg(t *testing.T) {
+	a := tensor.Range[float32](10)
+	b := a.Ln().Neg().MustAssert()
+	c := a.LnNeg().MustAssert()
+	assertEqualSlices(t, b.Data(), c.Data())
+}

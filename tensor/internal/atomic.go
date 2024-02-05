@@ -39,6 +39,10 @@ func LnAtomic[T types.TensorType](a T) T {
 	return T(math.Log(float64(a)))
 }
 
+func LnNegAtomic[T types.TensorType](a T) T {
+	return NegAtomic(LnAtomic(a))
+}
+
 func ReluAtomic[T types.TensorType](a T) T {
 	if a > 0 {
 		return a

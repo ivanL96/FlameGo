@@ -193,6 +193,15 @@ func NegMatx[T types.TensorType](a, out []T) {
 	parallel(neg_chunk, a, nil, makeOutMat(out, len(a)))
 }
 
+func LnNegMatx[T types.TensorType](a, out []T) {
+	lnneg_chunk := func(start, end int, a, dummy, out []T, mu *sync.Mutex) {
+		for i := start; i < end; i++ {
+			out[i] = -T(math.Log(float64(a[i])))
+		}
+	}
+	parallel(lnneg_chunk, a, nil, makeOutMat(out, len(a)))
+}
+
 func ReluMatx[T types.TensorType](a, out []T) {
 	relu_chunk := func(start, end int, a, dummy, out []T, mu *sync.Mutex) {
 		for i := start; i < end; i++ {

@@ -27,9 +27,8 @@ func (logits *variable[T]) SoftmaxCrossEntropy(y_true *variable[T]) *variable[T]
 	y_pred := logits.Value.Softmax(nil)
 
 	var epsilon float32 = 1e-15
-	ce := y_pred.IndexMask(y_true.Value, true).Clip(epsilon, 1-epsilon).Ln().Neg()
-	out := Variable(ce, logits)
-	out.Alias = "SoftmaxCrossEntropy"
+	ce := y_pred.IndexMask(y_true.Value, true).Clip(epsilon, 1-epsilon).LnNeg()
+	out := Variable(ce, logits).SetAlias("SoftmaxCrossEntropy")
 	if logits.Requires_grad {
 		n_classes := uint(logits.Value.Shape()[1])
 		y_onehot := y_true.ToOneHot(n_classes)

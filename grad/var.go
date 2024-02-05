@@ -91,11 +91,11 @@ func (v *variable[T]) ToString() string {
 
 // reduce gradient shape
 func unbroadcast[T types.TensorType](
-	grad,
-	other *tensor.Tensor[T],
+	grad *tensor.Tensor[T],
+	to_shape types.Shape,
 ) *tensor.Tensor[T] {
-	if !grad.Shape().Equals(other.Shape()) {
-		return grad.SumAlongAxis(0, true).Reshape(other.Shape()...)
+	if !grad.Shape().Equals(to_shape) {
+		return grad.SumAlongAxis(0, true).Reshape(to_shape...)
 	}
 	return grad
 }
@@ -104,12 +104,12 @@ func (this *variable[T]) Add(other *variable[T]) *variable[T] {
 	out := Variable(this.Value.Add(other.Value), this, other).SetAlias("Add")
 	if this.Requires_grad {
 		this.backward_fn = func() *tensor.Tensor[T] {
-			return unbroadcast(out.Grad, this.Value)
+			return unbroadcast(out.Grad, this.Value.Shape())
 		}
 	}
 	if other.Requires_grad {
 		other.backward_fn = func() *tensor.Tensor[T] {
-			return unbroadcast(out.Grad, other.Value)
+			return unbroadcast(out.Grad, other.Value.Shape())
 		}
 	}
 	return out
@@ -120,13 +120,13 @@ func (this *variable[T]) Sub(other *variable[T]) *variable[T] {
 	if this.Requires_grad {
 		this.backward_fn = func() *tensor.Tensor[T] {
 			// out.g
-			return unbroadcast(out.Grad, this.Value)
+			return unbroadcast(out.Grad, this.Value.Shape())
 		}
 	}
 	if other.Requires_grad {
 		other.backward_fn = func() *tensor.Tensor[T] {
 			// -out.g
-			return unbroadcast(out.Grad.Neg(), other.Value)
+			return unbroadcast(out.Grad.Neg(), other.Value.Shape())
 		}
 	}
 	return out
@@ -137,13 +137,13 @@ func (this *variable[T]) Mul(other *variable[T]) *variable[T] {
 	if this.Requires_grad {
 		this.backward_fn = func() *tensor.Tensor[T] {
 			grad := other.Value.Mul(out.Grad) // other * out.g
-			return unbroadcast(grad, this.Value)
+			return unbroadcast(grad, this.Value.Shape())
 		}
 	}
 	if other.Requires_grad {
 		other.backward_fn = func() *tensor.Tensor[T] {
 			grad := this.Value.Mul(out.Grad) // this * out.g
-			return unbroadcast(grad, other.Value)
+			return unbroadcast(grad, other.Value.Shape())
 		}
 	}
 	return out
@@ -156,14 +156,14 @@ func (this *variable[T]) Pow(other *variable[T]) *variable[T] {
 			// out.g * other * this**(other-1)
 			// or out.g * other * out / this ),
 			grad := out.Grad.Mul(other.Value.Mul(out.Value.Div(this.Value)))
-			return unbroadcast(grad, this.Value)
+			return unbroadcast(grad, this.Value.Shape())
 		}
 	}
 	if other.Requires_grad {
 		other.backward_fn = func() *tensor.Tensor[T] {
 			// out.g * out * this.ln()
 			grad := out.Grad.Mul(out.Value.Mul(this.Value.Ln()))
-			return unbroadcast(grad, other.Value)
+			return unbroadcast(grad, other.Value.Shape())
 		}
 	}
 	return out
@@ -178,14 +178,14 @@ func (this *variable[T]) Div(other *variable[T]) *variable[T] {
 		// one := tensor.Scalar[T](1)
 		this.backward_fn = func() *tensor.Tensor[T] {
 			grad := out.Grad.Div(other.Value) // this.g += out.g / other.val
-			return unbroadcast(grad, this.Value)
+			return unbroadcast(grad, this.Value.Shape())
 
 		}
 	}
 	if other.Requires_grad {
 		other.backward_fn = func() *tensor.Tensor[T] {
 			grad := this.Value.Neg().Div(other.Value.Mul(other.Value)) // other.g += -this.val * other.
-			return unbroadcast(grad, other.Value)
+			return unbroadcast(grad, other.Value.Shape())
 		}
 	}
 	return out
@@ -214,7 +214,7 @@ func (this *variable[T]) Sigmoid() *variable[T] {
 	if this.Requires_grad {
 		this.backward_fn = func() *tensor.Tensor[T] {
 			one := tensor.Ones[T](out.Value.Shape()...)
-			return unbroadcast(out.Value.Mul(one.Sub(out.Value)), this.Value)
+			return unbroadcast(out.Value.Mul(one.Sub(out.Value)), this.Value.Shape())
 		}
 	}
 	return out
@@ -242,7 +242,7 @@ func (this *variable[T]) Relu() *variable[T] {
 //
 // TODO treat each i-th row in batch independently and combine each i-th Jacobian using reduce (sum)
 func (this *variable[T]) Softmax() *variable[T] {
-	panic("To be implemented")
+	panic("variable.Softmax is not implemented")
 	nclasses := types.Dim(this.Value.Shape()[1])
 	e := this.Value.Exp()
 	_softmax := Variable(e.Div(e.Sum(false)), this)
