@@ -3,7 +3,6 @@ package grad
 import (
 	"fmt"
 	"gograd/tensor/types"
-	"math"
 )
 
 func (y *variable[T]) ToOneHot(classes uint) *variable[T] {
@@ -27,13 +26,4 @@ func (y *variable[T]) ToOneHot(classes uint) *variable[T] {
 func (y *variable[T]) ToOneHotAuto() *variable[T] {
 	_max := uint(y.Value.Max(false).Data()[0] + 1)
 	return y.ToOneHot(_max)
-}
-
-func hasNaN[T types.TensorType](data []T) bool {
-	for i := 0; i < len(data); i++ {
-		if math.IsNaN(float64(data[i])) {
-			return true
-		}
-	}
-	return false
 }

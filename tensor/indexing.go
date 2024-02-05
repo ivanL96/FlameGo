@@ -210,12 +210,16 @@ func parse_indexes(expr string) ([]*idxRange, error) {
 // Getting a sub tensor by axis is similar to:
 // a.TrC(2, 0, 1, 3, 4).Index(n) == a.IndexAdv(":,:,n,:,:")
 func (tensor *Tensor[T]) IndexAdv(expr string) *Tensor[T] {
-	if tensor.Err != nil {
-		return tensor
-	}
 	indices, err := parse_indexes(expr)
 	if err != nil {
 		tensor.Err = err
+		return tensor
+	}
+	return tensor.IndexAdv_(indices...)
+}
+
+func (tensor *Tensor[T]) IndexAdv_(indices ...*idxRange) *Tensor[T] {
+	if tensor.Err != nil {
 		return tensor
 	}
 
@@ -279,11 +283,17 @@ func (tensor *Tensor[T]) IndexAdv(expr string) *Tensor[T] {
 	}
 	for i, idx := range indices {
 		if idx.start == idx.end {
-			axes = axes[:dims-shift]
-			shifted_axes := make([]uint, 0, dims-shift)
-			shifted_axes = append(shifted_axes, axes[i-shift])
-			shifted_axes = append(shifted_axes, axes[:i-shift]...)
-			shifted_axes = append(shifted_axes, axes[i+1-shift:]...)
+			shifted_axes := make([]uint, dims-shift)
+			copy(shifted_axes, axes[:dims-shift])
+			prev := shifted_axes[0]
+			shifted_axes[0] = shifted_axes[i-shift]
+
+			for j := 1; j < len(shifted_axes); j++ {
+				shifted_axes[j], prev = prev, shifted_axes[j]
+				if i-shift == j {
+					break
+				}
+			}
 			tensor = tensor.TrC(shifted_axes...).Index(idx.start)
 			shift += 1
 		}

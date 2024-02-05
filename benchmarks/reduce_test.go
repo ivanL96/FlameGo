@@ -24,8 +24,21 @@ func BenchmarkSum(b *testing.B) {
 	}
 }
 
+// goos: windows
+// goarch: amd64
+// pkg: gograd/benchmarks
+// cpu: 11th Gen Intel(R) Core(TM) i5-11400H @ 2.70GHz
+// shape 1000 x 1000
+// default SumAlongAxis(0, false)
+// BenchmarkSumAxis-12          153           7.244.017 ns/op         6120516 B/op      38874 allocs/op
+// BenchmarkSumAxis-12          162           7.287.277 ns/op         6119115 B/op      38874 allocs/op
+// BenchmarkSumAxis-12          154           8.152.823 ns/op         6120345 B/op      38874 allocs/op
+// using IndexAdv_()
+// BenchmarkSumAxis-12          174           7.007.597 ns/op         6045399 B/op      33976 allocs/op
+// BenchmarkSumAxis-12          174           7.006.540 ns/op         6045464 B/op      33976 allocs/op
+// BenchmarkSumAxis-12          171           7.259.490 ns/op         6045796 B/op      33976 allocs/op
 func BenchmarkSumAxis(b *testing.B) {
-	a1 := tensor.Range[int32](1000000).Reshape(1000, 1000) //.Fill(1)
+	a1 := tensor.Range[int32](1000000).Reshape(1000, 1000)
 	for i := 0; i < b.N; i++ {
 		a1.SumAlongAxis(0, false)
 	}

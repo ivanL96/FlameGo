@@ -7,7 +7,7 @@ import (
 	"sync"
 )
 
-// noasm vector operations for two-dim matrices
+// noasm vector operations for matrices and vectors
 
 func identical[T types.TensorType](s1, s2 []T) bool {
 	if len(s1) != len(s2) {
