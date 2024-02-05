@@ -30,13 +30,21 @@ func BenchmarkSum(b *testing.B) {
 // cpu: 11th Gen Intel(R) Core(TM) i5-11400H @ 2.70GHz
 // shape 1000 x 1000
 // default SumAlongAxis(0, false)
-// BenchmarkSumAxis-12          153           7.244.017 ns/op         6120516 B/op      38874 allocs/op
-// BenchmarkSumAxis-12          162           7.287.277 ns/op         6119115 B/op      38874 allocs/op
-// BenchmarkSumAxis-12          154           8.152.823 ns/op         6120345 B/op      38874 allocs/op
+// BenchmarkSumAxis-12          153           7.244.017 ns/op         6.120.516 B/op      38874 allocs/op
+// BenchmarkSumAxis-12          162           7.287.277 ns/op         6.119.115 B/op      38874 allocs/op
+// BenchmarkSumAxis-12          154           8.152.823 ns/op         6.120.345 B/op      38874 allocs/op
 // using IndexAdv_()
-// BenchmarkSumAxis-12          174           7.007.597 ns/op         6045399 B/op      33976 allocs/op
-// BenchmarkSumAxis-12          174           7.006.540 ns/op         6045464 B/op      33976 allocs/op
-// BenchmarkSumAxis-12          171           7.259.490 ns/op         6045796 B/op      33976 allocs/op
+// BenchmarkSumAxis-12          174           7.007.597 ns/op         6.045.399 B/op      33976 allocs/op
+// BenchmarkSumAxis-12          174           7.006.540 ns/op         6.045.464 B/op      33976 allocs/op
+// BenchmarkSumAxis-12          171           7.259.490 ns/op         6.045.796 B/op      33976 allocs/op
+// 2D impl
+// BenchmarkSumAxis-12          750           1.520.501 ns/op            9613 B/op          9 allocs/op
+// BenchmarkSumAxis-12          739           1.544.970 ns/op            9692 B/op          9 allocs/op
+// BenchmarkSumAxis-12          720           1.521.726 ns/op            9835 B/op          9 allocs/op
+// parallel
+// BenchmarkSumAxis-12         2139            508.514 ns/op          142.328 B/op       2013 allocs/op
+// BenchmarkSumAxis-12         2271            504.863 ns/op          142.108 B/op       2013 allocs/op
+// BenchmarkSumAxis-12         2374            507.044 ns/op          142.026 B/op       2013 allocs/op
 func BenchmarkSumAxis(b *testing.B) {
 	a1 := tensor.Range[int32](1000000).Reshape(1000, 1000)
 	for i := 0; i < b.N; i++ {

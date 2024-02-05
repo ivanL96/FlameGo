@@ -167,6 +167,9 @@ func Sum[T types.TensorType](i Implementation, a, c []T) {
 	internal.SumMatx(a, c)
 	// }
 }
+func SumAxis[T types.TensorType](i Implementation, a, c []T, shape types.Shape, axis int) {
+	internal.SumAxisMatx(a, c, shape, axis)
+}
 
 func Max[T types.TensorType](i Implementation, a, c []T) {
 	internal.MaxMatx(a, c)

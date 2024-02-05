@@ -167,7 +167,13 @@ func (shape Shape) InitDimOrder() []uint16 {
 	return dimOrder
 }
 
-// stacks shapes together by given axis:
+func (shape Shape) ReduceDim(axis int) Shape {
+	new_shape := append(Shape{}, shape...)
+	new_shape[axis] = 1
+	return new_shape
+}
+
+// stacks shapes together by given axis. rest of dims must be the same:
 // Stacked by axis 0 (1,2,3), (2,2,3), (4,2,3) => (7,2,3)
 func StackShapes(axis int, other_shapes ...Shape) (Shape, error) {
 	if len(other_shapes) == 0 {

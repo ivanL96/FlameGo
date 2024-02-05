@@ -16,9 +16,17 @@ func TestSumAlongAxis(t *testing.T) {
 	assertEqualSlices(t, b.Data(), []int32{12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32, 34})
 }
 
+func TestSumAlongAxis2(t *testing.T) {
+	axis := 0
+	a := tensor.Range[float32](6).Reshape(2, 3)
+	out := a.SumAlongAxis(uint(axis), true).MustAssert()
+	assertEqualSlices(t, out.Data(), []float32{3, 5, 7})
+	assertEqualSlices(t, out.Shape(), types.Shape{1, 3})
+}
+
 func TestSum2(t *testing.T) {
 	a := tensor.Range[int32](2*3*4*5).Reshape(5, 4, 3, 2, 1)
-	b := a.IndexAdv("3,2,1").SumAlongAxis(0, true)
+	b := a.IndexAdv("3,2,1").SumAlongAxis(0, true).MustAssert()
 	assertEqualSlices(t, b.Shape(), types.Shape{1, 1})
 	assertEqualSlices(t, b.Data(), []int32{173})
 }

@@ -288,7 +288,7 @@ func (tensor *Tensor[T]) IndexAdv_(indices ...*idxRange) *Tensor[T] {
 			prev := shifted_axes[0]
 			shifted_axes[0] = shifted_axes[i-shift]
 
-			for j := 1; j < len(shifted_axes); j++ {
+			for j := 1; j < dims-shift; j++ {
 				shifted_axes[j], prev = prev, shifted_axes[j]
 				if i-shift == j {
 					break

@@ -239,6 +239,35 @@ func SumMatx[T types.TensorType](a, out []T) {
 	parallel(sum_chunk, a, nil, makeOutMat(out, len(a)))
 }
 
+func SumAxisMatx[T types.TensorType](data, out []T, shape types.Shape, axis int) {
+	inner_step := int(shape[axis])
+	outer_step := len(data) / inner_step
+
+	var stride_0 int = int(shape[1])
+	var stride_1 int = 1
+	if axis == 1 {
+		stride_0 = 1
+		stride_1 = int(shape[1])
+	}
+	var wg sync.WaitGroup
+	var mu sync.Mutex
+	for i := 0; i < outer_step; i++ {
+		wg.Add(1)
+		go func(i int) {
+			defer wg.Done()
+			inner_sum := T(0)
+			i_stride := i * stride_1
+			for j := 0; j < inner_step; j++ {
+				inner_sum += data[j*stride_0+i_stride]
+			}
+			mu.Lock()
+			defer mu.Unlock()
+			out[i] += inner_sum
+		}(i)
+	}
+	wg.Wait()
+}
+
 func MaxMatx[T types.TensorType](a, out []T) {
 	max_chunk := func(start, end int, a, dummy, out []T, mu *sync.Mutex) {
 		var _max T = a[0]

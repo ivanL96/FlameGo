@@ -3,8 +3,6 @@ package tensor
 import (
 	"gograd/tensor/internal/device"
 	types "gograd/tensor/types"
-	"strconv"
-	"strings"
 )
 
 func reduce_shape[T types.TensorType](
@@ -36,20 +34,31 @@ func (tensor *Tensor[T]) SumAlongAxis(
 	if tensor.Err != nil {
 		return tensor
 	}
-	// create args for IndexAdv. Initially [":",":",..."0",...]
-	args := make([]string, 0, len(tensor.Shape()))
-	for i := 0; i < len(tensor.Shape()); i++ {
-		args = append(args, ":")
+	if len(tensor.Shape()) == 2 {
+		out_shape := tensor.Shape().ReduceDim(int(axis))
+		out := CreateEmptyTensor[T](out_shape...)
+		device.SumAxis(AUTO_IMPL, tensor.Data(), out.Data(), tensor.Shape(), int(axis))
+		if !keep_dims {
+			return out.Squeeze()
+		}
+		return out
 	}
-	args[axis] = "0"
+	args := make([]*idxRange, len(tensor.Shape()))
+	for i := 0; i < len(tensor.Shape()); i++ {
+		if i == int(axis) {
+			args[i] = I(0)
+			continue
+		}
+		args[i] = Axis()
+	}
 
 	// get sub tensor by axis
-	reduced := tensor.IndexAdv(strings.Join(args, ","))
+	reduced := tensor.IndexAdv_(args...)
 	dim := int(tensor.Shape()[axis])
 	// iterate over remaining subtensors along axis and sum them
 	for i := 1; i < dim; i++ {
-		args[axis] = strconv.Itoa(i)
-		reduced.Add(tensor.IndexAdv(strings.Join(args, ",")), reduced)
+		args[axis] = I(i)
+		reduced.Add(tensor.IndexAdv_(args...), reduced)
 	}
 	if keep_dims {
 		return reduced.Unsqueeze(int(axis))
