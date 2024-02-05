@@ -26,10 +26,6 @@ func (logits *variable[T]) SoftmaxCrossEntropy(y_true *variable[T]) *variable[T]
 
 	y_pred := logits.Value.Softmax(nil)
 
-	if hasNaN(y_pred.Data()) {
-		panic(logits.ToString())
-	}
-
 	var epsilon float32 = 1e-15
 	ce := y_pred.IndexMask(y_true.Value, true).Clip(epsilon, 1-epsilon).Ln().Neg()
 	out := Variable(ce, logits)
