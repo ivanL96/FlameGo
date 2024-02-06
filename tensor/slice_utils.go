@@ -34,8 +34,7 @@ func get_param[T types.TensorType](params ...*Tensor[T]) *Tensor[T] {
 // sets specific value to []T buffer using loop unrolling opt.
 func fill_data_loop[T types.TensorType](buffer []T, value T) {
 	lb := len(buffer)
-	n := 8
-	for i := 0; i < lb/n; i += n {
+	for i := 0; i < lb/8; i += 8 {
 		buffer[i] = value
 		buffer[i+1] = value
 		buffer[i+2] = value
@@ -45,7 +44,7 @@ func fill_data_loop[T types.TensorType](buffer []T, value T) {
 		buffer[i+6] = value
 		buffer[i+7] = value
 	}
-	for i := lb - lb%n; i < lb; i++ {
+	for i := lb - lb%8; i < lb; i++ {
 		buffer[i] = value
 	}
 }
