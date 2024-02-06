@@ -6,8 +6,10 @@ import (
 	"strconv"
 )
 
-func LoadIris(path string) ([]float32, []float32) {
-
+func LoadIris(path string, test_ratio float32) ([]float32, []float32, []float32, []float32) {
+	if test_ratio > 1 || test_ratio < 0 {
+		panic("test_ratio must be < 1 and > 0")
+	}
 	file, err := os.Open(path)
 	if err != nil {
 		panic(err)
@@ -17,12 +19,19 @@ func LoadIris(path string) ([]float32, []float32) {
 	reader := csv.NewReader(file)
 
 	records, err := reader.ReadAll()
+
+	test_records_len := int(float32(len(records)) * test_ratio)
+	train_records_len := len(records) - test_records_len
+
 	if err != nil {
 		panic(err)
 	}
-	X := make([]float32, 0, len(records)*4)
-	Y := make([]float32, 0, len(records))
-	for _, record := range records {
+	X_train := make([]float32, 0, train_records_len*4)
+	Y_train := make([]float32, 0, train_records_len)
+	X_test := make([]float32, 0, test_records_len*4)
+	Y_test := make([]float32, 0, test_records_len)
+
+	for i, record := range records {
 		f1, _ := strconv.ParseFloat(record[1], 32)
 		f2, _ := strconv.ParseFloat(record[2], 32)
 		f3, _ := strconv.ParseFloat(record[3], 32)
@@ -34,8 +43,13 @@ func LoadIris(path string) ([]float32, []float32) {
 			float32(f3),
 			float32(f4),
 		}
-		X = append(X, r...)
-		Y = append(Y, float32(f5))
+		if i < train_records_len {
+			X_train = append(X_train, r...)
+			Y_train = append(Y_train, float32(f5))
+			continue
+		}
+		X_test = append(X_test, r...)
+		Y_test = append(Y_test, float32(f5))
 	}
-	return X, Y
+	return X_train, Y_train, X_test, Y_test
 }
