@@ -7,7 +7,7 @@ import (
 // MSE impl. mean((y_true-y_pred)**2)
 //
 // 'y_true' is a cosnt by definition
-func (y_pred *variable[T]) MSE(y_true *variable[T]) *variable[T] {
+func (y_pred *Var[T]) MSE(y_true *Var[T]) *Var[T] {
 	squared := tensor.Scalar[T](2)
 	mean := y_true.Value.Sub(y_pred.Value).Pow(squared).Mean(false)
 	out := Variable(mean, y_pred)
@@ -22,13 +22,14 @@ func (y_pred *variable[T]) MSE(y_true *variable[T]) *variable[T] {
 	return out
 }
 
-func (logits *variable[T]) SoftmaxCrossEntropy(y_true *variable[T]) *variable[T] {
+func (logits *Var[T]) SoftmaxCrossEntropy(y_true *Var[T]) *Var[T] {
 
 	y_pred := logits.Value.Softmax(nil)
 
 	var epsilon float32 = 1e-15
-	ce := y_pred.IndexMask(y_true.Value, true).Clip(epsilon, 1-epsilon).LnNeg()
-	out := Variable(ce, logits).SetAlias("SoftmaxCrossEntropy")
+	cross_entropy := y_pred.IndexMask(y_true.Value, true).Clip(epsilon, 1-epsilon).LnNeg()
+	out := Variable(cross_entropy, logits).SetAlias("SoftmaxCrossEntropy")
+
 	if logits.Requires_grad {
 		n_classes := uint(logits.Value.Shape()[1])
 		y_onehot := y_true.ToOneHot(n_classes)

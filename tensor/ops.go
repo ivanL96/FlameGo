@@ -55,7 +55,7 @@ func BaseBinElementwiseOp[T types.TensorType](
 			return tensor_a
 		}
 		// most trivial case (1,) & (1,)
-		outTensor.data()[0] = scalar_impl(tensor_a.data()[0], tensor_b.data()[0])
+		vector_impl(AUTO_IMPL, tensor_a.data(), tensor_b.data(), outTensor.data())
 		return outTensor
 	}
 

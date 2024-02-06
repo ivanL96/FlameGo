@@ -7,9 +7,9 @@ import (
 )
 
 func toposort[T types.TensorType](
-	topo_sorted *[]*variable[T],
+	topo_sorted *[]*Var[T],
 	visited *VarSet[T],
-	v *variable[T],
+	v *Var[T],
 ) {
 	if visited.Contains(v) {
 		return
@@ -21,7 +21,7 @@ func toposort[T types.TensorType](
 	*topo_sorted = append(*topo_sorted, v)
 }
 
-func reverse_vars_inplace[T types.TensorType](slice []*variable[T]) {
+func reverse_vars_inplace[T types.TensorType](slice []*Var[T]) {
 	l := len(slice)
 	if l <= 1 {
 		return
@@ -34,15 +34,15 @@ func reverse_vars_inplace[T types.TensorType](slice []*variable[T]) {
 
 // This method performs gradient computation for each Variable.
 // Parameter `gradient` is optional and must be set in cases where the result (`this`) Variable is not scalar.
-func (this *variable[T]) Backward(gradient *tensor.Tensor[T]) {
+func (this *Var[T]) Backward(gradient *tensor.Tensor[T]) {
 	this.MustAssert()
 	// toposort
-	topo_sorted := make([]*variable[T], 0)
+	topo_sorted := make([]*Var[T], 0)
 	visited := CreateVarSet[T]()
 	toposort(&topo_sorted, visited, this)
 	reverse_vars_inplace(topo_sorted)
 
-	// gradient w.r.t the current variable is ones tensor
+	// gradient w.r.t the current Var is ones tensor
 	if gradient == nil {
 		if this.Value.Shape().IsScalarLike() {
 			this.Grad = tensor.Ones[T](this.Value.Shape()...)
@@ -57,6 +57,7 @@ func (this *variable[T]) Backward(gradient *tensor.Tensor[T]) {
 	} else {
 		this.Grad = gradient
 	}
+
 	for _, v := range topo_sorted {
 		if v.backward_fn != nil {
 			new_grad := v.backward_fn()
