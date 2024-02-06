@@ -37,6 +37,20 @@ func (shape Shape) Squeeze() Shape {
 	return result
 }
 
+// works like squeeze but ignores edge dims
+func (shape Shape) SqueezeInner() Shape {
+	result := make(Shape, 0, len(shape))
+	for i, v := range shape {
+		if v > 1 || i == 0 || i == len(shape)-1 {
+			result = append(result, v)
+		}
+	}
+	if len(result) == 0 {
+		return Shape{1}
+	}
+	return result
+}
+
 // Adds a new dimension for given axis:
 //
 // example: AddDim(0) for shape (4,2,3) returns (1,4,2,3)

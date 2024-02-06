@@ -38,9 +38,9 @@ func BenchmarkSum(b *testing.B) {
 // BenchmarkSumAxis-12          174           7.006.540 ns/op         6.045.464 B/op      33976 allocs/op
 // BenchmarkSumAxis-12          171           7.259.490 ns/op         6.045.796 B/op      33976 allocs/op
 // 2D impl
-// BenchmarkSumAxis-12          750           1.520.501 ns/op            9613 B/op          9 allocs/op
-// BenchmarkSumAxis-12          739           1.544.970 ns/op            9692 B/op          9 allocs/op
-// BenchmarkSumAxis-12          720           1.521.726 ns/op            9835 B/op          9 allocs/op
+// BenchmarkSumAxis-12          750           1.520.501 ns/op            9.613 B/op          9 allocs/op
+// BenchmarkSumAxis-12          739           1.544.970 ns/op            9.692 B/op          9 allocs/op
+// BenchmarkSumAxis-12          720           1.521.726 ns/op            9.835 B/op          9 allocs/op
 // parallel
 // BenchmarkSumAxis-12         2139            508.514 ns/op          142.328 B/op       2013 allocs/op
 // BenchmarkSumAxis-12         2271            504.863 ns/op          142.108 B/op       2013 allocs/op

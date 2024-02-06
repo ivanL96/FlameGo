@@ -3,6 +3,7 @@ package tensor
 import (
 	"errors"
 	"fmt"
+	types "gograd/tensor/types"
 )
 
 // Example:
@@ -34,17 +35,31 @@ func (tensor *Tensor[T]) IndexMask(mask_tensor *Tensor[T], enumerate bool) *Tens
 
 	mask_tensor = mask_tensor.AsContinuous()
 
-	// TODO create a result buffer in advance instead of TensorList
-	tlist := &TensorList[T]{}
+	to_reduce := make([]int, len(mask_tensor.shape)-1)
+	for i := 0; i < len(mask_tensor.shape)-1; i++ {
+		to_reduce[i] = i + 1
+	}
+	out_shape := append(types.Shape{}, tensor.shape...)
+	if len(to_reduce) > 0 {
+		out_shape = tensor.shape.ReduceDim(to_reduce...).SqueezeInner()
+	}
+
+	// tlist := &TensorList[T]{}
+	stacked := CreateEmptyTensor[T](out_shape...)
+	start := 0
 	for i := 0; i < int(tensor.Shape()[0]); i++ {
 		mask_i := AsType[T, int](mask_tensor.Index(i)).data()
 		if enumerate {
 			mask_i = append([]int{i}, mask_i...)
 		}
 		masked := tensor.Index(mask_i...).Unsqueeze(0)
-		tlist.Append(masked)
+		// tlist.Append(masked)
+		end := int(masked.Size())
+		copy(stacked.data()[start:start+end], masked.data())
+		start += end
 	}
-	return tlist.StackedTensors
+	// return tlist.StackedTensors
+	return stacked
 }
 
 func (tensor *Tensor[T]) SetByIndexMask(mask_tensor *Tensor[T], enumerate bool, value T) {
