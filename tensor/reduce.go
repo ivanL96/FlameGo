@@ -35,6 +35,7 @@ func (tensor *Tensor[T]) SumAlongAxis(
 		return tensor
 	}
 	if len(tensor.Shape()) == 2 {
+		tensor = tensor.AsContinuous()
 		out_shape := tensor.Shape().ReduceDim(int(axis))
 		out := CreateEmptyTensor[T](out_shape...)
 		device.SumAxis(AUTO_IMPL, tensor.Data(), out.Data(), tensor.Shape(), int(axis))

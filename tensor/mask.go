@@ -75,3 +75,20 @@ func (tensor *Tensor[T]) SetByIndexMask(mask_tensor *Tensor[T], enumerate bool, 
 		tensor.Set(mask_i, value)
 	}
 }
+
+// tries to find a value in tensor and returns its index
+func (tensor *Tensor[T]) Find(value T) ([]int, error) {
+	if tensor.Err != nil {
+		return []int{}, tensor.Err
+	}
+
+	it := tensor.CreateIterator()
+	for it.Iterate() {
+		i := it.Index()
+		idx := it.Next()
+		if tensor.data()[i] == value {
+			return idx, nil
+		}
+	}
+	return []int{}, nil
+}
