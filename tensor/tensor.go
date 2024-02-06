@@ -314,7 +314,7 @@ func (tensor *Tensor[T]) IsAllClose(tensor_or_scalar *Tensor[T], tol float64) (b
 		return false, tensor_or_scalar.Err
 	}
 	if tensor_or_scalar.Shape().IsScalarLike() {
-		other_val := tensor_or_scalar.data()[0]
+		other_val := tensor_or_scalar.Item()
 		for _, val := range tensor.data() {
 			if math.Abs(float64(val-other_val)) > tol {
 				return false, nil

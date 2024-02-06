@@ -42,6 +42,14 @@ func (tensor *Tensor[T]) data() []T {
 	return tensor.data_buff
 }
 
+func (tensor *Tensor[T]) Item() T {
+	data := tensor.data()
+	if len(data) > 1 {
+		panic("cannot use Item() on non-scalar tensors")
+	}
+	return data[0]
+}
+
 func (tensor *Tensor[T]) DType() reflect.Type {
 	return getTypeArray(tensor.data())
 }

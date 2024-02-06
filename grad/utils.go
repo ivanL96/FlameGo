@@ -32,6 +32,6 @@ func (y *Var[T]) ToOneHot(classes uint) *Var[T] {
 
 // number of classes is auto detected
 func (y *Var[T]) ToOneHotAuto() *Var[T] {
-	_max := uint(y.Value.Max(false).Data()[0] + 1)
+	_max := uint(y.Value.Max(false).Item() + 1)
 	return y.ToOneHot(_max)
 }

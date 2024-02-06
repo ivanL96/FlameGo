@@ -39,4 +39,3 @@ func (logits *Var[T]) SoftmaxCrossEntropy(y_true *Var[T]) *Var[T] {
 	}
 	return out
 }
-

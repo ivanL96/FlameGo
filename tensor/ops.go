@@ -95,7 +95,7 @@ func BaseBinElementwiseOp[T types.TensorType](
 		}
 		out_data := outTensor.data()
 		if vector_to_scalar_impl == nil {
-			value := tensor_b.data()[0]
+			value := tensor_b.Item()
 			for i, val := range tensor_a.data() {
 				out_data[i] = scalar_impl(val, value)
 			}
@@ -112,7 +112,7 @@ func BaseBinElementwiseOp[T types.TensorType](
 		}
 		out_data := outTensor.data()
 		if vector_to_scalar_impl == nil {
-			value := tensor_a.data()[0]
+			value := tensor_a.Item()
 			for i, val := range tensor_b.data() {
 				out_data[i] = scalar_impl(value, val)
 			}
@@ -186,7 +186,7 @@ func unaryElementwiseRoutine[T types.TensorType](
 		return tensor
 	}
 	if tensor.shape.IsScalarLike() && scalar_impl != nil {
-		outTensor.data()[0] = scalar_impl(tensor.data()[0])
+		outTensor.data()[0] = scalar_impl(tensor.Item())
 		return outTensor
 	}
 	if vector_impl == nil {

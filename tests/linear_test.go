@@ -39,7 +39,7 @@ func TestLinear(t *testing.T) {
 		loss := y_pred.MSE(y).MustAssert()
 		loss.Backward(nil)
 		if (i+1)%100 == 0 {
-			history = loss.Value.Data()[0]
+			history = loss.Value.Item()
 		}
 		optim.Step(w, b)
 		optim.ZeroGrads()
