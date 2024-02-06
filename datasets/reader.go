@@ -2,14 +2,16 @@ package datasets
 
 import (
 	"encoding/csv"
+	"gograd/tensor"
 	"os"
 	"strconv"
 )
 
-func LoadIris(path string, test_ratio float32) ([]float32, []float32, []float32, []float32) {
+func LoadIris(path string, rng *tensor.RNG, test_ratio float32) ([]float32, []float32, []float32, []float32) {
 	if test_ratio > 1 || test_ratio < 0 {
 		panic("test_ratio must be < 1 and > 0")
 	}
+
 	file, err := os.Open(path)
 	if err != nil {
 		panic(err)
@@ -31,7 +33,15 @@ func LoadIris(path string, test_ratio float32) ([]float32, []float32, []float32,
 	X_test := make([]float32, 0, test_records_len*4)
 	Y_test := make([]float32, 0, test_records_len)
 
-	for i, record := range records {
+	shuffled_idx := make([]int, len(records))
+	for i := 0; i < len(records); i++ {
+		shuffled_idx[i] = i
+	}
+	tensor.ShuffleData(rng, shuffled_idx)
+
+	for j := 0; j < len(records); j++ {
+		i := shuffled_idx[j]
+		record := records[i]
 		f1, _ := strconv.ParseFloat(record[1], 32)
 		f2, _ := strconv.ParseFloat(record[2], 32)
 		f3, _ := strconv.ParseFloat(record[3], 32)
@@ -43,7 +53,7 @@ func LoadIris(path string, test_ratio float32) ([]float32, []float32, []float32,
 			float32(f3),
 			float32(f4),
 		}
-		if i < train_records_len {
+		if j < train_records_len {
 			X_train = append(X_train, r...)
 			Y_train = append(Y_train, float32(f5))
 			continue
