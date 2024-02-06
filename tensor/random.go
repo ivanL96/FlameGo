@@ -54,3 +54,8 @@ func (rng *RNG) RandomFloat32(shape ...types.Dim) *Tensor[float32] {
 	randTensor.SetData(value)
 	return randTensor
 }
+
+func ShuffleData(rng *RNG, data []int) {
+	_rand := createRand(rng.Seed)
+	_rand.Shuffle(len(data), func(i, j int) { data[i], data[j] = data[j], data[i] })
+}

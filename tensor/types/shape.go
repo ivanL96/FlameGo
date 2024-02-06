@@ -167,9 +167,14 @@ func (shape Shape) InitDimOrder() []uint16 {
 	return dimOrder
 }
 
-func (shape Shape) ReduceDim(axis int) Shape {
+func (shape Shape) ReduceDim(axes ...int) Shape {
+	if len(axes) == 0 {
+		return shape
+	}
 	new_shape := append(Shape{}, shape...)
-	new_shape[axis] = 1
+	for _, axis := range axes {
+		new_shape[axis] = 1
+	}
 	return new_shape
 }
 

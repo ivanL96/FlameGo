@@ -21,7 +21,7 @@ func (tensor *Tensor[T]) IndexMask(mask_tensor *Tensor[T], enumerate bool) *Tens
 	if tensor.Err != nil {
 		return tensor
 	}
-	if len(mask_tensor.Squeeze().Shape()) > 2 {
+	if len(mask_tensor.Shape().Squeeze()) > 2 {
 		tensor.Err = errors.New("mask_tensor must have 2 dims max")
 		return tensor
 	}

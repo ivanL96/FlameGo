@@ -107,7 +107,10 @@ func TestIndexMask(t *testing.T) {
 	assertEqualSlices(t, masked.Data(), []int32{3, 4, 5, 0, 1, 2, 6, 7, 8})
 	assertEqualSlices(t, masked.Shape(), types.Shape{3, 3})
 
-	mask1 := tensor.CreateTensor([]int32{0, 2, 1, 0, 2, 1}, types.Shape{3, 2})
+	mask1 := tensor.CreateTensor([]int32{
+		0, 2,
+		1, 0,
+		2, 1}, types.Shape{3, 2})
 	masked1 := a.IndexMask(mask1, false).MustAssert()
 	assertEqualSlices(t, masked1.Data(), []int32{2, 3, 7})
 }
@@ -118,6 +121,12 @@ func TestIndexMask2(t *testing.T) {
 	masked := a.IndexMask(mask, false).MustAssert()
 	assertEqualSlices(t, masked.Data(), []int32{4, 5, 6, 7, 0, 1, 2, 3})
 	assertEqualSlices(t, masked.Shape(), types.Shape{2, 2, 2})
+
+	b := tensor.Range[int32](8).Reshape(2, 2, 2)
+	maskb := tensor.CreateTensor([]int32{1, 0, 1, 0}, types.Shape{2, 2})
+	maskedb := b.IndexMask(maskb, false).MustAssert()
+	assertEqualSlices(t, maskedb.Data(), []int32{4, 5, 4, 5})
+	assertEqualSlices(t, maskedb.Shape(), types.Shape{2, 2})
 }
 
 func TestIndexMask3(t *testing.T) {

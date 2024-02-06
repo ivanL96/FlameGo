@@ -39,7 +39,7 @@ func BaseBinElementwiseOp[T types.TensorType](
 	// TODO if outTensor equals to a or b,  apply the *_to_const vectorized impl
 	// TODO try to vectorize operations for non continuous tensors. Right now it falls back to scalar impl which is slow
 
-	if scalar_impl == nil || (vector_impl == nil && vector_to_scalar_impl == nil) {
+	if scalar_impl == nil && vector_impl == nil && vector_to_scalar_impl == nil {
 		panic("no implementation found")
 	}
 
