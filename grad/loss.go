@@ -52,9 +52,10 @@ func (logits *Var[T]) SoftmaxCrossEntropy(y_true *Var[T]) *Var[T] {
 
 	if logits.Requires_grad {
 		n_classes := uint(logits.Value.Shape()[1])
-		y_onehot := y_true.ToOneHot(n_classes)
+		y_onehot := ToOneHot(y_true.Value, n_classes)
+		// y_onehot := tensor.AsType[int, T](ToOneHot(y_true.Value, n_classes))
 		logits.backward_fn = func() *tensor.Tensor[T] {
-			return out.Grad.Mul(y_pred.Sub(y_onehot.Value))
+			return out.Grad.Mul(y_pred.Sub(y_onehot))
 		}
 	}
 	return out

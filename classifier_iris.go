@@ -29,9 +29,14 @@ func classifier_iris() {
 	inner := types.Dim(10)
 
 	X := grad.Constant(tensor.CreateTensor(x, types.Shape{train_size, features})).MustAssert()
-	Y := grad.Constant(tensor.CreateTensor(y, types.Shape{train_size, 1})).MustAssert()
-	fmt.Println("x", X.Value.Shape())
-	fmt.Println("y", Y.Value.Shape())
+	Y := grad.Constant(
+		// tensor.AsType[float32, int](
+		tensor.CreateTensor(y, types.Shape{train_size, 1}),
+		// ),
+	).MustAssert()
+	fmt.Println("x", X.Value)
+	fmt.Println("y", Y.Value)
+	// fmt.Println("y", tensor.AsType[float32, int](Y.Value))
 
 	W1 := grad.Variable(rng.RandomFloat32(features, inner))
 	B1 := grad.Variable(rng.RandomFloat32(1, inner))

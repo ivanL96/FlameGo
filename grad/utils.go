@@ -2,16 +2,17 @@ package grad
 
 import (
 	"fmt"
+	"gograd/tensor"
 	"gograd/tensor/types"
 	"sync"
 )
 
-func (y *Var[T]) ToOneHot(classes uint) *Var[T] {
-	ndims := len(y.Value.Shape().Squeeze())
+func ToOneHot[T types.TensorType](y *tensor.Tensor[T], classes uint) *tensor.Tensor[T] {
+	ndims := len(y.Shape().Squeeze())
 	if ndims > 1 {
-		panic(fmt.Sprintf("Var y must have a vector-like shape, got %v", y.Value.Shape()))
+		panic(fmt.Sprintf("Var y must have a vector-like shape, got %v", y.Shape()))
 	}
-	size := y.Value.Shape()[0]
+	size := y.Shape()[0]
 	oneHotData := make([]T, int(size)*int(classes))
 
 	var wg sync.WaitGroup
@@ -19,19 +20,21 @@ func (y *Var[T]) ToOneHot(classes uint) *Var[T] {
 		wg.Add(1)
 		go func(i int) {
 			defer wg.Done()
-			classidx := int(y.Value.Data()[i])
+			classidx := int(y.Data()[i])
 			if classidx >= int(classes) {
-				panic(fmt.Sprintf("too few classes. tensor has element '%v' which must be less than 'classes' %v", classidx, classes))
+				panic(fmt.Sprintf(
+					"too few classes. tensor has element '%v' which must be less than 'classes' %v", classidx, classes,
+				))
 			}
 			oneHotData[i*int(classes)+classidx] = 1
 		}(i)
 	}
 	wg.Wait()
-	return VarFrom[T](oneHotData, types.Shape{size, types.Dim(classes)})
+	return tensor.CreateTensor[T](oneHotData, types.Shape{size, types.Dim(classes)})
 }
 
 // number of classes is auto detected
-func (y *Var[T]) ToOneHotAuto() *Var[T] {
-	_max := uint(y.Value.Max(false).Item() + 1)
-	return y.ToOneHot(_max)
+func ToOneHotAuto[T types.TensorType](y *tensor.Tensor[T]) *tensor.Tensor[T] {
+	_max := uint(y.Max(false).Item() + 1)
+	return ToOneHot(y, _max)
 }

@@ -26,7 +26,11 @@ func classifier_gen() {
 	fmt.Println(len(x), len(y))
 
 	X := grad.Constant(tensor.CreateTensor(x, types.Shape{types.Dim(800), 2})).MustAssert()
-	Y := grad.Constant(tensor.CreateTensor(y, types.Shape{types.Dim(800), 1})).MustAssert()
+	Y := grad.Constant(
+		// tensor.AsType[float32, int](
+		tensor.CreateTensor(y, types.Shape{types.Dim(800), 1}),
+		// ),
+	).MustAssert()
 	fmt.Println("x", X.Value.Shape())
 	fmt.Println("y", Y.Value.Shape())
 
