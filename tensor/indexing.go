@@ -334,6 +334,7 @@ func (tensor *Tensor[T]) AsContinuous() *Tensor[T] {
 		return tensor
 	}
 	outTensor := CreateEmptyTensor[T](tensor.shape...)
+	// for 2 dim tensor
 	if len(tensor.shape) == 2 {
 		// make matrix continuous
 		var wg sync.WaitGroup
@@ -353,7 +354,7 @@ func (tensor *Tensor[T]) AsContinuous() *Tensor[T] {
 		wg.Wait()
 		return outTensor
 	}
-
+	// for N Dim tensor
 	it := tensor.CreateIterator()
 	for it.Iterate() {
 		dataIndex := it.Index()

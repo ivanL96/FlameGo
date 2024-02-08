@@ -89,7 +89,12 @@ func (v *Var[T]) ToString() string {
 
 // VARIABLE OPS
 
-// reduce gradient shape
+// To reduce gradient shape.
+//
+// In some cases when broadcasting is applied,
+// we have to create a gradient w.r.t the broadcasted operand.
+// And that means the gradient will be broadcasted aswell.
+// So in order to propagate grad properly we need to unbroadcast (reduce) grad to init shape
 func unbroadcast[T types.TensorType](
 	grad *tensor.Tensor[T],
 	to_shape types.Shape,
