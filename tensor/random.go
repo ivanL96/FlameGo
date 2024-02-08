@@ -6,8 +6,16 @@ import (
 	"time"
 )
 
+type _rng struct {
+	Seed int64
+}
+
+// use seed -1 for non deterministic rand
+func NewRNG(seed int64) *_rng {
+	return &_rng{seed}
+}
+
 func createRand(seed int64) *rand.Rand {
-	// use -1 for non deterministic rand
 	if seed == -1 {
 		seed = time.Now().UnixNano()
 	}
@@ -33,29 +41,21 @@ func createRandFloat64Slice(length int, seed int64) []float64 {
 	return slice
 }
 
-type RNG struct {
-	Seed int64
-}
-
-func NewRNG(seed int64) *RNG {
-	return &RNG{seed}
-}
-
-func (rng *RNG) RandomFloat64(shape ...types.Dim) *Tensor[float64] {
+func (rng *_rng) RandomFloat64(shape ...types.Dim) *Tensor[float64] {
 	randTensor := CreateEmptyTensor[float64](shape...)
 	value := createRandFloat64Slice(len(randTensor.data()), rng.Seed)
 	randTensor.SetData(value)
 	return randTensor
 }
 
-func (rng *RNG) RandomFloat32(shape ...types.Dim) *Tensor[float32] {
+func (rng *_rng) RandomFloat32(shape ...types.Dim) *Tensor[float32] {
 	randTensor := CreateEmptyTensor[float32](shape...)
 	value := createRandFloat32Slice(len(randTensor.data()), rng.Seed)
 	randTensor.SetData(value)
 	return randTensor
 }
 
-func ShuffleData(rng *RNG, data []int) {
+func ShuffleData(rng *_rng, data []int) {
 	_rand := createRand(rng.Seed)
 	_rand.Shuffle(len(data), func(i, j int) { data[i], data[j] = data[j], data[i] })
 }

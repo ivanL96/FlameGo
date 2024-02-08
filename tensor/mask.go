@@ -6,22 +6,30 @@ import (
 	types "gograd/tensor/types"
 )
 
+// tensor.IndexMask() can work in two modes. When 'enumerate' is false
+// each value of the mask will represent each element(or subtensor) of 'tensor'.
+//
 // Example:
 //
 // tensor_a: [[1,2,3][4,5,6][7,8,9]]
-//
 // mask: [1,0,2]
-//
-// tensor_a.IndexMask(mask, true) => [2,4,9]
-// if enumerate is enabled, the mask will be applied for each tensor element.
 //
 // If enumerate is turned off:
 //
-// tensor_a.IndexMask(mask, false) => [[4,5,6],[1,2,3],[7,8,9]]
+// tensor_a.IndexMask(mask, false) => [[4,5,6],[1,2,3],[7,8,9]]. Here we get shuffled tensor with 1st, 0th and 2nd subtensors
+//
+// if enumerate is enabled:
+//
+// tensor_a.IndexMask(mask, true) => [2,4,9]
+//
+// Also enumerate can be recreated using this mask:
+//
+// tensor_a.IndexMask([0,1],[1,0],[2,2]], false) => [2,4,9] - same result
 func (tensor *Tensor[T]) IndexMask(mask_tensor *Tensor[T], enumerate bool) *Tensor[T] {
 	if tensor.Err != nil {
 		return tensor
 	}
+	// TODO support for nDim masks
 	if len(mask_tensor.Shape().Squeeze()) > 2 {
 		tensor.Err = errors.New("mask_tensor must have 2 dims max")
 		return tensor

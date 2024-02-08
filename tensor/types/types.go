@@ -9,7 +9,7 @@ type Float interface {
 }
 
 type TensorType interface {
-	constraints.Float | constraints.Integer
+	constraints.Float | constraints.Integer | ~byte
 }
 
 type Dim uint32
