@@ -55,12 +55,17 @@ func (tensor *Tensor[T]) IndexMask(mask_tensor *Tensor[T], enumerate bool) *Tens
 	// tlist := &TensorList[T]{}
 	stacked := CreateEmptyTensor[T](out_shape...)
 	start := 0
+	mask_tensor_int := AsType[T, int](mask_tensor)
+
 	for i := 0; i < int(tensor.Shape()[0]); i++ {
-		mask_i := AsType[T, int](mask_tensor.Index(i)).data()
+		mask_i := mask_tensor_int.Index(i).data()
+		// mask_i := AsType[T, int](mask_tensor.Index(i)).data()
+		var masked *Tensor[T]
 		if enumerate {
-			mask_i = append([]int{i}, mask_i...)
+			masked = tensor.Index(i).Index(mask_i...).Unsqueeze(0)
+		} else {
+			masked = tensor.Index(mask_i...).Unsqueeze(0)
 		}
-		masked := tensor.Index(mask_i...).Unsqueeze(0)
 		// tlist.Append(masked)
 		end := int(masked.Size())
 		copy(stacked.data()[start:start+end], masked.data())
@@ -100,6 +105,12 @@ func (tensor *Tensor[T]) SetByIndexMask(mask_tensor *Tensor[T], enumerate bool, 
 }
 
 // tries to find a value in tensor and returns its index
+//
+// Example:
+//
+// tensor [[1,2,3],[4,5,6]]
+//
+// tensor.Find(3) => [0,2], value 3 can be found at index (0,2)
 func (tensor *Tensor[T]) Find(value T) ([]int, error) {
 	if tensor.Err != nil {
 		return []int{}, tensor.Err
