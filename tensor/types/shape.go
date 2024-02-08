@@ -136,15 +136,6 @@ func (shape_a Shape) BroadcastShapes(shape_b Shape) Shape {
 	return result_shape
 }
 
-// compares two broadcastable shapes
-// func (shape Shape) Less(other Shape) bool {
-// 	broadcastable := shape.AreBroadcastable(other)
-// 	if !broadcastable {
-// 		return false
-// 	}
-// 	for
-// }
-
 func (shape Shape) IsScalarLike() bool {
 	if len(shape) == 1 && shape[0] == 1 {
 		return true

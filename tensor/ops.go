@@ -38,7 +38,6 @@ func BaseBinElementwiseOp[T types.TensorType](
 
 	// TODO if outTensor equals to a or b,  apply the *_to_const vectorized impl
 	// TODO try to vectorize operations for non continuous tensors. Right now it falls back to scalar impl which is slow
-
 	if scalar_impl == nil && vector_impl == nil && vector_to_scalar_impl == nil {
 		panic("no implementation found")
 	}
@@ -61,11 +60,6 @@ func BaseBinElementwiseOp[T types.TensorType](
 
 	are_continuous := tensor_a.IsContinuous() && tensor_b.IsContinuous()
 
-	// tensors should have equal shapes or at least one of them should be scalar-like
-	if !tensor_a.shape.AreBroadcastable(tensor_b.shape) {
-		tensor_a.Err = fmt.Errorf("shapes: %v, %v are not broadcastable", tensor_a.shape, tensor_b.shape)
-		return tensor_a
-	}
 	if len(tensor_a.data()) == len(tensor_b.data()) {
 		// same broadcastable shapes (N,M) & (N,M)
 		outTensor, err = PrepareOutTensor(out, tensor_a.shape)
@@ -85,7 +79,7 @@ func BaseBinElementwiseOp[T types.TensorType](
 				out_data[outIdx] = scalar_impl(tensor_a.Get_fast(idx...), tensor_b.Get_fast(idx...))
 			}
 		}
-	} else if len(tensor_b.data()) == 1 {
+	} else if tensor_b.shape.IsScalarLike() {
 		// tensor_b is scalar
 		// (N, M, ...) & (1,)
 		outTensor, err = PrepareOutTensor(out, tensor_a.shape)
@@ -102,7 +96,7 @@ func BaseBinElementwiseOp[T types.TensorType](
 		} else {
 			vector_to_scalar_impl(AUTO_IMPL, tensor_a.data(), tensor_b.data(), out_data)
 		}
-	} else if len(tensor_a.data()) == 1 {
+	} else if tensor_a.shape.IsScalarLike() {
 		// tensor_a is scalar
 		// (1,) & (N, M, ...)
 		outTensor, err = PrepareOutTensor(out, tensor_b.shape)
@@ -120,6 +114,12 @@ func BaseBinElementwiseOp[T types.TensorType](
 			vector_to_scalar_impl(AUTO_IMPL, tensor_b.data(), tensor_a.data(), out_data)
 		}
 	} else {
+		// tensors should have equal shapes or at least one of them should be scalar-like
+		if !tensor_a.shape.AreBroadcastable(tensor_b.shape) {
+			tensor_a.Err = fmt.Errorf("shapes: %v, %v are not broadcastable", tensor_a.shape, tensor_b.shape)
+			return tensor_a
+		}
+
 		// both tensors are not scalar but have completely different shapes
 		// (A, B ...) & (N, M, ...)
 		// apply operation for non scalar broadcastable tensors
