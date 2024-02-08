@@ -7,7 +7,7 @@ import (
 	"log"
 )
 
-func (tensor *Tensor[T]) Encode() []byte {
+func (tensor *Tensor[T]) EncodeToBytes() []byte {
 	var buf bytes.Buffer
 	enc := gob.NewEncoder(&buf)
 
@@ -35,7 +35,7 @@ func (tensor *Tensor[T]) Encode() []byte {
 	return buf.Bytes()
 }
 
-func Decode[T types.TensorType](input []byte) *Tensor[T] {
+func DecodeBytes[T types.TensorType](input []byte) *Tensor[T] {
 	buf := bytes.NewBuffer(input)
 	dec := gob.NewDecoder(buf)
 
@@ -53,6 +53,7 @@ func Decode[T types.TensorType](input []byte) *Tensor[T] {
 		strides[i] = int(m["strides"][i])
 		dimord[i] = uint16(m["dimord"][i])
 	}
+
 	return &Tensor[T]{
 		data_buff: m["data"],
 		shape:     shape,

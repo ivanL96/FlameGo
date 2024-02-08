@@ -95,8 +95,8 @@ func TestEye(t *testing.T) {
 func TestSerializer(t *testing.T) {
 	rng := tensor.NewRNG(-1)
 	a := rng.RandomFloat32(2, 3)
-	enc := a.Encode()
-	decoded := tensor.Decode[float32](enc)
+	enc := a.EncodeToBytes()
+	decoded := tensor.DecodeBytes[float32](enc)
 	isequal, err := a.IsEqual(decoded)
 	if err != nil {
 		panic(err)

@@ -18,19 +18,25 @@ func model[T types.TensorType](X, W1, B1, W2, B2 *grad.Var[T]) *grad.Var[T] {
 func classifier_iris() {
 	rng := tensor.NewRNG(69)
 
-	x, y, xtest, ytest := datasets.LoadIris("datasets/iris.csv").Shuffle(rng).Split(0.2)
+	split := float32(0.5)
+	x, y, xtest, ytest := datasets.LoadIris("datasets/iris.csv").Shuffle(rng).Split(split)
 
-	X := grad.Constant(tensor.CreateTensor(x, types.Shape{120, 4})).MustAssert()
-	Y := grad.Constant(tensor.CreateTensor(y, types.Shape{120, 1})).MustAssert()
+	train_size := types.Dim(150 * (1 - split))
+	test_size := types.Dim(150 * split)
+
+	features := types.Dim(4)
+	classes := types.Dim(3)
+	inner := types.Dim(10)
+
+	X := grad.Constant(tensor.CreateTensor(x, types.Shape{train_size, features})).MustAssert()
+	Y := grad.Constant(tensor.CreateTensor(y, types.Shape{train_size, 1})).MustAssert()
 	fmt.Println("x", X.Value.Shape())
 	fmt.Println("y", Y.Value.Shape())
 
-	inner := types.Dim(1000)
-
-	W1 := grad.Variable(rng.RandomFloat32(4, inner))
+	W1 := grad.Variable(rng.RandomFloat32(features, inner))
 	B1 := grad.Variable(rng.RandomFloat32(1, inner))
-	W2 := grad.Variable(rng.RandomFloat32(inner, 3))
-	B2 := grad.Variable(rng.RandomFloat32(1, 3))
+	W2 := grad.Variable(rng.RandomFloat32(inner, classes))
+	B2 := grad.Variable(rng.RandomFloat32(1, classes))
 
 	optim := grad.SGD[float32](0.01)
 	start := time.Now()
@@ -62,18 +68,21 @@ func classifier_iris() {
 	// ela 1.3845107s
 	// inference 0.96666664
 
-	Xtest := tensor.CreateTensor(xtest, types.Shape{30, 4}).MustAssert()
-	Ytest := tensor.CreateTensor(ytest, types.Shape{30, 1}).MustAssert()
+	Xtest := tensor.CreateTensor(xtest, types.Shape{test_size, features}).MustAssert()
+	Ytest := tensor.CreateTensor(ytest, types.Shape{test_size, 1}).MustAssert()
 	var correct float32 = 0
-	for i := 0; i < 30; i++ {
-		x := grad.Constant(Xtest.Index(i).Reshape(1, 4))
+	for i := 0; i < int(test_size); i++ {
+		x := grad.Constant(Xtest.Index(i).Reshape(1, features))
 		y := grad.Constant(Ytest.Index(i).Reshape(1, 1))
 		pred := model(x, W1, B1, W2, B2).Value.Softmax(nil).MustAssert()
 
 		argmax, _ := pred.Find(pred.Max(false).Item())
 		if argmax[1] == int(y.Value.Item()) {
+			fmt.Println(i, argmax[1], y.Value.Item())
 			correct += 1
+		} else {
+			fmt.Println(i, argmax[1], y.Value.Item(), "mismatch")
 		}
 	}
-	fmt.Println("inference", correct/30)
+	fmt.Println("inference: corrects", correct, "of", test_size)
 }
