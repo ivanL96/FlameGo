@@ -25,9 +25,9 @@ func (y_pred *Var[T]) MSE(y_true *Var[T]) *Var[T] {
 
 // -log(Ypredicted)
 func (logits *Var[T]) SoftmaxCrossEntropy(y_true *Var[T]) *Var[T] {
-	if len(y_true.Value.Shape()) > 1 {
-		panic("y_true must be 1 dim")
-	}
+	// if len(y_true.Value.Shape()) > 1 {
+	// 	panic("y_true must be 1 dim")
+	// }
 
 	y_pred := logits.Value.Softmax(nil)
 

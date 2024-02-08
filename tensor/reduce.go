@@ -44,6 +44,7 @@ func (tensor *Tensor[T]) SumAlongAxis(
 		}
 		return out
 	}
+
 	args := make([]*idxRange, len(tensor.Shape()))
 	for i := 0; i < len(tensor.Shape()); i++ {
 		if i == int(axis) {
