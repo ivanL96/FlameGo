@@ -3,7 +3,6 @@ package tensor
 import (
 	"errors"
 	"fmt"
-	types "gograd/tensor/types"
 	"strconv"
 	"strings"
 	"sync"
@@ -82,65 +81,26 @@ func (tensor *Tensor[T]) Index(indices ...int) *Tensor[T] {
 	}
 
 	// index of the first elem in the sub tensor
+	if n_indices == n_dims {
+		flatIndex, err := tensor.getFlatIndex(indices...)
+		if err != nil {
+			tensor.Err = err
+			return tensor
+		}
+		return Scalar[T](tensor.data()[flatIndex])
+	}
+
+	tensor = tensor.AsContinuous()
+	innerShape := tensor.shape[n_indices:]
 	flatIndex, err := tensor.getFlatIndex(indices...)
 	if err != nil {
 		tensor.Err = err
 		return tensor
 	}
-	if n_indices == n_dims {
-		return Scalar[T](tensor.data()[flatIndex])
-	}
-	innerShape := tensor.shape[n_indices:]
-
-	// continuous data
 	// if data layout is continuous we can just take a slice start:end from data
-	if tensor.IsContinuous() {
-		endFlatIndex := flatIndex + tensor.strides[n_indices-1]
-		subData := tensor.data()[flatIndex:endFlatIndex]
-		return CreateTensor(subData, innerShape)
-		// TODO finish this. Tensor creation here should be without shape validation.
-		// because data can be larger on purpose (buffer)
-		// return &Tensor[T]{
-		// 	data:      subData,
-		// 	shape:     innerShape,
-		// 	dim_order: initDimOrder(innerShape),
-		// 	strides:   getStrides(innerShape),
-		// }
-	}
-	// not continuous data. i.e. transposed tensor
-	subShape := innerShape
-	innerStrides := tensor.strides[n_indices:]
-	// expand innerShape
-	// TODO this is extra step, better to do something within the loop
-	if len(innerShape) == 1 {
-		innerShape = types.Shape{1, innerShape[0]}
-		innerStrides = []int{innerStrides[0], innerStrides[0]}
-	}
-
-	// prealloc output
-	var innerShapeProd types.Dim = 1
-	for _, dim := range innerShape {
-		innerShapeProd *= dim
-	}
-	subData := make([]T, innerShapeProd)
-	origData := tensor.data()
-	innermostStride := tensor.strides[len(tensor.strides)-1]
-	row := int(innerShape[len(innerShape)-1]) // innermost axis
-	// number of dims around the 'row'. Cannot be zero
-	numDims := len(innerStrides) - 2
-	for i := numDims; i >= 0; i-- {
-		stride := innerStrides[i]
-		subDataIdx := 0
-		for j := 0; j < int(innerShape[i]); j++ {
-			for k := 0; k < row; k++ {
-				// from innermost to outermost
-				deepIndex := flatIndex + innermostStride*k + stride*j
-				subData[subDataIdx] = origData[deepIndex]
-				subDataIdx++
-			}
-		}
-	}
-	return CreateTensor(subData, subShape)
+	endFlatIndex := flatIndex + tensor.strides[n_indices-1]
+	subData := tensor.data()[flatIndex:endFlatIndex]
+	return CreateTensor(subData, innerShape)
 }
 
 // IdxRange is used to create a slice along specific axis.
