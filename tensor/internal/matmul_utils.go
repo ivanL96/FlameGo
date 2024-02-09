@@ -11,7 +11,7 @@ func SplitTensorImpl[T types.TensorType](
 	d_data []T,
 ) (a, b, c, d []T) {
 	// only 2-dim, squared matrices with even dims
-	// assume continuous data
+	// assume contiguous data
 	row2 := nrows / 2
 	astride, bstride, cstride, dstride := 0, 0, 0, 0
 	for i := 0; i < int(nrows)*2; i++ {

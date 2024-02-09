@@ -36,7 +36,7 @@ func BaseBinElementwiseOp[T types.TensorType](
 	var err error
 
 	// TODO if outTensor equals to a or b,  apply the *_to_const vectorized impl
-	// TODO try to vectorize operations for non continuous tensors. Right now it falls back to scalar impl which is slow
+	// TODO try to vectorize operations for non contiguous tensors. Right now it falls back to scalar impl which is slow
 	if scalar_impl == nil && vector_impl == nil && vector_to_scalar_impl == nil {
 		panic("no implementation found")
 	}
@@ -57,7 +57,7 @@ func BaseBinElementwiseOp[T types.TensorType](
 		return outTensor
 	}
 
-	are_continuous := tensor_a.IsContinuous() && tensor_b.IsContinuous()
+	are_contiguous := tensor_a.IsContiguous() && tensor_b.IsContiguous()
 
 	if len(tensor_a.data()) == len(tensor_b.data()) {
 		// same broadcastable shapes (N,M) & (N,M)
@@ -68,9 +68,9 @@ func BaseBinElementwiseOp[T types.TensorType](
 		}
 		out_data := outTensor.data()
 
-		if are_continuous && vector_impl != nil { // vec or avx
+		if are_contiguous && vector_impl != nil { // vec or avx
 			vector_impl(AUTO_IMPL, tensor_a.data(), tensor_b.data(), out_data)
-		} else if !are_continuous || vector_impl == nil {
+		} else if !are_contiguous || vector_impl == nil {
 			iter := tensor_a.CreateIterator()
 			for iter.Iterate() {
 				idx := iter.Next()
@@ -152,9 +152,9 @@ func BaseBinElementwiseOp[T types.TensorType](
 		if broadcasted_tensor_b == nil {
 			broadcasted_tensor_b = tensor_b
 		}
-		if vector_impl != nil && are_continuous {
+		if vector_impl != nil && are_contiguous {
 			vector_impl(AUTO_IMPL, broadcasted_tensor_a.data(), broadcasted_tensor_b.data(), out_data)
-		} else if vector_impl == nil || !are_continuous {
+		} else if vector_impl == nil || !are_contiguous {
 			iter := broadcasted_tensor_a.CreateIterator()
 			for iter.Iterate() {
 				dataIndex := iter.Index()
@@ -266,7 +266,7 @@ func (tensor *Tensor[T]) Softmax(out *Tensor[T]) *Tensor[T] {
 	if err != nil {
 		return tensor
 	}
-	tensor = tensor.AsContinuous()
+	tensor = tensor.AsContiguous()
 	device.Softmax[T](AUTO_IMPL, tensor.data(), out.data(), tensor.Strides())
 	return out
 }
@@ -358,9 +358,9 @@ func (tensor *Tensor[T]) MatMul(other *Tensor[T]) *Tensor[T] {
 
 	// isVec2Scalar := adim0 == 1 && bdim1 == 1
 
-	tensor = tensor.AsContinuous()
+	tensor = tensor.AsContiguous()
 	// needs to be in column-major format for the AVX support
-	if other.IsContinuous() {
+	if other.IsContiguous() {
 		other = other.TrC2D()
 	} else {
 		other = other.TrC()

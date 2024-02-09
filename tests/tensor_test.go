@@ -45,7 +45,7 @@ func TestCompare(t *testing.T) {
 
 	// IsEqual is dim order aware
 	a1 := tensor.Range[int32](4).Reshape(2, 2).T()
-	a2 := a1.AsContinuous()
+	a2 := a1.AsContiguous()
 	a1a2, err4 := a1.IsEqual(a2)
 	assert(t, a1a2)
 	assert(t, err4 == nil)

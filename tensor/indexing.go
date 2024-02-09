@@ -90,14 +90,14 @@ func (tensor *Tensor[T]) Index(indices ...int) *Tensor[T] {
 		return Scalar[T](tensor.data()[flatIndex])
 	}
 
-	tensor = tensor.AsContinuous()
+	tensor = tensor.AsContiguous()
 	innerShape := tensor.shape[n_indices:]
 	flatIndex, err := tensor.getFlatIndex(indices...)
 	if err != nil {
 		tensor.Err = err
 		return tensor
 	}
-	// if data layout is continuous we can just take a slice start:end from data
+	// if data layout is contiguous we can just take a slice start:end from data
 	endFlatIndex := flatIndex + tensor.strides[n_indices-1]
 	subData := tensor.data()[flatIndex:endFlatIndex]
 	return CreateTensor(subData, innerShape)
@@ -263,8 +263,8 @@ func (tensor *Tensor[T]) IndexAdv_(indices ...*idxRange) *Tensor[T] {
 
 // DATA LAYOUT (move to other file?)
 
-// Check if dimensions order is not shuffled and data layout is continuous
-func (tensor *Tensor[T]) IsContinuous() bool {
+// Check if dimensions order is not shuffled and data layout is contiguous
+func (tensor *Tensor[T]) IsContiguous() bool {
 	dimOrder := tensor.dim_order
 	switch len(dimOrder) {
 	case 1:
@@ -284,19 +284,19 @@ func (tensor *Tensor[T]) IsContinuous() bool {
 	}
 }
 
-// reorders data layout to continuous format.
-// it is useful for optimizing indexing/iterating for transposed & other non-continuous tensors
-func (tensor *Tensor[T]) AsContinuous() *Tensor[T] {
+// reorders data layout to contiguous format.
+// it is useful for optimizing indexing/iterating for transposed & other non-contiguous tensors
+func (tensor *Tensor[T]) AsContiguous() *Tensor[T] {
 	if tensor.Err != nil {
 		return tensor
 	}
-	if tensor.IsContinuous() {
+	if tensor.IsContiguous() {
 		return tensor
 	}
 	outTensor := CreateEmptyTensor[T](tensor.shape...)
 	// for 2 dim tensor
 	if len(tensor.shape) == 2 {
-		// make matrix continuous
+		// make matrix contiguous
 		var wg sync.WaitGroup
 		rows := int(tensor.shape[0])
 		cols := int(tensor.shape[1])

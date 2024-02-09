@@ -291,7 +291,7 @@ func (tensor *Tensor[T]) IsEqual(other *Tensor[T]) (bool, error) {
 	if !tensor.shape.Equals(other.shape) {
 		return false, nil
 	}
-	if tensor.IsContinuous() && other.IsContinuous() {
+	if tensor.IsContiguous() && other.IsContiguous() {
 		return EqualSlices[T](tensor.data(), other.data()), nil
 	}
 

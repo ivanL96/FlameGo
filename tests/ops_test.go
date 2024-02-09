@@ -41,7 +41,7 @@ func TestAdd2(t *testing.T) {
 
 func TestAdd3(t *testing.T) {
 	e1 := tensor.Range[int32](10).Reshape(5, 2).T()
-	e2 := tensor.Range[int32](10).Reshape(5, 2).T().AsContinuous()
+	e2 := tensor.Range[int32](10).Reshape(5, 2).T().AsContiguous()
 	f1 := tensor.Range[int32](10).Reshape(2, 5)
 	ef1 := e1.Add(f1, nil)
 	ef2 := e2.Add(f1, nil).MustAssert()
@@ -53,7 +53,7 @@ func TestAdd3(t *testing.T) {
 func TestAdd4(t *testing.T) {
 	g1 := tensor.Range[int32](5).Reshape(5, 1).T()
 	g2 := tensor.Range[int32](15).Reshape(5, 3).T()
-	g22 := tensor.Range[int32](15).Reshape(5, 3).T().AsContinuous()
+	g22 := tensor.Range[int32](15).Reshape(5, 3).T().AsContiguous()
 	g3 := g1.Add(g2, nil)
 	g4 := g1.Add(g22, nil).MustAssert()
 	assertEqualSlices(t, g3.Data(), g4.Data())

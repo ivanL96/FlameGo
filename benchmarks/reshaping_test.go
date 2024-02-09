@@ -64,19 +64,19 @@ func BenchmarkToString(b *testing.B) {
 // cpu: 11th Gen Intel(R) Core(TM) i5-11400H @ 2.70GHz
 // 1000x1000
 // 1 thread
-// BenchmarkAsContinuous-12             352           3.305.912 ns/op         6020435 B/op          9 allocs/op
-// BenchmarkAsContinuous-12             367           3.312.905 ns/op         6025425 B/op          9 allocs/op
-// BenchmarkAsContinuous-12             363           3.293.073 ns/op         6025606 B/op          9 allocs/op
+// BenchmarkAsContiguous-12             352           3.305.912 ns/op         6020435 B/op          9 allocs/op
+// BenchmarkAsContiguous-12             367           3.312.905 ns/op         6025425 B/op          9 allocs/op
+// BenchmarkAsContiguous-12             363           3.293.073 ns/op         6025606 B/op          9 allocs/op
 // optimized for 2D matrix
-// BenchmarkAsContinuous-12            1024           1.106.555 ns/op         6064986 B/op       1009 allocs/op
-// BenchmarkAsContinuous-12            1010           1.103.096 ns/op         6065024 B/op       1009 allocs/op
-// BenchmarkAsContinuous-12             996           1.101.434 ns/op         6065081 B/op       1009 allocs/op
-func BenchmarkAsContinuous(b *testing.B) {
+// BenchmarkAsContiguous-12            1024           1.106.555 ns/op         6064986 B/op       1009 allocs/op
+// BenchmarkAsContiguous-12            1010           1.103.096 ns/op         6065024 B/op       1009 allocs/op
+// BenchmarkAsContiguous-12             996           1.101.434 ns/op         6065081 B/op       1009 allocs/op
+func BenchmarkAsContiguous(b *testing.B) {
 	var side types.Dim = 1000
 	a := tensor.Range[int32](int(side*side)).Reshape(side, side)
 	for i := 0; i < b.N; i++ {
 		a = a.T()
-		a.AsContinuous()
+		a.AsContiguous()
 	}
 	a.MustAssert()
 }

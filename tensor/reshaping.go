@@ -135,9 +135,9 @@ func (tensor *Tensor[T]) T(axes ...uint) *Tensor[T] {
 	return outTensor
 }
 
-// alias for .T(axes).AsContinuous()
+// alias for .T(axes).AsContiguous()
 func (tensor *Tensor[T]) TrC(axes ...uint) *Tensor[T] {
-	return tensor.T(axes...).AsContinuous()
+	return tensor.T(axes...).AsContiguous()
 }
 
 // TrC for 2D matrix
@@ -151,8 +151,8 @@ func (tensor *Tensor[T]) TrC2D() *Tensor[T] {
 		tensor.Err = errors.New("tensor must be 2D")
 		return tensor
 	}
-	if !tensor.IsContinuous() {
-		tensor.Err = errors.New("tensor must be continuous")
+	if !tensor.IsContiguous() {
+		tensor.Err = errors.New("tensor must be contiguous")
 		return tensor
 	}
 	sh := tensor.shape

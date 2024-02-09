@@ -41,7 +41,7 @@ func (tensor *Tensor[T]) IndexMask(mask_tensor *Tensor[T], enumerate bool) *Tens
 		return tensor
 	}
 
-	mask_tensor = mask_tensor.AsContinuous()
+	mask_tensor = mask_tensor.AsContiguous()
 
 	to_reduce := make([]int, len(mask_tensor.shape)-1)
 	for i := 0; i < len(mask_tensor.shape)-1; i++ {
@@ -93,7 +93,7 @@ func (tensor *Tensor[T]) SetByIndexMask(mask_tensor *Tensor[T], enumerate bool, 
 			dims, len(mask_tensor.Shape()))
 		return
 	}
-	mask_tensor = mask_tensor.AsContinuous()
+	mask_tensor = mask_tensor.AsContiguous()
 
 	for i := 0; i < int(tensor.Shape()[0]); i++ {
 		mask_i := AsType[T, int](mask_tensor.Index(i)).data()
