@@ -5,7 +5,6 @@ import (
 	"fmt"
 	ops "gograd/tensor/internal"
 	"gograd/tensor/internal/device"
-	"gograd/tensor/iter"
 	types "gograd/tensor/types"
 	"reflect"
 )
@@ -303,7 +302,7 @@ func (tensor *Tensor[T]) Dot(other *Tensor[T]) *Tensor[T] {
 		outer_shape_prod *= dim
 	}
 	tensors_stack := make([]*Tensor[T], int(outer_shape_prod))
-	shape_iter := iter.CreateIterator(int(outer_shape_prod), outer_dims_a)
+	shape_iter := CreateIterator(int(outer_shape_prod), outer_dims_a)
 
 	for shape_iter.Iterate() {
 		i := shape_iter.Index()

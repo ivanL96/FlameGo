@@ -1,4 +1,4 @@
-package iter
+package tensor
 
 import (
 	"gograd/tensor/types"

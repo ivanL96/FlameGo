@@ -3,7 +3,6 @@ package tensor
 import (
 	"errors"
 	"fmt"
-	"gograd/tensor/iter"
 	types "gograd/tensor/types"
 	"math"
 	"runtime"
@@ -276,8 +275,8 @@ func (tensor *Tensor[T]) Set(indexes []int, value T) {
 	tensor.data()[flatIndex] = value
 }
 
-func (tensor *Tensor[T]) CreateIterator() *iter.TensorIterator {
-	return iter.CreateIterator(len(tensor.data()), tensor.shape)
+func (tensor *Tensor[T]) CreateIterator() *TensorIterator {
+	return CreateIterator(len(tensor.data()), tensor.shape)
 }
 
 // Compares shapes and data:
