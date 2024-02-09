@@ -3,9 +3,9 @@ package tensor
 import (
 	"errors"
 	"fmt"
+	"gograd/tensor/internal"
 	"strconv"
 	"strings"
-	"sync"
 )
 
 func (tensor *Tensor[T]) getFlatIndex(indices ...int) (int, error) {
@@ -297,30 +297,10 @@ func (tensor *Tensor[T]) AsContiguous() *Tensor[T] {
 	// for 2 dim tensor
 	if len(tensor.shape) == 2 {
 		// make matrix contiguous
-		var wg sync.WaitGroup
-		rows := int(tensor.shape[0])
-		cols := int(tensor.shape[1])
-		out_data := outTensor.data()
-		for j := 0; j < cols; j++ {
-			wg.Add(1)
-			go func(j int) {
-				defer wg.Done()
-				j_rows := j * rows
-				for i := 0; i < rows; i++ {
-					out_data[i*cols+j] = tensor.data()[j_rows+i]
-				}
-			}(j)
-		}
-		wg.Wait()
+		internal.TraverseAsContiguous2D(tensor.data(), outTensor.data(), tensor.shape)
 		return outTensor
 	}
 	// for N Dim tensor
-	it := tensor.CreateIterator()
-	for it.Iterate() {
-		dataIndex := it.Index()
-		valueIndexes := it.Next()
-		val := tensor.Get_fast(valueIndexes...)
-		outTensor.data()[dataIndex] = val
-	}
+	internal.TraverseAsContiguous[T](tensor.data(), outTensor.data(), tensor.strides, tensor.shape)
 	return outTensor
 }
