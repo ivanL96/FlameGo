@@ -114,10 +114,8 @@ func Div[T types.TensorType](i Implementation, a, b, c []T) {
 func Add[T types.TensorType](i Implementation, a, b, c []T) {
 	switch i.impl {
 	case AVX:
-		// internal.RunSimdImpl(a, b, c, src.Add_mm256)
 		src.Add_mm256(a, b, c)
 	case AVX512:
-		// internal.RunSimdImpl(a, b, c, src.Add_mm256)
 		src.Add_mm256(a, b, c)
 	default:
 		internal.ElementwiseNoSimd(a, b, c, internal.AddAtomic)
@@ -127,9 +125,9 @@ func Add[T types.TensorType](i Implementation, a, b, c []T) {
 func Sub[T types.TensorType](i Implementation, a, b, c []T) {
 	switch i.impl {
 	case AVX:
-		internal.RunSimdImpl(a, b, c, src.Sub_mm256)
+		src.Sub_mm256(a, b, c)
 	case AVX512:
-		internal.RunSimdImpl(a, b, c, src.Sub_mm256)
+		src.Sub_mm256(a, b, c)
 	default:
 		internal.ElementwiseNoSimd(a, b, c, internal.SubAtomic)
 	}

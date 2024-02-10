@@ -28,6 +28,17 @@ func TestAdd1(t *testing.T) {
 	cd.MustAssert()
 }
 
+func TestAddScFloat(t *testing.T) {
+	c := tensor.Range[float32](9).Reshape(3, 3)
+	d := tensor.Scalar[float32](1)
+	cd := c.Add(d, nil).MustAssert()
+	assertEqualSlices(t, cd.Data(), []float32{1, 2, 3, 4, 5, 6, 7, 8, 9})
+	assertEqualSlices(t, cd.Shape(), types.Shape{3, 3})
+	c.MustAssert()
+	d.MustAssert()
+	cd.MustAssert()
+}
+
 func TestAdd2(t *testing.T) {
 	e := tensor.CreateEmptyTensor[int32](1).Fill(4)
 	f := tensor.CreateEmptyTensor[int32](1).Fill(1)
@@ -191,4 +202,44 @@ func TestDivInplace(t *testing.T) {
 	a2.Div(b2, a2)
 	assertEqualSlices(t, a2.Data(), []float32{0.5, 1, 1.5})
 	assertEqualSlices(t, a2.Shape(), types.Shape{3})
+}
+
+func TestSub(t *testing.T) {
+	g1 := tensor.Range[float32](1, 16).Reshape(5, 3)
+	g2 := tensor.Range[float32](15).Reshape(5, 3)
+	g3 := g1.Sub(g2, nil)
+	assertEqualSlices(t, g3.Data(), []float32{
+		1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+	})
+	tensor.MustAssertAll(g1, g2, g3)
+}
+
+func TestSubSc(t *testing.T) {
+	g1 := tensor.Range[float32](1, 16).Reshape(5, 3)
+	g2 := tensor.Scalar[float32](2)
+	g3 := g1.Sub(g2, nil)
+	assertEqualSlices(t, g3.Data(), []float32{
+		-1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13,
+	})
+	tensor.MustAssertAll(g1, g2, g3)
+}
+
+func TestSubint(t *testing.T) {
+	g1 := tensor.Range[int32](1, 16).Reshape(5, 3)
+	g2 := tensor.Range[int32](15).Reshape(5, 3)
+	g3 := g1.Sub(g2, nil)
+	assertEqualSlices(t, g3.Data(), []int32{
+		1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+	})
+	tensor.MustAssertAll(g1, g2, g3)
+}
+
+func TestSubScint(t *testing.T) {
+	g1 := tensor.Range[int32](1, 16).Reshape(5, 3)
+	g2 := tensor.Scalar[int32](2)
+	g3 := g1.Sub(g2, nil)
+	assertEqualSlices(t, g3.Data(), []int32{
+		-1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13,
+	})
+	tensor.MustAssertAll(g1, g2, g3)
 }

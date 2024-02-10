@@ -51,10 +51,11 @@ func BenchmarkAddToConst(b *testing.B) {
 // BenchmarkBigAdd-12         10390            108.364 ns/op            2925 B/op         26 allocs/op
 // BenchmarkBigAdd-12          9687            107.917 ns/op            3008 B/op         26 allocs/op
 // BenchmarkBigAdd-12          9469            105.879 ns/op            3037 B/op         26 allocs/op
-// avx + openmp
-// BenchmarkBigAdd-12         11733             98.518 ns/op            1024 B/op          0 allocs/op
-// BenchmarkBigAdd-12         11983            102.650 ns/op            1002 B/op          0 allocs/op
-// BenchmarkBigAdd-12         11762             99.941 ns/op            1021 B/op          0 allocs/op
+// avx256 + openmp
+// BenchmarkBigAdd-12         10152            118.314 ns/op            1183 B/op          0 allocs/op
+// BenchmarkBigAdd-12          8360            119.803 ns/op            1437 B/op          0 allocs/op
+// BenchmarkBigAdd-12         10662            114.841 ns/op            1127 B/op          0 allocs/op
+//
 // numpy 									 2.412.390 ns/op
 
 func BenchmarkBigAdd(b *testing.B) {
@@ -90,10 +91,10 @@ func BenchmarkBigAdd(b *testing.B) {
 // BenchmarkBigMul-12         11272            108.102 ns/op            3545 B/op         26 allocs/op
 // BenchmarkBigMul-12         11263            106.109 ns/op            3547 B/op         26 allocs/op
 // avx256 + openmp
-// BenchmarkBigMul-12         12014             95.663 ns/op            1668 B/op          0 allocs/op
-// BenchmarkBigMul-12         11899             95.827 ns/op            1684 B/op          0 allocs/op
-// BenchmarkBigMul-12         12418             95.279 ns/op            1613 B/op          0 allocs/op
-// BenchmarkBigMul-12         12302             95.259 ns/op            1629 B/op          0 allocs/op
+// BenchmarkBigMul-12         10303            117.260 ns/op            1945 B/op          0 allocs/op
+// BenchmarkBigMul-12         10179            116.660 ns/op            1968 B/op          0 allocs/op
+// BenchmarkBigMul-12         10185            113.450 ns/op            1967 B/op          0 allocs/op
+//
 // numpy ref 								 2.712.392 ns/op
 // shape 1000x1000
 func BenchmarkBigMul(b *testing.B) {
