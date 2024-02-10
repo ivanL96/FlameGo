@@ -6,9 +6,19 @@ import (
 	"testing"
 )
 
-func BenchmarkAdd(b *testing.B) {
-	a1 := tensor.CreateEmptyTensor[int32](100, 100).Fill(100)
-	a2 := tensor.CreateEmptyTensor[int32](100, 100).Fill(99)
+// goos: windows
+// goarch: amd64
+// pkg: gograd/benchmarks
+// cpu: 11th Gen Intel(R) Core(TM) i5-11400H @ 2.70GHz
+// BenchmarkAddToConst
+// BenchmarkAddToConst-12               566           2.045.898 ns/op         4013127 B/op          5 allocs/op
+// BenchmarkAddToConst-12               589           2.040.260 ns/op         4012850 B/op          5 allocs/op
+// BenchmarkAddToConst-12               553           2.059.855 ns/op         4013289 B/op          5 allocs/op
+// BenchmarkAddToConst-12               584           2.081.990 ns/op         4012902 B/op          5 allocs/op
+// BenchmarkAddToConst-12               600           2.065.429 ns/op         4012713 B/op          5 allocs/op
+func BenchmarkAddToConst(b *testing.B) {
+	a1 := tensor.CreateEmptyTensor[float32](1000, 1000).Fill(100)
+	a2 := tensor.Scalar[float32](5)
 	for i := 0; i < b.N; i++ {
 		a1.Add(a2, nil)
 	}

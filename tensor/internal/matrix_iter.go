@@ -26,10 +26,10 @@ func traverse[T types.TensorType](
 }
 
 func TraverseAsContiguous[T types.TensorType](a, out []T,
-	astrides []int, ashape types.Shape,
+	a_strides []int, a_shape types.Shape,
 ) {
 	i := 0
-	traverse(a, out, astrides, ashape, 0, 0, &i)
+	traverse(a, out, a_strides, a_shape, 0, 0, &i)
 }
 
 func TraverseAsContiguous2D[T types.TensorType](a, out []T, ashape types.Shape) {

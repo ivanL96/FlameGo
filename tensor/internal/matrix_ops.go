@@ -173,6 +173,7 @@ func PowMatx[T types.TensorType](a, b, out []T) {
 	parallel(pow_chunk, a, b, makeOutMat(out, len(a)))
 }
 
+// unary
 func SigmoidMatx[T types.TensorType](a, out []T) {
 	// x / (1 + abs(x))
 	sigm_chunk := func(start, end int, a, dummy, out []T, mu *sync.Mutex) {

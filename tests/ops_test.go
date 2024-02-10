@@ -8,8 +8,8 @@ import (
 
 func TestAdd(t *testing.T) {
 	a := tensor.CreateEmptyTensor[float32](3, 2).Fill(2)
-	b := tensor.CreateEmptyTensor[float32](3, 1).Fill(3)
-	ab := a.Add(b, nil)
+	b := tensor.CreateEmptyTensor[float32](3, 1).Fill(3).MustAssert()
+	ab := a.Add(b, nil).MustAssert()
 	assertEqualSlices(t, ab.Data(), []float32{5, 5, 5, 5, 5, 5})
 	assertEqualSlices(t, ab.Shape(), types.Shape{3, 2})
 	a.MustAssert()
@@ -19,8 +19,8 @@ func TestAdd(t *testing.T) {
 
 func TestAdd1(t *testing.T) {
 	c := tensor.CreateEmptyTensor[int32](3, 3).Fill(4)
-	d := tensor.CreateEmptyTensor[int32](1).Fill(1)
-	cd := c.Add(d, nil)
+	d := tensor.Scalar[int32](1)
+	cd := c.Add(d, nil).MustAssert()
 	assertEqualSlices(t, cd.Data(), []int32{5, 5, 5, 5, 5, 5, 5, 5, 5})
 	assertEqualSlices(t, cd.Shape(), types.Shape{3, 3})
 	c.MustAssert()
@@ -31,7 +31,7 @@ func TestAdd1(t *testing.T) {
 func TestAdd2(t *testing.T) {
 	e := tensor.CreateEmptyTensor[int32](1).Fill(4)
 	f := tensor.CreateEmptyTensor[int32](1).Fill(1)
-	ef := e.Add(f, nil)
+	ef := e.Add(f, nil).MustAssert()
 	assertEqualSlices(t, ef.Data(), []int32{5})
 	assertEqualSlices(t, ef.Shape(), types.Shape{1})
 	e.MustAssert()
@@ -43,7 +43,7 @@ func TestAdd3(t *testing.T) {
 	e1 := tensor.Range[int32](10).Reshape(5, 2).T()
 	e2 := tensor.Range[int32](10).Reshape(5, 2).T().AsContiguous()
 	f1 := tensor.Range[int32](10).Reshape(2, 5)
-	ef1 := e1.Add(f1, nil)
+	ef1 := e1.Add(f1, nil).MustAssert()
 	ef2 := e2.Add(f1, nil).MustAssert()
 	assertEqualSlices(t, ef1.Data(), ef2.Data())
 	assertEqualSlices(t, ef1.Shape(), types.Shape{2, 5})

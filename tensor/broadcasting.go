@@ -9,10 +9,10 @@ func (tensor *Tensor[T]) Broadcast(shape ...types.Dim) *Tensor[T] {
 	if tensor.Err != nil {
 		return tensor
 	}
-	// TODO test with transpose
 	if tensor.shape.Equals(shape) {
 		return tensor
 	}
+	// TODO test with transpose
 
 	broadcastedShape := tensor.shape.BroadcastShapes(shape)
 
@@ -32,7 +32,6 @@ func (tensor *Tensor[T]) Broadcast(shape ...types.Dim) *Tensor[T] {
 			shape_diff[j] = 1
 		}
 	}
-	// fmt.Println("shape_diff", shape_diff)
 
 	// repeat data to fill broadcasted dims
 	sub_index := make([]int, tensor_dims)
@@ -50,7 +49,6 @@ func (tensor *Tensor[T]) Broadcast(shape ...types.Dim) *Tensor[T] {
 			// if shape_diff[i-1] == 1 previous (inner) dim was changed
 			continue
 		}
-		// fmt.Println("repeat", repeat)
 
 		// TODO test for other shapes
 		if is_innermost_broadcast {
@@ -74,7 +72,6 @@ func (tensor *Tensor[T]) Broadcast(shape ...types.Dim) *Tensor[T] {
 			if i > 0 {
 				sub = tensor.Index(sub_index[:i]...)
 			}
-			// fmt.Println("sub what is it ", sub.ToString())
 			for j := 0; j < repeat; j++ { // repeat
 				start := j * len(sub.data())
 				end := len(sub.data()) * (j + 1)
