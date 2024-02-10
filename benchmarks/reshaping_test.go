@@ -100,6 +100,10 @@ func BenchmarkAsContiguous(b *testing.B) {
 // BenchmarkTrC2D-12          28478             41.330 ns/op           53130 B/op        207 allocs/op
 // BenchmarkTrC2D-12          28988             41.902 ns/op           53130 B/op        207 allocs/op
 // BenchmarkTrC2D-12          29118             43.685 ns/op           53131 B/op        207 allocs/op
+// goroutine per core
+// BenchmarkTrC2D-12          76899             15.640 ns/op           42666 B/op         31 allocs/op
+// BenchmarkTrC2D-12          72721             16.598 ns/op           42665 B/op         31 allocs/op
+// BenchmarkTrC2D-12          72602             16.981 ns/op           42665 B/op         31 allocs/op
 func BenchmarkTrC2D(b *testing.B) {
 	a := tensor.Range[float32](10000).Reshape(100, 100)
 	for i := 0; i < b.N; i++ {

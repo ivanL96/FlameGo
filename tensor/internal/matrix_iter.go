@@ -59,15 +59,12 @@ func TraverseAsContiguous2D[T types.TensorType](a, out []T, ashape types.Shape) 
 	wg.Wait()
 }
 
-func parallel[T types.TensorType](
+func Parallel[T types.TensorType](
+	size int,
 	f func(int, int, []T, []T, []T, *sync.Mutex),
 	a, b, out []T,
 ) {
-	la := len(a)
-	if len(a) == 1 {
-		la = len(b)
-	}
-	chunk_size := (la + numCPU - 1) / numCPU
+	chunk_size := (size + numCPU - 1) / numCPU
 
 	var wg sync.WaitGroup
 	var mu sync.Mutex
@@ -76,8 +73,8 @@ func parallel[T types.TensorType](
 	for i := 0; i < numCPU; i++ {
 		start := i * chunk_size
 		end := (i + 1) * chunk_size
-		if end > la {
-			end = la
+		if end > size {
+			end = size
 		}
 
 		go func(start, end int) {

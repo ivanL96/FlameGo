@@ -24,6 +24,51 @@ func _range[T types.TensorType](slc []T, start, end int) []T {
 	return slc[start:end]
 }
 
+func get_size[T types.TensorType](a, b []T) int {
+	if len(a) == 1 {
+		return len(b)
+	}
+	return len(a)
+}
+
+func ElementwiseNoSimdUnary[T types.TensorType](a, out []T, atomic func(T) T) {
+	chunk := func(start, end int, a, b, out []T, mu *sync.Mutex) {
+		for i := start; i < end; i++ {
+			out[i] = atomic(a[i])
+		}
+	}
+	Parallel(len(a), chunk, a, nil, makeOutMat(out, len(a)))
+}
+
+func ElementwiseNoSimd[T types.TensorType](a, b, out []T, atomic func(T, T) T) {
+	var chunk func(int, int, []T, []T, []T, *sync.Mutex)
+	if len(a) == 1 {
+		chunk = func(start, end int, a, b, out []T, mu *sync.Mutex) {
+			for i := start; i < end; i++ {
+				out[i] = atomic(a[0], b[i])
+			}
+		}
+	} else if len(b) == 1 {
+		chunk = func(start, end int, a, b, out []T, mu *sync.Mutex) {
+			for i := start; i < end; i++ {
+				out[i] = atomic(a[i], b[0])
+			}
+		}
+	} else {
+		chunk = func(start, end int, a, b, out []T, mu *sync.Mutex) {
+			for i := start; i < end; i++ {
+				out[i] = atomic(a[i], b[i])
+			}
+		}
+	}
+
+	la := len(a)
+	if len(a) == 1 {
+		la = len(b)
+	}
+	Parallel(la, chunk, a, b, makeOutMat(out, len(a)))
+}
+
 // here's the logic of elementwise addition between matrices.
 // The "impl" argument can contain an implementation to accelerate inner loop using avx,etc
 func RunSimdImpl[T types.TensorType](a, b, out []T, impl func([]T, []T, []T)) {
@@ -33,7 +78,7 @@ func RunSimdImpl[T types.TensorType](a, b, out []T, impl func([]T, []T, []T)) {
 		}
 		impl(_range(a, start, end), _range(b, start, end), _range(out, start, end))
 	}
-	parallel(chunk, a, b, makeOutMat(out, len(a)))
+	Parallel(get_size(a, b), chunk, a, b, makeOutMat(out, len(a)))
 }
 
 func RunSimdImplUnary[T types.TensorType](a, out []T, impl func([]T, []T)) {
@@ -43,7 +88,7 @@ func RunSimdImplUnary[T types.TensorType](a, out []T, impl func([]T, []T)) {
 		}
 		impl(_range(a, start, end), _range(out, start, end))
 	}
-	parallel(chunk, a, []T{}, makeOutMat(out, len(a)))
+	Parallel(len(a), chunk, a, nil, makeOutMat(out, len(a)))
 }
 
 func Dot[T types.TensorType](a, b []float32) float32 {
@@ -70,7 +115,7 @@ func PowMatx[T types.TensorType](a, b, out []T) {
 			}
 		}
 	}
-	parallel(pow_chunk, a, b, makeOutMat(out, len(a)))
+	Parallel(get_size(a, b), pow_chunk, a, b, makeOutMat(out, len(a)))
 }
 
 // unary
@@ -80,7 +125,7 @@ func SigmoidMatx[T types.TensorType](a, out []T) {
 			out[i] = T(1. / (1. + math.Pow(math.E, float64(-a[i]))))
 		}
 	}
-	parallel(sigm_chunk, a, nil, makeOutMat(out, len(a)))
+	Parallel(len(a), sigm_chunk, a, nil, makeOutMat(out, len(a)))
 }
 
 func NegMatx[T types.TensorType](a, out []T) {
@@ -89,7 +134,7 @@ func NegMatx[T types.TensorType](a, out []T) {
 			out[i] = -a[i]
 		}
 	}
-	parallel(neg_chunk, a, nil, makeOutMat(out, len(a)))
+	Parallel(len(a), neg_chunk, a, nil, makeOutMat(out, len(a)))
 }
 
 func LnNegMatx[T types.TensorType](a, out []T) {
@@ -98,7 +143,7 @@ func LnNegMatx[T types.TensorType](a, out []T) {
 			out[i] = -T(math.Log(float64(a[i])))
 		}
 	}
-	parallel(lnneg_chunk, a, nil, makeOutMat(out, len(a)))
+	Parallel(len(a), lnneg_chunk, a, nil, makeOutMat(out, len(a)))
 }
 
 func ReluMatx[T types.TensorType](a, out []T) {
@@ -112,7 +157,7 @@ func ReluMatx[T types.TensorType](a, out []T) {
 			out[i] = 0
 		}
 	}
-	parallel(relu_chunk, a, nil, makeOutMat(out, len(a)))
+	Parallel(len(a), relu_chunk, a, nil, makeOutMat(out, len(a)))
 }
 
 func ExpMatx[T types.TensorType](a, out []T) {
@@ -121,7 +166,7 @@ func ExpMatx[T types.TensorType](a, out []T) {
 			out[i] = T(math.Exp(float64(a[i])))
 		}
 	}
-	parallel(exp_chunk, a, nil, makeOutMat(out, len(a)))
+	Parallel(len(a), exp_chunk, a, nil, makeOutMat(out, len(a)))
 }
 
 func ApplyFuncMatx[T types.TensorType](a []T, expr_fn func(T) T, out []T) {
@@ -130,7 +175,7 @@ func ApplyFuncMatx[T types.TensorType](a []T, expr_fn func(T) T, out []T) {
 			out[i] = expr_fn(a[i])
 		}
 	}
-	parallel(_chunk, a, nil, makeOutMat(out, len(a)))
+	Parallel(len(a), _chunk, a, nil, makeOutMat(out, len(a)))
 }
 
 // reduce
@@ -144,7 +189,7 @@ func SumMatx[T types.TensorType](a, out []T) {
 		defer mu.Unlock()
 		out[0] += chunk_sum
 	}
-	parallel(sum_chunk, a, nil, makeOutMat(out, len(a)))
+	Parallel(len(a), sum_chunk, a, nil, makeOutMat(out, len(a)))
 }
 
 func SumAxisMatx[T types.TensorType](data, out []T, shape types.Shape, axis int) {
@@ -157,6 +202,19 @@ func SumAxisMatx[T types.TensorType](data, out []T, shape types.Shape, axis int)
 		stride_0 = 1
 		stride_1 = int(shape[1])
 	}
+	// Parallel(outer_step, func(start, end int, data, dummy, out []T, mu *sync.Mutex) {
+	// 	// for i := 0; i < outer_step; i++ {
+	// 	for i := start; i < end; i++ {
+	// 		inner_sum := T(0)
+	// 		i_stride := i * stride_1
+	// 		for j := 0; j < inner_step; j++ {
+	// 			inner_sum += data[j*stride_0+i_stride]
+	// 		}
+	// 		mu.Lock()
+	// 		defer mu.Unlock()
+	// 		out[i] += inner_sum
+	// 	}
+	// }, data, nil, out)
 	var wg sync.WaitGroup
 	var mu sync.Mutex
 	for i := 0; i < outer_step; i++ {
@@ -191,7 +249,7 @@ func MaxMatx[T types.TensorType](a, out []T) {
 			out[0] = _max
 		}
 	}
-	parallel(max_chunk, a, nil, makeOutMat(out, len(a)))
+	Parallel(len(a), max_chunk, a, nil, makeOutMat(out, len(a)))
 }
 
 func MinMatx[T types.TensorType](a, out []T) {
@@ -209,7 +267,7 @@ func MinMatx[T types.TensorType](a, out []T) {
 			out[0] = _min
 		}
 	}
-	parallel(min_chunk, a, nil, makeOutMat(out, len(a)))
+	Parallel(len(a), min_chunk, a, nil, makeOutMat(out, len(a)))
 }
 
 func SoftmaxMatx[T types.TensorType](a, out []T, strides []int) {

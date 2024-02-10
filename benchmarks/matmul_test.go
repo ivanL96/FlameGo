@@ -99,9 +99,9 @@ func BenchmarkMatMulUnite(b *testing.B) {
 // BenchmarkMatMul-12           102          11.561.105 ns/op        12447245 B/op       4015 allocs/op
 // BenchmarkMatMul-12           102          11.648.135 ns/op        12447252 B/op       4015 allocs/op
 // splitted by blocks, improved cache locality
-// BenchmarkMatMul-12           106          10.161.215 ns/op        12449556 B/op       2552 allocs/op
-// BenchmarkMatMul-12           114          10.287.807 ns/op        12430639 B/op       2550 allocs/op
-// BenchmarkMatMul-12           109          10.155.769 ns/op        12441993 B/op       2551 allocs/op
+// BenchmarkMatMul-12           106          10.039.453 ns/op        12329846 B/op        557 allocs/op
+// BenchmarkMatMul-12           115           9.977.032 ns/op        12308991 B/op        557 allocs/op
+// BenchmarkMatMul-12           112           9.891.651 ns/op        12315537 B/op        557 allocs/op
 //
 // numpy matmul ref                          10.645.914 ns/op
 // 10000x10000

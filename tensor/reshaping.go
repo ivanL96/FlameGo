@@ -163,12 +163,21 @@ func (tensor *Tensor[T]) TrC2D() *Tensor[T] {
 	data := tensor.data()
 
 	var wg sync.WaitGroup
-	for i := 0; i < rows; i++ {
-		wg.Add(1)
-		go func(i int) {
+	chunk_size := (rows + numCPU - 1) / numCPU
+	wg.Add(numCPU)
+
+	for i := 0; i < numCPU; i++ {
+		start := i * chunk_size
+		end := (i + 1) * chunk_size
+		if end > rows {
+			end = rows
+		}
+		go func(start, end int) {
 			defer wg.Done()
-			internal.Transpose_cont2D_loop(data, transposed, i, cols, rows)
-		}(i)
+			for j := start; j < end; j++ {
+				internal.Transpose_cont2D_loop(data, transposed, j, cols, rows)
+			}
+		}(start, end)
 	}
 	wg.Wait()
 	return CreateTensorNoCopy[T](transposed, types.Shape{sh[1], sh[0]})

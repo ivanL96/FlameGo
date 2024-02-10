@@ -38,6 +38,9 @@ func DetectImpl() *Implementation {
 	if cpuid.CPU.Supports(cpuid.AVX512VNNI) {
 		impl.all_suppored = append(impl.all_suppored, "AVX512VNNI")
 	}
+	if cpuid.CPU.AnyOf(cpuid.AMXBF16, cpuid.AMXBF16, cpuid.AMXINT8, cpuid.AMXTILE) {
+		impl.all_suppored = append(impl.all_suppored, "AMX")
+	}
 	// select the best cpu impl
 	if cpuid.CPU.Supports(cpuid.AVX512F, cpuid.AVX512DQ) {
 		impl.impl = AVX512
