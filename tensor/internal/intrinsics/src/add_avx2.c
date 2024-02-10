@@ -1,7 +1,7 @@
 #include <immintrin.h>
 #include <stdint.h>
 
-void _mm256_mul_to(float *a, float *b, float *c, int64_t n)
+void _mm256_add_to(float *a, float *b, float *c, int64_t n)
 {
     int epoch = n / 8;
     int remain = n % 8;
