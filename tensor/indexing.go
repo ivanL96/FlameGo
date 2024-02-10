@@ -301,6 +301,6 @@ func (tensor *Tensor[T]) AsContiguous() *Tensor[T] {
 		return outTensor
 	}
 	// for N Dim tensor
-	internal.TraverseAsContiguous[T](tensor.data(), outTensor.data(), tensor.strides, tensor.shape)
+	internal.TraverseAsContiguousND[T](tensor.data(), outTensor.data(), tensor.strides, tensor.shape)
 	return outTensor
 }

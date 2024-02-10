@@ -45,6 +45,10 @@ func BenchmarkSum(b *testing.B) {
 // BenchmarkSumAxis-12         2139            508.514 ns/op          142.328 B/op       2013 allocs/op
 // BenchmarkSumAxis-12         2271            504.863 ns/op          142.108 B/op       2013 allocs/op
 // BenchmarkSumAxis-12         2374            507.044 ns/op          142.026 B/op       2013 allocs/op
+// goroutine per core
+// BenchmarkSumAxis-12         4311            235.806 ns/op            7.001 B/op         36 allocs/op
+// BenchmarkSumAxis-12         4759            225.101 ns/op            6.914 B/op         36 allocs/op
+// BenchmarkSumAxis-12         5380            221.528 ns/op            6.816 B/op         36 allocs/op
 func BenchmarkSumAxis(b *testing.B) {
 	a1 := tensor.Range[int32](1000000).Reshape(1000, 1000)
 	for i := 0; i < b.N; i++ {

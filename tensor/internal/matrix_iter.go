@@ -8,7 +8,7 @@ import (
 
 var numCPU int = runtime.NumCPU()
 
-func traverse[T types.TensorType](
+func _traverse[T types.TensorType](
 	a, out []T,
 	astrides []int, ashape types.Shape,
 	axis, step int, flat *int,
@@ -24,15 +24,18 @@ func traverse[T types.TensorType](
 		return
 	}
 	for i := 0; i < dim; i++ {
-		traverse(a, out, astrides, ashape, axis+1, step+i*stride, flat)
+		_traverse(a, out, astrides, ashape, axis+1, step+i*stride, flat)
 	}
 }
 
-func TraverseAsContiguous[T types.TensorType](a, out []T,
+// general traversal algorithm for ND tensor with any memory contiguity.
+//
+// As the algorithm walks through it stores its progress to 'out' tensor - i.e. makes the first tensor contiguous
+func TraverseAsContiguousND[T types.TensorType](a, out []T,
 	a_strides []int, a_shape types.Shape,
 ) {
 	i := 0
-	traverse(a, out, a_strides, a_shape, 0, 0, &i)
+	_traverse(a, out, a_strides, a_shape, 0, 0, &i)
 }
 
 func TraverseAsContiguous2D[T types.TensorType](a, out []T, ashape types.Shape) {

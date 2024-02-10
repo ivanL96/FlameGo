@@ -202,36 +202,19 @@ func SumAxisMatx[T types.TensorType](data, out []T, shape types.Shape, axis int)
 		stride_0 = 1
 		stride_1 = int(shape[1])
 	}
-	// Parallel(outer_step, func(start, end int, data, dummy, out []T, mu *sync.Mutex) {
-	// 	// for i := 0; i < outer_step; i++ {
-	// 	for i := start; i < end; i++ {
-	// 		inner_sum := T(0)
-	// 		i_stride := i * stride_1
-	// 		for j := 0; j < inner_step; j++ {
-	// 			inner_sum += data[j*stride_0+i_stride]
-	// 		}
-	// 		mu.Lock()
-	// 		defer mu.Unlock()
-	// 		out[i] += inner_sum
-	// 	}
-	// }, data, nil, out)
-	var wg sync.WaitGroup
-	var mu sync.Mutex
-	for i := 0; i < outer_step; i++ {
-		wg.Add(1)
-		go func(i int) {
-			defer wg.Done()
-			inner_sum := T(0)
-			i_stride := i * stride_1
-			for j := 0; j < inner_step; j++ {
-				inner_sum += data[j*stride_0+i_stride]
+	Parallel(outer_step,
+		func(start, end int, data, dummy, out []T, mu *sync.Mutex) {
+			for i := start; i < end; i++ {
+				inner_sum := T(0)
+				i_stride := i * stride_1
+				for j := 0; j < inner_step; j++ {
+					inner_sum += data[j*stride_0+i_stride]
+				}
+				// mu.Lock()
+				// defer mu.Unlock()
+				out[i] += inner_sum
 			}
-			mu.Lock()
-			defer mu.Unlock()
-			out[i] += inner_sum
-		}(i)
-	}
-	wg.Wait()
+		}, data, nil, out)
 }
 
 func MaxMatx[T types.TensorType](a, out []T) {
