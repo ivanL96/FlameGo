@@ -64,17 +64,21 @@ func BenchmarkToString(b *testing.B) {
 // cpu: 11th Gen Intel(R) Core(TM) i5-11400H @ 2.70GHz
 // 1000x1000
 // 1 thread
-// BenchmarkAsContiguous-12             352           3.305.912 ns/op         6020435 B/op          9 allocs/op
-// BenchmarkAsContiguous-12             367           3.312.905 ns/op         6025425 B/op          9 allocs/op
-// BenchmarkAsContiguous-12             363           3.293.073 ns/op         6025606 B/op          9 allocs/op
+// BenchmarkAsContiguous-12             352           3.305.912 ns/op         6.020.435 B/op          9 allocs/op
+// BenchmarkAsContiguous-12             367           3.312.905 ns/op         6.025.425 B/op          9 allocs/op
+// BenchmarkAsContiguous-12             363           3.293.073 ns/op         6.025.606 B/op          9 allocs/op
 // optimized for 2D matrix
-// BenchmarkAsContiguous-12            1024           1.106.555 ns/op         6064986 B/op       1009 allocs/op
-// BenchmarkAsContiguous-12            1010           1.103.096 ns/op         6065024 B/op       1009 allocs/op
-// BenchmarkAsContiguous-12             996           1.101.434 ns/op         6065081 B/op       1009 allocs/op
+// BenchmarkAsContiguous-12            1024           1.106.555 ns/op         6.064.986 B/op       1009 allocs/op
+// BenchmarkAsContiguous-12            1010           1.103.096 ns/op         6.065.024 B/op       1009 allocs/op
+// BenchmarkAsContiguous-12             996           1.101.434 ns/op         6.065.081 B/op       1009 allocs/op
 // loop unroll
-// BenchmarkAsContiguous-12            1225             912.125 ns/op         6074341 B/op       1010 allocs/op
-// BenchmarkAsContiguous-12            1090             925.909 ns/op         6072793 B/op       1009 allocs/op
-// BenchmarkAsContiguous-12            1287             904.302 ns/op         6073798 B/op       1009 allocs/op
+// BenchmarkAsContiguous-12            1225             912.125 ns/op         6.074.341 B/op       1010 allocs/op
+// BenchmarkAsContiguous-12            1090             925.909 ns/op         6.072.793 B/op       1009 allocs/op
+// BenchmarkAsContiguous-12            1287             904.302 ns/op         6.073.798 B/op       1009 allocs/op
+// goroutine per cpu
+// BenchmarkAsContiguous-12            1612             688.423 ns/op         6.012.334 B/op         21 allocs/op
+// BenchmarkAsContiguous-12            1648             710.814 ns/op         6.012.286 B/op         21 allocs/op
+// BenchmarkAsContiguous-12            1590             696.024 ns/op         6.012.369 B/op         21 allocs/op
 func BenchmarkAsContiguous(b *testing.B) {
 	var side types.Dim = 1000
 	a := tensor.Range[int32](int(side*side)).Reshape(side, side)

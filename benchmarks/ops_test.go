@@ -94,6 +94,10 @@ func BenchmarkBigAdd(b *testing.B) {
 // BenchmarkBigMul-12         10303            117.260 ns/op            1945 B/op          0 allocs/op
 // BenchmarkBigMul-12         10179            116.660 ns/op            1968 B/op          0 allocs/op
 // BenchmarkBigMul-12         10185            113.450 ns/op            1967 B/op          0 allocs/op
+// avx512 + openmp
+// BenchmarkBigMul-12          8148            123.141 ns/op            2459 B/op          0 allocs/op
+// BenchmarkBigMul-12          8796            121.407 ns/op            2278 B/op          0 allocs/op
+// BenchmarkBigMul-12          9952            123.991 ns/op            2013 B/op          0 allocs/op
 //
 // numpy ref 								 2.712.392 ns/op
 // shape 1000x1000
