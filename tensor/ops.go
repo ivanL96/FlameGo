@@ -19,8 +19,6 @@ func BaseBinElementwiseOp[T types.TensorType](
 	scalar_impl func(T, T) T,
 	// vector is used to accelerate applying operation to vectors
 	vector_impl func(device.Implementation, []T, []T, []T),
-	// vector_to_scalar_impl is used to accelerate applying operation between vectors and scalars.
-	vector_to_scalar_impl func(device.Implementation, []T, []T, []T),
 	out *Tensor[T],
 ) *Tensor[T] {
 	if tensor_a.Err != nil {
@@ -37,7 +35,7 @@ func BaseBinElementwiseOp[T types.TensorType](
 
 	// TODO if outTensor equals to a or b,  apply the *_to_const vectorized impl
 	// TODO try to vectorize operations for non contiguous tensors. Right now it falls back to scalar impl which is slow
-	if scalar_impl == nil && vector_impl == nil && vector_to_scalar_impl == nil {
+	if scalar_impl == nil && vector_impl == nil {
 		panic("no implementation found")
 	}
 
@@ -87,14 +85,14 @@ func BaseBinElementwiseOp[T types.TensorType](
 			return tensor_a
 		}
 		out_data := outTensor.data()
-		if vector_to_scalar_impl == nil {
-			value := tensor_b.Item()
-			for i, val := range tensor_a.data() {
-				out_data[i] = scalar_impl(val, value)
-			}
-		} else {
-			vector_to_scalar_impl(AUTO_IMPL, tensor_a.data(), tensor_b.data(), out_data)
-		}
+		// if vector_to_scalar_impl == nil {
+		// 	value := tensor_b.Item()
+		// 	for i, val := range tensor_a.data() {
+		// 		out_data[i] = scalar_impl(val, value)
+		// 	}
+		// } else {
+		vector_impl(AUTO_IMPL, tensor_a.data(), tensor_b.data(), out_data)
+		// }
 	} else if tensor_a.shape.IsScalarLike() {
 		// tensor_a is scalar
 		// (1,) & (N, M, ...)
@@ -104,14 +102,14 @@ func BaseBinElementwiseOp[T types.TensorType](
 			return tensor_a
 		}
 		out_data := outTensor.data()
-		if vector_to_scalar_impl == nil {
-			value := tensor_a.Item()
-			for i, val := range tensor_b.data() {
-				out_data[i] = scalar_impl(value, val)
-			}
-		} else {
-			vector_to_scalar_impl(AUTO_IMPL, tensor_b.data(), tensor_a.data(), out_data)
-		}
+		// if vector_to_scalar_impl == nil {
+		// 	value := tensor_a.Item()
+		// 	for i, val := range tensor_b.data() {
+		// 		out_data[i] = scalar_impl(value, val)
+		// 	}
+		// } else {
+		vector_impl(AUTO_IMPL, tensor_b.data(), tensor_a.data(), out_data)
+		// }
 	} else {
 		// tensors should have equal shapes or at least one of them should be scalar-like
 		if !tensor_a.shape.AreBroadcastable(tensor_b.shape) {
@@ -203,23 +201,23 @@ func unaryElementwiseRoutine[T types.TensorType](
 //
 
 func (tensor *Tensor[T]) Add(other_tensor *Tensor[T], out ...*Tensor[T]) *Tensor[T] {
-	return BaseBinElementwiseOp(tensor, other_tensor, ops.AddAtomic[T], device.Add[T], nil, get_param(out...))
+	return BaseBinElementwiseOp(tensor, other_tensor, ops.AddAtomic[T], device.Add[T], get_param(out...))
 }
 
 func (tensor *Tensor[T]) Sub(other_tensor *Tensor[T], out ...*Tensor[T]) *Tensor[T] {
-	return BaseBinElementwiseOp(tensor, other_tensor, ops.SubAtomic[T], device.Sub[T], nil, get_param(out...))
+	return BaseBinElementwiseOp(tensor, other_tensor, ops.SubAtomic[T], device.Sub[T], get_param(out...))
 }
 
 func (tensor *Tensor[T]) Mul(other_tensor *Tensor[T], out ...*Tensor[T]) *Tensor[T] {
-	return BaseBinElementwiseOp(tensor, other_tensor, ops.MulAtomic[T], device.Mul[T], device.MulToConst[T], get_param(out...))
+	return BaseBinElementwiseOp(tensor, other_tensor, ops.MulAtomic[T], device.Mul[T], get_param(out...))
 }
 
 func (tensor *Tensor[T]) Div(other_tensor *Tensor[T], out ...*Tensor[T]) *Tensor[T] {
-	return BaseBinElementwiseOp(tensor, other_tensor, ops.DivAtomic[T], device.Div[T], nil, get_param(out...))
+	return BaseBinElementwiseOp(tensor, other_tensor, ops.DivAtomic[T], device.Div[T], get_param(out...))
 }
 
 func (tensor *Tensor[T]) Pow(other_tensor *Tensor[T], out ...*Tensor[T]) *Tensor[T] {
-	return BaseBinElementwiseOp(tensor, other_tensor, ops.PowAtomic[T], device.Pow[T], nil, get_param(out...))
+	return BaseBinElementwiseOp(tensor, other_tensor, ops.PowAtomic[T], device.Pow[T], get_param(out...))
 }
 
 // unary

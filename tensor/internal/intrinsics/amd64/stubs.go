@@ -20,5 +20,4 @@ func _mm512_mul_to(a, b, c, n unsafe.Pointer)
 //go:noescape
 func _mm256_mul_const_to(a, b, c, n unsafe.Pointer)
 
-//go:noescape
-func _mm256_add_to(a, b, c, n unsafe.Pointer)
+// func _mm256_add_to(a, b, c, n unsafe.Pointer)

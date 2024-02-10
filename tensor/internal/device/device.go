@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"gograd/tensor/internal"
 	"gograd/tensor/internal/intrinsics/amd64"
+	"gograd/tensor/internal/intrinsics/src"
 	"gograd/tensor/types"
 
 	"github.com/klauspost/cpuid/v2"
@@ -46,6 +47,10 @@ func DetectImpl() *Implementation {
 	return &impl
 }
 
+func (i *Implementation) SetImpl(newimpl int) {
+	i.impl = newimpl
+}
+
 func (i *Implementation) ShowDebugInfo() *Implementation {
 	if len(i.all_suppored) > 0 {
 		fmt.Println("CPU acceleration:", i.all_suppored, "available.")
@@ -83,50 +88,55 @@ func MatMul[T types.TensorType](
 }
 
 func Mul[T types.TensorType](i Implementation, a, b, c []T) {
-	// afl, _, _ := types.Input_to_float32(a, b, c)
 	switch i.impl {
 	case AVX:
-		internal.MulMatx(a, b, c, amd64.Mul_mm256)
+		src.Mul_mm256(a, b, c)
+		// internal.RunSimdImpl(a, b, c, src.Mul_mm256)
 	case AVX512:
-		internal.MulMatx(a, b, c, amd64.Mul_mm256)
+		src.Mul_mm256(a, b, c)
+		// internal.RunSimdImpl(a, b, c, src.Mul_mm256)
 	default:
-		internal.MulMatx(a, b, c, nil)
-	}
-}
-
-func MulToConst[T types.TensorType](i Implementation, a, b, c []T) {
-	// afl, _, _ := types.Input_b_scalar_to_float32(a, b[0], c)
-	switch i.impl {
-	case AVX:
-		internal.MulMatxToConst(a, b, c, amd64.Mul_to_const_mm256)
-	case AVX512:
-		internal.MulMatxToConst(a, b, c, amd64.Mul_to_const_mm256)
-	default:
-		internal.MulMatxToConst(a, b, c, nil)
+		internal.ElementwiseNoSimd(a, b, c, internal.MulAtomic)
 	}
 }
 
 func Div[T types.TensorType](i Implementation, a, b, c []T) {
-	internal.DivMatx(a, b, c)
+	switch i.impl {
+	case AVX:
+		internal.RunSimdImpl(a, b, c, src.Div_mm256)
+	case AVX512:
+		internal.RunSimdImpl(a, b, c, src.Div_mm256)
+	default:
+		internal.ElementwiseNoSimd(a, b, c, internal.DivAtomic)
+	}
 }
 
 func Add[T types.TensorType](i Implementation, a, b, c []T) {
-	// afl, _, _ := types.Input_to_float32(a, b, c)
 	switch i.impl {
 	case AVX:
-		internal.AddMatx(a, b, c, amd64.Add_mm256)
+		// internal.RunSimdImpl(a, b, c, src.Add_mm256)
+		src.Add_mm256(a, b, c)
 	case AVX512:
-		internal.AddMatx(a, b, c, amd64.Add_mm256)
+		// internal.RunSimdImpl(a, b, c, src.Add_mm256)
+		src.Add_mm256(a, b, c)
 	default:
-		internal.AddMatx(a, b, c, nil)
+		internal.ElementwiseNoSimd(a, b, c, internal.AddAtomic)
 	}
 }
 
 func Sub[T types.TensorType](i Implementation, a, b, c []T) {
-	internal.SubMatx(a, b, c)
+	switch i.impl {
+	case AVX:
+		internal.RunSimdImpl(a, b, c, src.Sub_mm256)
+	case AVX512:
+		internal.RunSimdImpl(a, b, c, src.Sub_mm256)
+	default:
+		internal.ElementwiseNoSimd(a, b, c, internal.SubAtomic)
+	}
 }
 
 func Pow[T types.TensorType](i Implementation, a, b, c []T) {
+	// internal.ElementwiseNoSimd(a, b, c, internal.PowAtomic)
 	internal.PowMatx(a, b, c)
 }
 
@@ -136,7 +146,14 @@ func Sigmoid[T types.TensorType](i Implementation, a, c []T) {
 }
 
 func Neg[T types.TensorType](i Implementation, a, c []T) {
-	internal.NegMatx(a, c)
+	switch i.impl {
+	case AVX:
+		internal.RunSimdImplUnary(a, c, src.Neg_mm256)
+	case AVX512:
+		internal.RunSimdImplUnary(a, c, src.Neg_mm256)
+	default:
+		internal.ElementwiseNoSimdUnary(a, c, internal.NegAtomic)
+	}
 }
 
 func LnNeg[T types.TensorType](i Implementation, a, c []T) {

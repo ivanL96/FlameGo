@@ -12,10 +12,8 @@ func main() {
 	// fmt.Println(http.ListenAndServe("localhost:6060", nil))
 	// }()
 	// wg.Add(1)
-
 	pprof_main(classifier_iris)
 	// wg.Wait()
-
 	// classifier_gen()
 
 	// a := x86.MmSetrEpi8(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15)
@@ -25,7 +23,6 @@ func main() {
 	// log.Print(b)
 	// log.Print(add)
 
-	// linear_regression()
 }
 
 // go build -gcflags="-m -l"

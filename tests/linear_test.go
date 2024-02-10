@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"gograd/grad"
 	"gograd/tensor"
 	types "gograd/tensor/types"
@@ -45,5 +46,6 @@ func TestLinear(t *testing.T) {
 		optim.ZeroGrads()
 	}
 
+	fmt.Println(history, 0.0361432)
 	assert(t, math.Abs(float64(history-0.0361432)) <= 0.0001)
 }

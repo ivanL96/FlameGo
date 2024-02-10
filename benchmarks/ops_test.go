@@ -16,6 +16,10 @@ import (
 // BenchmarkAddToConst-12               553           2.059.855 ns/op         4013289 B/op          5 allocs/op
 // BenchmarkAddToConst-12               584           2.081.990 ns/op         4012902 B/op          5 allocs/op
 // BenchmarkAddToConst-12               600           2.065.429 ns/op         4012713 B/op          5 allocs/op
+// avx
+// BenchmarkAddToConst-12              1242            923.534 ns/op         4011068 B/op         33 allocs/op
+// BenchmarkAddToConst-12              1317            941.953 ns/op         4010884 B/op         33 allocs/op
+// BenchmarkAddToConst-12              1332            959.982 ns/op         4010854 B/op         33 allocs/op
 func BenchmarkAddToConst(b *testing.B) {
 	a1 := tensor.CreateEmptyTensor[float32](1000, 1000).Fill(100)
 	a2 := tensor.Scalar[float32](5)
@@ -47,6 +51,10 @@ func BenchmarkAddToConst(b *testing.B) {
 // BenchmarkBigAdd-12         10390            108.364 ns/op            2925 B/op         26 allocs/op
 // BenchmarkBigAdd-12          9687            107.917 ns/op            3008 B/op         26 allocs/op
 // BenchmarkBigAdd-12          9469            105.879 ns/op            3037 B/op         26 allocs/op
+// avx + openmp
+// BenchmarkBigAdd-12         11733             98.518 ns/op            1024 B/op          0 allocs/op
+// BenchmarkBigAdd-12         11983            102.650 ns/op            1002 B/op          0 allocs/op
+// BenchmarkBigAdd-12         11762             99.941 ns/op            1021 B/op          0 allocs/op
 // numpy 									 2.412.390 ns/op
 
 func BenchmarkBigAdd(b *testing.B) {
@@ -56,7 +64,7 @@ func BenchmarkBigAdd(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		a1.Add(a2, out)
 	}
-	// fmt.Println(out.Get(999, 999))
+	// fmt.Println(out.Get(333, 333))
 }
 
 // goos: windows
@@ -81,6 +89,11 @@ func BenchmarkBigAdd(b *testing.B) {
 // BenchmarkBigMul-12         10958            106.339 ns/op            3596 B/op         26 allocs/op
 // BenchmarkBigMul-12         11272            108.102 ns/op            3545 B/op         26 allocs/op
 // BenchmarkBigMul-12         11263            106.109 ns/op            3547 B/op         26 allocs/op
+// avx256 + openmp
+// BenchmarkBigMul-12         12014             95.663 ns/op            1668 B/op          0 allocs/op
+// BenchmarkBigMul-12         11899             95.827 ns/op            1684 B/op          0 allocs/op
+// BenchmarkBigMul-12         12418             95.279 ns/op            1613 B/op          0 allocs/op
+// BenchmarkBigMul-12         12302             95.259 ns/op            1629 B/op          0 allocs/op
 // numpy ref 								 2.712.392 ns/op
 // shape 1000x1000
 func BenchmarkBigMul(b *testing.B) {
