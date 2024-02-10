@@ -3,6 +3,7 @@ package tensor
 import (
 	"errors"
 	"fmt"
+	"gograd/tensor/internal"
 	types "gograd/tensor/types"
 	"math"
 	"runtime"
@@ -128,7 +129,7 @@ func AsType[OLD_T, NEW_T types.TensorType](tensor *Tensor[OLD_T]) *Tensor[NEW_T]
 				out_batch = out_data[start:]
 				in_batch = tensor.data()[start:]
 			}
-			convert_type_loop[OLD_T, NEW_T](in_batch, out_batch)
+			internal.Convert_type_loop[OLD_T, NEW_T](in_batch, out_batch)
 		}(start, end)
 	}
 	wg.Wait()
@@ -203,7 +204,7 @@ func (tensor *Tensor[T]) Fill(value T) *Tensor[T] {
 			default:
 				batch = data[start:end]
 			}
-			fill_data_loop(batch, value)
+			internal.Fill_data_loop(batch, value)
 		}(start, end)
 	}
 	wg.Wait()

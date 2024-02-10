@@ -3,6 +3,7 @@ package tensor
 import (
 	"errors"
 	"fmt"
+	"gograd/tensor/internal"
 	types "gograd/tensor/types"
 	"sync"
 )
@@ -166,7 +167,7 @@ func (tensor *Tensor[T]) TrC2D() *Tensor[T] {
 		wg.Add(1)
 		go func(i int) {
 			defer wg.Done()
-			transpose_cont2D_loop(data, transposed, i, cols, rows)
+			internal.Transpose_cont2D_loop(data, transposed, i, cols, rows)
 		}(i)
 	}
 	wg.Wait()

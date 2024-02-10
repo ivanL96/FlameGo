@@ -71,6 +71,10 @@ func BenchmarkToString(b *testing.B) {
 // BenchmarkAsContiguous-12            1024           1.106.555 ns/op         6064986 B/op       1009 allocs/op
 // BenchmarkAsContiguous-12            1010           1.103.096 ns/op         6065024 B/op       1009 allocs/op
 // BenchmarkAsContiguous-12             996           1.101.434 ns/op         6065081 B/op       1009 allocs/op
+// loop unroll
+// BenchmarkAsContiguous-12            1225             912.125 ns/op         6074341 B/op       1010 allocs/op
+// BenchmarkAsContiguous-12            1090             925.909 ns/op         6072793 B/op       1009 allocs/op
+// BenchmarkAsContiguous-12            1287             904.302 ns/op         6073798 B/op       1009 allocs/op
 func BenchmarkAsContiguous(b *testing.B) {
 	var side types.Dim = 1000
 	a := tensor.Range[int32](int(side*side)).Reshape(side, side)
