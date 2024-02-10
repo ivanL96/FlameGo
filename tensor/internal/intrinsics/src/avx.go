@@ -152,19 +152,3 @@ func Div_mm256[T types.TensorType](a, b, c []T) {
 // 		panic("not implemented")
 // 	}
 // }
-
-func Neg_mm256[T types.TensorType](a, c []T) {
-	if len(a) == 0 || len(c) == 0 {
-		return
-	}
-
-	t := reflect.TypeOf(a[0]).Kind()
-	switch t {
-	case reflect.Float32:
-		af, cf := any(a).([]float32), any(c).([]float32)
-		n := C.longlong(len(a))
-		C._mm256_neg_to((*C.float)(&af[0]), (*C.float)(&cf[0]), n)
-	default:
-		panic("not implemented")
-	}
-}

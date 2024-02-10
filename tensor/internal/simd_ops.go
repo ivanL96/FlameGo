@@ -83,14 +83,14 @@ func SigmoidMatx[T types.TensorType](a, out []T) {
 	parallel(sigm_chunk, a, nil, makeOutMat(out, len(a)))
 }
 
-// func NegMatx[T types.TensorType](a, out []T) {
-// 	neg_chunk := func(start, end int, a, dummy, out []T, mu *sync.Mutex) {
-// 		for i := start; i < end; i++ {
-// 			out[i] = -a[i]
-// 		}
-// 	}
-// 	parallel(neg_chunk, a, nil, makeOutMat(out, len(a)))
-// }
+func NegMatx[T types.TensorType](a, out []T) {
+	neg_chunk := func(start, end int, a, dummy, out []T, mu *sync.Mutex) {
+		for i := start; i < end; i++ {
+			out[i] = -a[i]
+		}
+	}
+	parallel(neg_chunk, a, nil, makeOutMat(out, len(a)))
+}
 
 func LnNegMatx[T types.TensorType](a, out []T) {
 	lnneg_chunk := func(start, end int, a, dummy, out []T, mu *sync.Mutex) {

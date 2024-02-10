@@ -142,14 +142,7 @@ func Sigmoid[T types.TensorType](i Implementation, a, c []T) {
 }
 
 func Neg[T types.TensorType](i Implementation, a, c []T) {
-	switch i.impl {
-	case AVX:
-		internal.RunSimdImplUnary(a, c, src.Neg_mm256)
-	case AVX512:
-		internal.RunSimdImplUnary(a, c, src.Neg_mm256)
-	default:
-		internal.ElementwiseNoSimdUnary(a, c, internal.NegAtomic)
-	}
+	internal.NegMatx(a, c)
 }
 
 func LnNeg[T types.TensorType](i Implementation, a, c []T) {
