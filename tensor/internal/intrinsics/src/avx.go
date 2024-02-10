@@ -1,14 +1,13 @@
 package src
 
 /*
-#cgo CFLAGS: -mavx -O3 -mavx512f -mavx512dq -fopenmp
+#cgo CFLAGS: -mavx2 -O3 -fopenmp
 #cgo LDFLAGS: -lm -fopenmp
-#include "avx2_float.h"
-#include "avx2_int.h"
+#include "avx_float.h"
+#include "avx_int.h"
 */
 import "C"
 import (
-	"fmt"
 	"gograd/tensor/types"
 	"reflect"
 	"unsafe"
@@ -19,10 +18,6 @@ func identical[T types.TensorType](s1, s2 []T) bool {
 		return false
 	}
 	return len(s1) == 0 || &s1[0] == &s2[0]
-}
-
-func not_implemented_err(msg string, t reflect.Kind) {
-	panic(fmt.Sprintf("%v is not implemented for %v", msg, t))
 }
 
 func Add_mm256[T types.TensorType](a, b, c []T) {

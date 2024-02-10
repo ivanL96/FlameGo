@@ -91,10 +91,8 @@ func Mul[T types.TensorType](i Implementation, a, b, c []T) {
 	switch i.impl {
 	case AVX:
 		src.Mul_mm256(a, b, c)
-		// internal.RunSimdImpl(a, b, c, src.Mul_mm256)
 	case AVX512:
-		src.Mul_mm256(a, b, c)
-		// internal.RunSimdImpl(a, b, c, src.Mul_mm256)
+		src.Mul_mm512(a, b, c)
 	default:
 		internal.ElementwiseNoSimd(a, b, c, internal.MulAtomic)
 	}
