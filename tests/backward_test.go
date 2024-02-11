@@ -146,3 +146,22 @@ func TestGradReluMean(t *testing.T) {
 // 	fmt.Println(out.MustAssert().ToString())
 // 	fmt.Println(out.Mean().MustAssert().ToString())
 // }
+
+func TestGradStep(t *testing.T) {
+	rng := tensor.NewRNG(1)
+	a := rng.RandomFloat32(10)
+	grad := rng.RandomFloat32(10)
+	lr := tensor.Scalar[float32](0.001)
+	for i := 0; i < 10; i++ { // to imitate repetitive param update
+		a.GradientStep(grad, lr).MustAssert()
+	}
+	// fmt.Println(a.ToString())
+	out := tensor.CreateTensor([]float32{
+		0.59861338, 0.93110406, 0.65791476, 0.43333712, 0.42039126,
+		0.67995483, 0.06498063, 0.15495403, 0.09599983, 0.29790273,
+	}, types.Shape{10})
+
+	is_close, err := a.IsAllClose(out, 0.001)
+	assert(t, is_close)
+	assert(t, err == nil)
+}

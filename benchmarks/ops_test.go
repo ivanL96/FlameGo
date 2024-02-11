@@ -2,6 +2,7 @@ package main
 
 import (
 	"gograd/tensor"
+	"gograd/tensor/types"
 	"testing"
 )
 
@@ -300,10 +301,43 @@ func BenchmarkSoftmax(b *testing.B) {
 	// fmt.Println(out.Data()[777])
 }
 
-func BenchmarkLnNeg(b *testing.B) {
-	a := tensor.Range[float32](1000)
+// func BenchmarkLnNeg(b *testing.B) {
+// 	a := tensor.Range[float32](1000)
+// 	// lnneg := func(v float32) float32 {
+// 	// 	return float32(-math.Log(float64(v)))
+// 	// }
+// 	for i := 0; i < b.N; i++ {
+// 		// a.LnNeg(a).MustAssert()
+// 		// a.ApplyFunc(lnneg).MustAssert()
+// 		a.Ln().Neg().MustAssert()
+// 	}
+// }
+
+// goos: windows
+// goarch: amd64
+// pkg: gograd/benchmarks
+// cpu: 11th Gen Intel(R) Core(TM) i5-11400H @ 2.70GHz
+// 1000,1000
+// pure go + goroutines
+// BenchmarkGradStep-12                5604            181.516 ns/op            4693 B/op         27 allocs/op
+// BenchmarkGradStep-12                6319            162.814 ns/op            4369 B/op         27 allocs/op
+// BenchmarkGradStep-12                7383            169.063 ns/op            4003 B/op         27 allocs/op
+// avx + openmp
+// BenchmarkGradStep-12               11768             95.846 ns/op            1362 B/op          0 allocs/op
+// BenchmarkGradStep-12               12394             94.153 ns/op            1293 B/op          0 allocs/op
+// BenchmarkGradStep-12               12450             92.217 ns/op            1287 B/op          0 allocs/op
+// goroutines + avx
+// BenchmarkGradStep-12               15231             74.767 ns/op            2902 B/op          28 allocs/op
+// BenchmarkGradStep-12               15442             79.774 ns/op            2886 B/op          28 allocs/op
+// BenchmarkGradStep-12               14064             76.649 ns/op            2988 B/op          28 allocs/op
+func BenchmarkGradStep(b *testing.B) {
+	rng := tensor.NewRNG(0)
+	side := types.Dim(1000)
+	a1 := rng.RandomFloat32(side, side)
+	b1 := rng.RandomFloat32(side, side)
+	lr := tensor.Scalar[float32](0.1)
 	for i := 0; i < b.N; i++ {
-		a.LnNeg(a).MustAssert()
-		// a.Ln().Neg().MustAssert()
+		// a1.Sub(b1.Mul(lr), a1)
+		a1.GradientStep(b1, lr)
 	}
 }

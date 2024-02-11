@@ -3,7 +3,6 @@ package internal
 import (
 	"gograd/tensor/types"
 	"math"
-	"runtime"
 	"sync"
 )
 
@@ -298,17 +297,11 @@ func MatMulMatx(
 
 	block_size := 64
 
-	runtime.GOMAXPROCS(numCPU)
-
 	var wg sync.WaitGroup
 
 	for i := 0; i < a_dim0; i += block_size {
 		for j := 0; j < b_dim0; j += block_size {
 			wg.Add(1)
-
-			// runtime.LockOSThread()
-			// defer runtime.UnlockOSThread()
-
 			go func(i, j int) {
 				defer wg.Done()
 				for bi := 0; bi < block_size; bi++ {
@@ -332,10 +325,21 @@ func MatMulMatx(
 
 // backward utils
 
-func GradientStep[T types.TensorType](val, grad []T, lr T) {
-	chunk := func(start, end int, a, dummy, out []T, mu *sync.Mutex) {
-		for i := start; i < end; i++ {
-			val[i] -= grad[i] * lr
+func GradientStep[T types.TensorType](val, grad []T, lr T, impl func([]T, []T, T)) {
+	var chunk func(start, end int, a, _, out []T, mu *sync.Mutex)
+
+	if impl == nil {
+		chunk = func(start, end int, a, _, out []T, mu *sync.Mutex) {
+			for i := start; i < end; i++ {
+				val[i] -= grad[i] * lr
+			}
+		}
+	} else {
+		chunk = func(start, end int, a, _, out []T, mu *sync.Mutex) {
+			if start >= end {
+				return
+			}
+			impl(_range(val, start, end), _range(grad, start, end), lr)
 		}
 	}
 	Parallel(len(val), chunk, val, grad, nil)

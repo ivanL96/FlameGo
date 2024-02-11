@@ -1,7 +1,7 @@
 package src
 
 /*
-#cgo CFLAGS: -mavx2 -O3 -fopenmp
+#cgo CFLAGS: -Wall -mavx2 -O3 -fopenmp -fPIC
 #cgo LDFLAGS: -lm -fopenmp
 #include "avx_float.h"
 #include "avx_int.h"
@@ -142,6 +142,21 @@ func Relu_mm256[T types.TensorType](a, c []T) {
 		C._mm256_relu((*C.float)(unsafe.Pointer(&a[0])), (*C.float)(unsafe.Pointer(&c[0])), C.longlong(len(a)))
 	default:
 		not_implemented_err("Relu", t)
+	}
+}
+
+func GradientStep_mm256[T types.TensorType](a, b []T, c T) {
+	if len(a) == 0 || len(b) == 0 {
+		return
+	}
+
+	t := reflect.TypeOf(a[0]).Kind()
+	switch t {
+	case reflect.Float32:
+		C._mm256_gradientstep(
+			(*C.float)(unsafe.Pointer(&a[0])), (*C.float)(unsafe.Pointer(&b[0])), C.float(float32(c)), C.longlong(len(a)))
+	default:
+		not_implemented_err("GradientStep", t)
 	}
 }
 

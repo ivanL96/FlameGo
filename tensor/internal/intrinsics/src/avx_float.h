@@ -21,5 +21,7 @@ void _mm256_div_to_const_a(float a, float *b, float *c, int64_t n);
 // void _mm256_pow_to_const_a(float a, float *b, float *c, int64_t n);
 
 void _mm256_relu(float* a, float* c, int64_t n);
+void _mm256_gradientstep(float* val, float* grad, float lr, int64_t n);
+
 
 #endif

@@ -95,6 +95,7 @@ func Mul[T types.TensorType](i Implementation, a, b, c []T) {
 	case AVX:
 		src.Mul_mm256(a, b, c)
 	case AVX512:
+		// internal.RunSimdImpl(a, b, c, src.Mul_mm512)
 		src.Mul_mm512(a, b, c)
 	default:
 		internal.ElementwiseNoSimd(a, b, c, internal.MulAtomic)
@@ -157,6 +158,7 @@ func Exp[T types.TensorType](i Implementation, a, c []T) {
 }
 
 func Relu[T types.TensorType](i Implementation, a, c []T) {
+	// internal.RunSimdImplUnary(a, c, src.Relu_mm256)
 	// internal.ReluMatx(a, c)
 	src.Relu_mm256(a, c)
 }
@@ -194,5 +196,7 @@ func Min[T types.TensorType](i Implementation, a, c []T) {
 }
 
 func GradientStep[T types.TensorType](val, grad []T, lr T) {
-	internal.GradientStep(val, grad, lr)
+	internal.GradientStep(val, grad, lr, src.GradientStep_mm256)
+	// internal.GradientStep(val, grad, lr, nil)
+	// src.GradientStep_mm256(val, grad, lr)
 }
