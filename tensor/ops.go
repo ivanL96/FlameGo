@@ -12,7 +12,7 @@ import (
 var AUTO_IMPL device.Implementation = *device.DetectImpl().ShowDebugInfo()
 
 // general use Binary operator
-func BaseBinElementwiseOp[T types.TensorType](
+func baseBinElementwiseOp[T types.TensorType](
 	tensor_a,
 	tensor_b *Tensor[T],
 	// contains function with scalar bin operation
@@ -201,23 +201,23 @@ func unaryElementwiseRoutine[T types.TensorType](
 //
 
 func (tensor *Tensor[T]) Add(other_tensor *Tensor[T], out ...*Tensor[T]) *Tensor[T] {
-	return BaseBinElementwiseOp(tensor, other_tensor, ops.AddAtomic[T], device.Add[T], get_param(out...))
+	return baseBinElementwiseOp(tensor, other_tensor, ops.AddAtomic[T], device.Add[T], get_param(out...))
 }
 
 func (tensor *Tensor[T]) Sub(other_tensor *Tensor[T], out ...*Tensor[T]) *Tensor[T] {
-	return BaseBinElementwiseOp(tensor, other_tensor, ops.SubAtomic[T], device.Sub[T], get_param(out...))
+	return baseBinElementwiseOp(tensor, other_tensor, ops.SubAtomic[T], device.Sub[T], get_param(out...))
 }
 
 func (tensor *Tensor[T]) Mul(other_tensor *Tensor[T], out ...*Tensor[T]) *Tensor[T] {
-	return BaseBinElementwiseOp(tensor, other_tensor, ops.MulAtomic[T], device.Mul[T], get_param(out...))
+	return baseBinElementwiseOp(tensor, other_tensor, ops.MulAtomic[T], device.Mul[T], get_param(out...))
 }
 
 func (tensor *Tensor[T]) Div(other_tensor *Tensor[T], out ...*Tensor[T]) *Tensor[T] {
-	return BaseBinElementwiseOp(tensor, other_tensor, ops.DivAtomic[T], device.Div[T], get_param(out...))
+	return baseBinElementwiseOp(tensor, other_tensor, ops.DivAtomic[T], device.Div[T], get_param(out...))
 }
 
 func (tensor *Tensor[T]) Pow(other_tensor *Tensor[T], out ...*Tensor[T]) *Tensor[T] {
-	return BaseBinElementwiseOp(tensor, other_tensor, ops.PowAtomic[T], device.Pow[T], get_param(out...))
+	return baseBinElementwiseOp(tensor, other_tensor, ops.PowAtomic[T], device.Pow[T], get_param(out...))
 }
 
 // unary

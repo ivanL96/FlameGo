@@ -208,6 +208,7 @@ func SumAxisMatx[T types.TensorType](data, out []T, shape types.Shape, axis int)
 				inner_sum := T(0)
 				i_stride := i * stride_1
 				for j := 0; j < inner_step; j++ {
+					// TODO swap loops , improve cache locality => enable avx
 					inner_sum += data[j*stride_0+i_stride]
 				}
 				// mu.Lock()
@@ -254,14 +255,12 @@ func MinMatx[T types.TensorType](a, out []T) {
 }
 
 func SoftmaxMatx[T types.TensorType](a, out []T, strides []int) {
-	var wg sync.WaitGroup
 
 	c := strides[0]
 	batchsize := len(a) / c
-	for i := 0; i < batchsize; i++ {
-		wg.Add(1)
-		go func(i int) {
-			defer wg.Done()
+
+	Parallel(batchsize, func(start, end int, a, _, out []T, m *sync.Mutex) {
+		for i := start; i < end; i++ {
 			logits_start := c * i
 			logits_end := (i + 1) * c
 			logit_max := a[logits_start]
@@ -280,9 +279,8 @@ func SoftmaxMatx[T types.TensorType](a, out []T, strides []int) {
 			for j := logits_start; j < logits_end; j++ {
 				out[j] /= logits_sum
 			}
-		}(i)
-	}
-	wg.Wait()
+		}
+	}, a, nil, out)
 }
 
 // matmul
@@ -303,20 +301,8 @@ func MatMulMatx(
 	runtime.GOMAXPROCS(numCPU)
 
 	var wg sync.WaitGroup
-	// wg.Add(numCPU)
-	// chunk_size := (a_dim0 + numCPU - 1) / numCPU
 
-	// for ii := 0; ii < numCPU; ii++ {
-	// 	start := ii * chunk_size
-	// 	end := (ii + 1) * chunk_size
-	// 	if end > a_dim0 {
-	// 		end = a_dim0
-	// 	}
-
-	// 	go func(start, end int) {
-	// 		defer wg.Done()
 	for i := 0; i < a_dim0; i += block_size {
-		// for i := start; i < end; i += block_size {
 		for j := 0; j < b_dim0; j += block_size {
 			wg.Add(1)
 
@@ -340,7 +326,6 @@ func MatMulMatx(
 				}
 			}(i, j)
 		}
-	} //(start, end)
-	// }
+	}
 	wg.Wait()
 }

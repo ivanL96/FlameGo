@@ -39,27 +39,14 @@ func TraverseAsContiguousND[T types.TensorType](a, out []T,
 }
 
 func TraverseAsContiguous2D[T types.TensorType](a, out []T, ashape types.Shape) {
-	var wg sync.WaitGroup
 	rows := int(ashape[0])
 	cols := int(ashape[1])
 
-	chunk_size := (cols + numCPU - 1) / numCPU
-	wg.Add(numCPU)
-
-	for i := 0; i < numCPU; i++ {
-		start := i * chunk_size
-		end := (i + 1) * chunk_size
-		if end > cols {
-			end = cols
+	Parallel(cols, func(start, end int, a, _, out []T, mu *sync.Mutex) {
+		for j := start; j < end; j++ {
+			Transpose_cont2D_loop(a, out, j, rows, cols)
 		}
-		go func(start, end int) {
-			defer wg.Done()
-			for j := start; j < end; j++ {
-				Transpose_cont2D_loop(a, out, j, rows, cols)
-			}
-		}(start, end)
-	}
-	wg.Wait()
+	}, a, nil, out)
 }
 
 func Parallel[T types.TensorType](

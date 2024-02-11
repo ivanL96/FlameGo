@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"gograd/tensor"
 	"testing"
 )
@@ -255,6 +254,10 @@ func BenchmarkSub(b *testing.B) {
 // BenchmarkRelu-12            2304             496.967 ns/op         4011268 B/op         31 allocs/op
 // BenchmarkRelu-12            2036             501.141 ns/op         4011721 B/op         31 allocs/op
 // BenchmarkRelu-12            2418             489.242 ns/op         4011099 B/op         31 allocs/op
+// c impl
+// BenchmarkRelu-12            2529             470.140 ns/op         4009208 B/op          5 allocs/op
+// BenchmarkRelu-12            2530             472.320 ns/op         4009205 B/op          5 allocs/op
+// BenchmarkRelu-12            2587             467.774 ns/op         4009135 B/op          5 allocs/op
 func BenchmarkRelu(b *testing.B) {
 	rng := tensor.NewRNG(0)
 	a1 := rng.RandomFloat32(1000, 1000)
@@ -278,11 +281,13 @@ func BenchmarkRelu(b *testing.B) {
 // BenchmarkSoftmax-12           18          61.208.217 ns/op        93.003.496 B/op     205105 allocs/op
 // ad-hoc impl tensor.Softmax(out). 150x speed up
 // result 0.008303015
-// BenchmarkSoftmax-12         2696            385.663 ns/op          104.473 B/op       2001 allocs/op
 // BenchmarkSoftmax-12         3070            381.827 ns/op          104.452 B/op       2001 allocs/op
 // BenchmarkSoftmax-12         3063            379.646 ns/op          104.427 B/op       2001 allocs/op
 // BenchmarkSoftmax-12         3074            382.471 ns/op          104.411 B/op       2001 allocs/op
-// BenchmarkSoftmax-12         3122            384.219 ns/op          104.405 B/op       2001 allocs/op
+// goroutine per core
+// BenchmarkSoftmax-12         5564            208.815 ns/op            1.997 B/op         27 allocs/op
+// BenchmarkSoftmax-12         4840            233.703 ns/op            2.026 B/op         27 allocs/op
+// BenchmarkSoftmax-12         4580            232.619 ns/op            2.040 B/op         27 allocs/op
 func BenchmarkSoftmax(b *testing.B) {
 	rng := tensor.NewRNG(0)
 	x := rng.RandomFloat32(1000, 100)
@@ -292,7 +297,7 @@ func BenchmarkSoftmax(b *testing.B) {
 		// out = e.Div(e.SumAlongAxis(1, true))
 		x.Softmax(out)
 	}
-	fmt.Println(out.Data()[777])
+	// fmt.Println(out.Data()[777])
 }
 
 func BenchmarkLnNeg(b *testing.B) {

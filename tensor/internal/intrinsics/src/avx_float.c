@@ -260,3 +260,22 @@ void _mm256_div_to_const_a(float a, float *b, float *c, int64_t n)
 //         c[i] = powf(a, b[i]);
 //     }
 // }
+
+void _mm256_relu(float* a, float* c, int64_t n) {
+    int epoch = n / 8;
+    int remain = n % 8;
+
+    __m256 zero = _mm256_set1_ps(0.0f);
+
+    #pragma omp parallel for
+    for (int i = 0; i < epoch; i++){
+        __m256 v1 = _mm256_loadu_ps(a + i * 8);
+        __m256 v = _mm256_max_ps(v1, zero);
+        _mm256_storeu_ps(c + i * 8, v);
+    }
+
+    int offset = epoch * 8;
+    for (int i = 0; i < remain; ++i) {
+        c[offset + i] = (a[offset + i] > 0.0f) ? a[offset + i] : 0.0f;
+    }
+}

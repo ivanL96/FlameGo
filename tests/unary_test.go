@@ -31,13 +31,13 @@ func TestRelu(t *testing.T) {
 }
 
 func TestApplyFunc1(t *testing.T) {
-	a := tensor.Range[float32](6).Reshape(2, 3)
+	a := tensor.Range[float32](10).Reshape(2, 5)
 	expr := func(a float32) float32 {
 		return -a
 	}
 	s := a.ApplyFunc(expr).MustAssert()
-	assertEqualSlices(t, s.Shape(), types.Shape{2, 3})
-	assertEqualSlices(t, s.Data(), []float32{0, -1, -2, -3, -4, -5})
+	assertEqualSlices(t, s.Shape(), types.Shape{2, 5})
+	assertEqualSlices(t, s.Data(), []float32{0, -1, -2, -3, -4, -5, -6, -7, -8, -9})
 }
 
 func TestApplyFunc2(t *testing.T) {

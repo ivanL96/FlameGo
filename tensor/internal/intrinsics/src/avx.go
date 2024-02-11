@@ -131,6 +131,20 @@ func Div_mm256[T types.TensorType](a, b, c []T) {
 	}
 }
 
+func Relu_mm256[T types.TensorType](a, c []T) {
+	if len(a) == 0 || len(c) == 0 {
+		return
+	}
+
+	t := reflect.TypeOf(a[0]).Kind()
+	switch t {
+	case reflect.Float32:
+		C._mm256_relu((*C.float)(unsafe.Pointer(&a[0])), (*C.float)(unsafe.Pointer(&c[0])), C.longlong(len(a)))
+	default:
+		not_implemented_err("Relu", t)
+	}
+}
+
 // func Pow_mm256[T types.TensorType](a, b, c []T) {
 // 	if len(a) == 0 || len(b) == 0 || len(c) == 0 {
 // 		return

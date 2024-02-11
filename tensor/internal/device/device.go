@@ -157,7 +157,8 @@ func Exp[T types.TensorType](i Implementation, a, c []T) {
 }
 
 func Relu[T types.TensorType](i Implementation, a, c []T) {
-	internal.ReluMatx(a, c)
+	// internal.ReluMatx(a, c)
+	src.Relu_mm256(a, c)
 }
 
 func Softmax[T types.TensorType](i Implementation, a, c []T, strides []int) {
