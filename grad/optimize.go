@@ -20,7 +20,8 @@ func (opt *Optimizer[T]) Step(parameters ...*Var[T]) {
 	// new = old - lr*gradient
 	opt.params = parameters
 	for _, param := range parameters {
-		param.Value.Sub(param.Grad.Mul(opt.lr), param.Value)
+		param.Value.GradientStep(param.Grad, opt.lr)
+		// param.Value.Sub(param.Grad.Mul(opt.lr), param.Value)
 	}
 }
 

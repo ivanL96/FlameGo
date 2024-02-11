@@ -329,3 +329,14 @@ func MatMulMatx(
 	}
 	wg.Wait()
 }
+
+// backward utils
+
+func GradientStep[T types.TensorType](val, grad []T, lr T) {
+	chunk := func(start, end int, a, dummy, out []T, mu *sync.Mutex) {
+		for i := start; i < end; i++ {
+			val[i] -= grad[i] * lr
+		}
+	}
+	Parallel(len(val), chunk, val, grad, nil)
+}

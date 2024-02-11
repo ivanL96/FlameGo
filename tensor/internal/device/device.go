@@ -192,3 +192,7 @@ func Max[T types.TensorType](i Implementation, a, c []T) {
 func Min[T types.TensorType](i Implementation, a, c []T) {
 	internal.MinMatx(a, c)
 }
+
+func GradientStep[T types.TensorType](val, grad []T, lr T) {
+	internal.GradientStep(val, grad, lr)
+}

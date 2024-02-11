@@ -269,6 +269,14 @@ func (tensor *Tensor[T]) Softmax(out *Tensor[T]) *Tensor[T] {
 	return out
 }
 
+func (tensor *Tensor[T]) GradientStep(grad, lr *Tensor[T]) *Tensor[T] {
+	if tensor.Err != nil {
+		return tensor
+	}
+	device.GradientStep(tensor.Data(), grad.Data(), lr.Item())
+	return tensor
+}
+
 //
 // MATRIX OPERATIONS
 //
