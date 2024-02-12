@@ -56,7 +56,7 @@ func Constant[T types.TensorType](
 ) *Var[T] {
 	return &Var[T]{
 		Value:         tensor_val.MustAssert(),
-		Grad:          nil,
+		Grad:          tensor.Scalar[T](0),
 		Children:      nil,
 		Requires_grad: false,
 	}
