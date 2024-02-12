@@ -3,9 +3,9 @@ package tensor
 import (
 	"errors"
 	"fmt"
-	ops "gograd/tensor/internal"
+	"gograd/tensor/internal"
 	"gograd/tensor/internal/device"
-	types "gograd/tensor/types"
+	"gograd/tensor/types"
 	"reflect"
 )
 
@@ -85,14 +85,7 @@ func baseBinElementwiseOp[T types.TensorType](
 			return tensor_a
 		}
 		out_data := outTensor.data()
-		// if vector_to_scalar_impl == nil {
-		// 	value := tensor_b.Item()
-		// 	for i, val := range tensor_a.data() {
-		// 		out_data[i] = scalar_impl(val, value)
-		// 	}
-		// } else {
 		vector_impl(AUTO_IMPL, tensor_a.data(), tensor_b.data(), out_data)
-		// }
 	} else if tensor_a.shape.IsScalarLike() {
 		// tensor_a is scalar
 		// (1,) & (N, M, ...)
@@ -102,14 +95,7 @@ func baseBinElementwiseOp[T types.TensorType](
 			return tensor_a
 		}
 		out_data := outTensor.data()
-		// if vector_to_scalar_impl == nil {
-		// 	value := tensor_a.Item()
-		// 	for i, val := range tensor_b.data() {
-		// 		out_data[i] = scalar_impl(value, val)
-		// 	}
-		// } else {
 		vector_impl(AUTO_IMPL, tensor_b.data(), tensor_a.data(), out_data)
-		// }
 	} else {
 		// tensors should have equal shapes or at least one of them should be scalar-like
 		if !tensor_a.shape.AreBroadcastable(tensor_b.shape) {
@@ -201,49 +187,49 @@ func unaryElementwiseRoutine[T types.TensorType](
 //
 
 func (tensor *Tensor[T]) Add(other_tensor *Tensor[T], out ...*Tensor[T]) *Tensor[T] {
-	return baseBinElementwiseOp(tensor, other_tensor, ops.AddAtomic[T], device.Add[T], get_param(out...))
+	return baseBinElementwiseOp(tensor, other_tensor, internal.AddAtomic[T], device.Add[T], get_param(out...))
 }
 
 func (tensor *Tensor[T]) Sub(other_tensor *Tensor[T], out ...*Tensor[T]) *Tensor[T] {
-	return baseBinElementwiseOp(tensor, other_tensor, ops.SubAtomic[T], device.Sub[T], get_param(out...))
+	return baseBinElementwiseOp(tensor, other_tensor, internal.SubAtomic[T], device.Sub[T], get_param(out...))
 }
 
 func (tensor *Tensor[T]) Mul(other_tensor *Tensor[T], out ...*Tensor[T]) *Tensor[T] {
-	return baseBinElementwiseOp(tensor, other_tensor, ops.MulAtomic[T], device.Mul[T], get_param(out...))
+	return baseBinElementwiseOp(tensor, other_tensor, internal.MulAtomic[T], device.Mul[T], get_param(out...))
 }
 
 func (tensor *Tensor[T]) Div(other_tensor *Tensor[T], out ...*Tensor[T]) *Tensor[T] {
-	return baseBinElementwiseOp(tensor, other_tensor, ops.DivAtomic[T], device.Div[T], get_param(out...))
+	return baseBinElementwiseOp(tensor, other_tensor, internal.DivAtomic[T], device.Div[T], get_param(out...))
 }
 
 func (tensor *Tensor[T]) Pow(other_tensor *Tensor[T], out ...*Tensor[T]) *Tensor[T] {
-	return baseBinElementwiseOp(tensor, other_tensor, ops.PowAtomic[T], device.Pow[T], get_param(out...))
+	return baseBinElementwiseOp(tensor, other_tensor, internal.PowAtomic[T], device.Pow[T], get_param(out...))
 }
 
 // unary
 func (tensor *Tensor[T]) Neg(out ...*Tensor[T]) *Tensor[T] {
-	return unaryElementwiseRoutine(tensor, ops.NegAtomic[T], device.Neg[T], get_param(out...))
+	return unaryElementwiseRoutine(tensor, internal.NegAtomic[T], device.Neg[T], get_param(out...))
 }
 
 func (tensor *Tensor[T]) Sigmoid(out ...*Tensor[T]) *Tensor[T] {
-	return unaryElementwiseRoutine(tensor, ops.SigmoidAtomic[T], device.Sigmoid[T], get_param(out...))
+	return unaryElementwiseRoutine(tensor, internal.SigmoidAtomic[T], device.Sigmoid[T], get_param(out...))
 }
 
 func (tensor *Tensor[T]) Ln(out ...*Tensor[T]) *Tensor[T] {
-	return unaryElementwiseRoutine(tensor, ops.LnAtomic[T], nil, get_param(out...))
+	return unaryElementwiseRoutine(tensor, internal.LnAtomic[T], nil, get_param(out...))
 }
 
 // combination of Ln().Neg()
 func (tensor *Tensor[T]) LnNeg(out ...*Tensor[T]) *Tensor[T] {
-	return unaryElementwiseRoutine(tensor, ops.LnNegAtomic[T], device.LnNeg[T], get_param(out...))
+	return unaryElementwiseRoutine(tensor, internal.LnNegAtomic[T], device.LnNeg[T], get_param(out...))
 }
 
 func (tensor *Tensor[T]) Relu(out ...*Tensor[T]) *Tensor[T] {
-	return unaryElementwiseRoutine(tensor, ops.ReluAtomic[T], device.Relu[T], get_param(out...))
+	return unaryElementwiseRoutine(tensor, internal.ReluAtomic[T], device.Relu[T], get_param(out...))
 }
 
 func (tensor *Tensor[T]) Exp(out ...*Tensor[T]) *Tensor[T] {
-	return unaryElementwiseRoutine(tensor, ops.ExpAtomic[T], device.Exp[T], get_param(out...))
+	return unaryElementwiseRoutine(tensor, internal.ExpAtomic[T], device.Exp[T], get_param(out...))
 }
 
 func (tensor *Tensor[T]) Clip(min, max float32, out ...*Tensor[T]) *Tensor[T] {
@@ -410,7 +396,7 @@ func SplitTensor[T types.TensorType](
 	if t := AnyErrors(a, b, c, d); t != nil {
 		return
 	}
-	ops.SplitTensorImpl(tensor.data(), nrows, a.data(), b.data(), c.data(), d.data())
+	internal.SplitTensorImpl(tensor.data(), nrows, a.data(), b.data(), c.data(), d.data())
 	return
 }
 
@@ -419,6 +405,6 @@ func UniteTensors[T types.TensorType](a, b, c, d, out *Tensor[T]) *Tensor[T] {
 	if err != nil {
 		panic(err)
 	}
-	ops.UniteTensors(int(a.shape[0]), a.strides[0], a.data(), b.data(), c.data(), d.data(), out_tensor.data())
+	internal.UniteTensors(int(a.shape[0]), a.strides[0], a.data(), b.data(), c.data(), d.data(), out_tensor.data())
 	return out_tensor
 }
